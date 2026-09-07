@@ -9,6 +9,8 @@ Current scope: **Phase 3 — confirmed swings, historical trend, BOS, and CHoCH*
 - [Trend methodology](trend-methodology.md): confirmed HH/HL versus LH/LL, ranging, and readiness.
 - [No-look-ahead guarantees](no-look-ahead.md): availability indices, state-transition argument,
   prefix/future-shock tests, and input/history assumptions.
+- [Evidence provenance contract](evidence-provenance-contract.md): architecture-only contracts
+  and required future liquidity/sweep metadata; scoring is deferred beyond Phase 4.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 

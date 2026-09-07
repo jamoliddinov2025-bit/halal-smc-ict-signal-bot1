@@ -11,6 +11,13 @@ from smcsignal.analysis.models import (
     TrendDirection,
     TrendState,
 )
+from smcsignal.analysis.provenance import (
+    CandleReference,
+    EvidenceProvenance,
+    EvidenceReference,
+    ProvenancedEvidence,
+    SeriesProvenance,
+)
 from smcsignal.analysis.structure import MarketStructureAnalyzer, analyze
 from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
@@ -21,6 +28,11 @@ __all__ = [
     "AnalysisError",
     "AnalysisInputError",
     "AnalysisSnapshot",
+    "CandleReference",
+    "EvidenceProvenance",
+    "EvidenceReference",
+    "ProvenancedEvidence",
+    "SeriesProvenance",
     "MarketStructureAnalyzer",
     "StructureEvent",
     "StructureEventKind",

@@ -179,6 +179,16 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
+## Architecture addendum: evidence provenance only
+
+Shared immutable provenance records now provide source/producer identity,
+configuration and input-prefix fingerprints, exact candle references, and true
+availability times for future components. The
+[evidence provenance contract](docs/evidence-provenance-contract.md) defines the
+metadata that future liquidity/sweep objects must carry. Their implementations
+remain deferred; no score values, scoring logic, active threshold, or signal-count
+targets are introduced. The eventual signal policy is documented, not implemented.
+
 ## Phase boundary
 
 No liquidity pools, sweeps, displacement, fair value gaps, order blocks,

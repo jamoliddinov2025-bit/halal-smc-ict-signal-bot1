@@ -88,6 +88,16 @@ single-pass iterables, independent analyzer instances, CSV replay, and mocked
 Binance normalization. `test_bos.py` checks that same-candle new confirmations or
 trend labels do not retroactively change event classification.
 
+## Future evidence metadata
+
+The shared [evidence provenance contract](evidence-provenance-contract.md) adds
+explicit closed-bar boundaries and real `available_at` instants. Unlike the
+Phase 3 candle-opening identifiers, those availability instants are appropriate
+for cross-timeframe dependency checks. A future producer must not substitute a
+Swing's confirming-candle opening timestamp for the instant it became knowable.
+Source/configuration fingerprints and immutable snapshot IDs must be derived
+from the known prefix only. These metadata types add no new detection or scoring.
+
 ## What this guarantee does not mean
 
 - Candle opening timestamps are identifiers, **not** claims that a close-based

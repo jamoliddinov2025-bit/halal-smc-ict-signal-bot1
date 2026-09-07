@@ -89,6 +89,26 @@ and tiny labeled CSV fixtures. The wheel includes both runtime subpackages and
 the typing marker, not repository-local configuration/tests. Build outputs and
 large/downloaded datasets remain Git-ignored.
 
+## Evidence-ready architecture addendum (no Phase 4 detection)
+
+`analysis/provenance.py` supplies immutable `SeriesProvenance`, `CandleReference`,
+`EvidenceReference`, and `EvidenceProvenance` records plus the `ProvenancedEvidence`
+protocol. Existing Phase 3 feature models and analysis results are unchanged.
+Future liquidity/sweep records must compose that provenance and retain typed raw
+facts, versioned dependencies, source/configuration fingerprints, and actual
+knowable times, rather than embedding an evaluation result.
+
+The [evidence provenance contract](evidence-provenance-contract.md) specifies the
+required future liquidity/sweep payload fields and all deferred factor inputs.
+It also records the eventual 0–100 Setup Quality Score, configurable publication
+threshold with default 75, quality-over-quantity rule, valid zero-signal outcomes,
+and absolute prohibition on signal-count targets. These are future policy only:
+no scoring values, evaluator, active threshold, or signal engine is implemented,
+and scoring must not be implemented in Phase 4.
+
+This addendum prepares data contracts only. Liquidity/sweep object implementations
+and detectors remain gated on explicit Phase 4 approval.
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
