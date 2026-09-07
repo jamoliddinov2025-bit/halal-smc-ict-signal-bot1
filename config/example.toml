@@ -1,0 +1,20 @@
+# Reference template only. Phase 1 does NOT load or enforce this file.
+# These values document intended scope; editing them cannot enable features.
+# Future implementations must explicitly enforce the approved safety constraints.
+# Never add API keys, passwords, or other secrets to this tracked file.
+
+[project]
+name = "Professional Halal SMC/ICT Spot Signal Bot"
+phase = 1
+
+[scope]
+market = "spot"
+direction = "long_only"
+signal_only = true
+
+[safety]
+exchange_connectivity = false
+order_execution = false
+leverage = false
+margin = false
+short_selling = false
