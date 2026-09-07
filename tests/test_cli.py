@@ -10,13 +10,14 @@ from smcsignal import __version__
 from smcsignal.cli import main
 
 
-def test_default_command_reports_scaffold(capsys: pytest.CaptureFixture[str]) -> None:
+def test_default_command_reports_market_data_scope(capsys: pytest.CaptureFixture[str]) -> None:
     assert main([]) == 0
     captured = capsys.readouterr()
     assert captured.out == (
         "Professional Halal SMC/ICT Spot Signal Bot\n"
-        "Phase 1: project scaffold only.\n"
-        "No market data, signal generation, exchange connectivity, or order execution.\n"
+        "Phase 2: market data foundation.\n"
+        "CSV replay and Binance public OHLCV are available through the Python data API.\n"
+        "No strategy logic, signals, or trading.\n"
     )
     assert captured.err == ""
 
@@ -34,8 +35,8 @@ def test_help_option(capsys: pytest.CaptureFixture[str]) -> None:
     assert exc.value.code == 0
     output = capsys.readouterr().out
     assert "--version" in output
-    assert "Phase 1 scaffold only" in output
-    assert "Phase 2 requires explicit approval" in output
+    assert "Phase 2 market data foundation" in output
+    assert "Phase 3 requires explicit approval" in output
 
 
 @pytest.mark.parametrize("option", ["--live", "--trade", "--config"])
@@ -59,6 +60,6 @@ def test_module_entrypoint_works_outside_checkout(tmp_path: Path) -> None:
         timeout=10,
         check=True,
     )
-    assert "Phase 1: project scaffold only." in result.stdout
-    assert "No market data, signal generation" in result.stdout
+    assert "Phase 2: market data foundation." in result.stdout
+    assert "No strategy logic, signals, or trading." in result.stdout
     assert result.stderr == ""

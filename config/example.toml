@@ -1,11 +1,11 @@
-# Reference template only. Phase 1 does NOT load or enforce this file.
-# These values document intended scope; editing them cannot enable features.
-# Future implementations must explicitly enforce the approved safety constraints.
-# Never add API keys, passwords, or other secrets to this tracked file.
+# Phase 2 offline example. Only [market_data] is consumed by load_data_config().
+# Project/scope/safety tables document intent, not a runtime trading policy engine.
+# This CSV is explicitly synthetic test data, not historical Binance observations.
+# Never add credentials or account data.
 
 [project]
 name = "Professional Halal SMC/ICT Spot Signal Bot"
-phase = 1
+phase = 2
 
 [scope]
 market = "spot"
@@ -13,8 +13,18 @@ direction = "long_only"
 signal_only = true
 
 [safety]
-exchange_connectivity = false
+authenticated_exchange_access = false
 order_execution = false
 leverage = false
 margin = false
 short_selling = false
+
+[market_data]
+symbol = "BTCUSDT"
+timeframe = "15m"
+data_source = "csv"
+history_limit = 500
+# Resolved relative to this TOML file, not the process working directory.
+csv_path = "../tests/fixtures/ohlcv.csv"
+missing_value_policy = "error"
+timeout_seconds = 10.0

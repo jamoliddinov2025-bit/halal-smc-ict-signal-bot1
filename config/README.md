@@ -1,24 +1,41 @@
-# Configuration templates
+# Market data configuration
 
-`example.toml` is a version-controlled reference for the intended project scope.
-It contains no credentials and can be parsed with Python 3.11's standard-library
-`tomllib`.
+Phase 2 explicitly loads `[market_data]` using `smcsignal.data.load_data_config`.
+The informational CLI does not load settings or fetch data automatically.
 
-## Phase 1 boundary
+- `example.toml`: offline CSV example using a tiny **synthetic** test fixture.
+- `binance-public.example.toml`: explicit unauthenticated Binance Spot REST example.
 
-There is **no runtime configuration loader** in this phase. The CLI does not read
-this directory. The template's flags are documented intentions, not implemented
-security controls, and changing them cannot enable networking, signals, or orders.
-Tests validate the template's syntax and baseline values only.
+## Settings
 
-Any future implementation must explicitly enforce approved spot-only, long-only,
-signal-only constraints. Neither leverage, margin, short selling, nor automated
-order execution is part of this scaffold.
+| Key | Contract |
+| --- | --- |
+| `symbol` | Required exchange symbol, e.g. `BTCUSDT`; 2–30 ASCII alphanumeric characters, normalized to uppercase. Slash/derivative notation is rejected. |
+| `timeframe` | Required, case-sensitive supported interval; `1m` means minute, `1M` means month. |
+| `data_source` | Required: `csv` or `binance_public`; no fallback or automatic selection. |
+| `history_limit` | Required integer from 1 to 1000. Return **up to** this many candles, ascending, from the latest validated window. |
+| `csv_path` | Required only for CSV and forbidden for Binance. Relative TOML paths resolve against the TOML directory. |
+| `missing_value_policy` | `error` (default) or explicit `drop`; never fill prices or fabricate candles. |
+| `timeout_seconds` | Finite number greater than zero and at most 60; default 10. Applies to HTTP I/O, not CSV. |
 
-## Local files and secrets
+Unknown keys inside `[market_data]`, including credentials, are rejected. The four
+required settings cannot be silently supplied by defaults. Direct `MarketDataConfig`
+construction resolves relative CSV paths against the working directory at construction.
+Files are not opened until configuration loading or an explicit provider fetch.
 
-Machine-specific files named `local*.toml` or `secrets*.toml` in this directory
-are Git-ignored, but are not loaded by Phase 1. Ignore rules are not a substitute
-for secret management. Never commit API keys, passwords, tokens, or account data.
-Only this README and `example.toml` are explicitly included from this directory
-in the source distribution.
+The existing `[project]`, `[scope]`, and `[safety]` tables document intent only and
+are not consumed by the data loader. In particular, `authenticated_exchange_access`
+is not a toggle for public data; no authenticated/execution implementation exists.
+No halal filter or asset-eligibility decision is implemented.
+
+## Secrets and local data
+
+Do not add API keys, tokens, passwords, or account information. Binance public
+klines need no exchange credentials. Local `config/local*.toml` and
+`config/secrets*.toml` are ignored, but ignoring a path is not secret management.
+Downloaded data under the root `data/` directory is also ignored.
+
+The source distribution explicitly includes only the three configuration files
+listed in `MANIFEST.in`, not arbitrary local TOML files. See the
+[market data methodology](../docs/market-data-methodology.md) for validation,
+replay, missing-data behavior, and important limits.

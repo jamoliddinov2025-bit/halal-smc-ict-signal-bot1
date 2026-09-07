@@ -1,12 +1,13 @@
 # Documentation
 
-Current scope: **Phase 1 — project scaffold only**.
+Current scope: **Phase 2 — market data foundation only**.
 
-- [Architecture and scope](architecture.md): package responsibilities, boundaries,
-  and explicitly unimplemented features.
-- [Development guide](development.md): installation, checks, tests, and packaging.
-- [Configuration templates](../config/README.md): reference-only settings and
-  secret-handling guidance.
+- [Architecture](architecture.md): provider contract, module boundaries, and data flow.
+- [Market data methodology](market-data-methodology.md): OHLCV schema, timestamps,
+  validation, cleaning audit, CSV replay, Binance behavior, and limitations.
+- [Development guide](development.md): installation, offline tests, and packaging.
+- [Configuration](../config/README.md): supported settings and source selection.
 
-No Phase 2 work or SMC/ICT implementation is included. Further development requires
-explicit approval.
+Phase 1's scaffold is retained and extended only with market data functionality.
+No trend detection, SMC, BOS, CHoCH, liquidity analysis, signals, charts, Telegram,
+or halal filter is implemented. Phase 3 requires explicit approval.

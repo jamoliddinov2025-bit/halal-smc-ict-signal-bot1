@@ -1,0 +1,11 @@
+# Explicit, read-only public Spot data. No API key or account access is required.
+# Loading/constructing a provider does not make a request; fetch_ohlcv() does.
+# Do not add csv_path or credentials to this source configuration.
+
+[market_data]
+symbol = "BTCUSDT"
+timeframe = "15m"
+data_source = "binance_public"
+history_limit = 500
+missing_value_policy = "error"
+timeout_seconds = 10.0

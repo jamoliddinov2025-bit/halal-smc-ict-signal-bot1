@@ -1,55 +1,75 @@
-# Architecture and Phase 1 scope
+# Architecture — Phase 2
 
-## What exists
+## Data flow
 
-The project uses a Python `src` layout so that tests exercise an installed package
-rather than accidentally importing directly from the repository root.
+```text
+Explicit TOML file / MarketDataConfig
+                  |
+          create_data_provider
+             /           \
+     CsvDataProvider   BinancePublicDataProvider
+      local CSV        public HTTPS GET /api/v3/klines
+             \           /
+         six-field source mappings
+                  |
+           normalize_ohlcv
+                  |
+      OHLCVBatch(candles, report)
+```
 
-| Location | Responsibility |
+Both providers implement the abstract `DataProvider.fetch_ohlcv()` contract. A
+provider is configured for one declared symbol/timeframe. Importing packages and
+constructing providers perform no data fetch. `fetch_ohlcv()` is the explicit I/O
+boundary; there is no automatic fallback to another source or synthetic data.
+
+## Modules
+
+| Module | Responsibility |
 | --- | --- |
-| `src/smcsignal/__init__.py` | Package metadata; single source of the version |
-| `src/smcsignal/cli.py` | Informational status, help, and version output only |
-| `src/smcsignal/__main__.py` | Support `python -m smcsignal` |
-| `src/smcsignal/py.typed` | Mark the package as shipping inline type annotations |
-| `tests/` | Offline scaffold, CLI, metadata, and template tests |
-| `config/` | Non-executable reference configuration and guidance |
-| `docs/` | Scope and development documentation |
-| `pyproject.toml` | Build metadata, development dependencies, pytest, and Ruff |
+| `data/base.py` | Provider interface |
+| `data/config.py` | Frozen settings, type/range checks, source selection values, explicit TOML loading |
+| `data/factory.py` | Construct the configured provider without fetching |
+| `data/models.py` | Immutable OHLCV records, serialization, batches, cleaning reports |
+| `data/validation.py` | Schema, UTC/decimal conversion, missing-value policy, sorting, duplicates, history window |
+| `data/csv.py` | Strict local CSV ingestion and independent snapshot replay iterators |
+| `data/binance.py` | Read-only public Spot klines, bounded HTTP response, timeout, closed-candle cutoff |
+| `data/errors.py` | Distinct configuration, validation, provider, HTTP, and rate-limit errors |
+| `cli.py` | Informational status/help/version only; no implicit data fetch |
 
-There are no third-party runtime dependencies. Importing the package has no
-application-level side effects. CLI execution only prints information; it does
-not load configuration, read credentials, access market data, or submit orders.
+The public API is exported through `smcsignal.data`. The `src` layout and editable
+installation prevent tests from depending on accidental repository-root imports.
+Runtime dependencies remain Python's standard library only. Binance transport
+and clock are injectable for offline, deterministic tests.
 
-The source distribution includes the reference configuration, documentation, and
-tests. The wheel includes the `smcsignal` package, typing marker, and CLI entry
-point; it does not install the repository's tests or configuration directory.
+## Configuration versus metadata
 
-## Intent, not an implemented strategy
+Only the `[market_data]` table is consumed. Project/scope/safety tables in the
+example describe product intent; they are not runtime trading controls. Unknown
+market-data settings are errors, not silently ignored options. The provider code
+has no authentication, order submission, or derivatives endpoints to enable.
 
-The intended product is a spot-only, long-only signal tool. The configuration
-file documents that intent, but Phase 1 has no trading engine or runtime safety
-policy evaluator. Template flags must not be mistaken for enforced controls.
+Configuration holds the declared symbol/timeframe; the canonical candle has only
+the six OHLCV fields. Keep a batch with its provider's configuration when retaining
+provenance. A CSV cannot prove its declared market identity from those six columns.
 
-## Explicitly out of scope
+## Testing and packaging
 
-- Market-data ingestion, exchange clients, authentication, or external services.
-- SMC/ICT analysis, indicators, setups, scoring, or signal generation.
-- Signal delivery, Telegram integration, scheduling, or background workers.
-- Backtesting, paper trading, execution, risk sizing, or portfolio management.
-- Runtime configuration parsing, secret storage, or databases.
-- Leverage, margin, short selling, derivatives, or automated orders.
+`tests/data/` covers normalization, configuration, CSV replay, Binance mapping,
+closure cutoffs, and transport failures. `tests/conftest.py` blocks socket access
+in the pytest process. All provider tests use synthetic fixtures or injected
+transports; no live exchange calls or credentials are used.
 
-No placeholder strategy implementations, fabricated signals, or performance
-claims are provided.
+The source distribution includes docs, explicit example configurations, tests,
+and tiny labeled fixtures. The wheel includes the runtime package and typing
+marker, not repository-local configuration or tests. Build outputs and downloaded
+datasets remain Git-ignored.
 
-## Halal qualification
+## Boundaries and phase gate
 
-“Halal” describes the project's intended constraints, not a Sharia certification.
-Asset eligibility, venue mechanics, fees, and any future implementation require
-appropriate qualified review. A software scaffold cannot establish compliance
-or guarantee investment outcomes.
+This phase is **data ingestion and validation**, not analysis. It implements none
+of: trend detection, SMC, BOS, CHoCH, liquidity analysis, signals, charts, Telegram,
+a halal filter, backtesting, paper trading, or order execution. “Halal” remains a
+design goal, not certification; this code makes no asset-eligibility decision.
 
-## Phase gate
-
-Phase 1 ends with a tested, packaged, committed, and remotely verified scaffold.
-Phase 2 requires explicit approval. Nothing here starts a bot or a trading loop.
+Phase 2 ends with the full offline suite, packaging checks, commit, push, and
+remote SHA verification. Stop here; Phase 3 requires explicit approval.

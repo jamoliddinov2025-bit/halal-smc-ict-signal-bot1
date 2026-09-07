@@ -1,1 +1,1 @@
-"""Offline tests for the Phase 1 project scaffold."""
+"""Offline tests for the package and Phase 2 market data foundation."""

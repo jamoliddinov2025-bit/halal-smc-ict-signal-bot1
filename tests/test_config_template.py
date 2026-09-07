@@ -1,4 +1,4 @@
-"""Validate the reference template, not runtime configuration enforcement."""
+"""Check project metadata and the offline-first market data example."""
 
 import tomllib
 from pathlib import Path
@@ -14,8 +14,8 @@ def config_template() -> dict[str, Any]:
         return tomllib.load(stream)
 
 
-def test_template_describes_phase_one(config_template: dict[str, Any]) -> None:
-    assert config_template["project"]["phase"] == 1
+def test_template_describes_phase_two(config_template: dict[str, Any]) -> None:
+    assert config_template["project"]["phase"] == 2
     assert config_template["project"]["name"] == "Professional Halal SMC/ICT Spot Signal Bot"
 
 
@@ -29,7 +29,7 @@ def test_template_documents_spot_signal_only_intent(config_template: dict[str, A
 
 @pytest.mark.parametrize(
     "setting",
-    ["exchange_connectivity", "order_execution", "leverage", "margin", "short_selling"],
+    ["authenticated_exchange_access", "order_execution", "leverage", "margin", "short_selling"],
 )
 def test_template_keeps_future_capabilities_disabled(
     config_template: dict[str, Any], setting: str

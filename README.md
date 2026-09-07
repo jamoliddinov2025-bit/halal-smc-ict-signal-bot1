@@ -1,47 +1,100 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 1 — project scaffold only. No SMC/ICT logic is implemented.**
+**Status: Phase 2 — market data foundation only. No strategy or signal logic.**
 
-A Python foundation for a future spot-only, long-only signal tool. This version
-provides packaging, an informational CLI, offline tests, a reference configuration,
-and development documentation. It does **not** generate signals, connect to an
-exchange, trade, or claim any performance results.
+A Python foundation for a future spot-only, long-only signal tool. The current
+package reads and validates OHLCV from local CSV files or Binance's unauthenticated
+public **Spot** endpoint. It provides deterministic CSV replay, typed configuration,
+and auditable cleaning. It does not trade or make asset-eligibility decisions.
 
-## Requirements
+## Requirements and installation
 
-- Python **3.11+**.
-- A virtual environment for local development.
-- No third-party runtime dependencies.
-
-## Quick start
-
-From the repository root on Linux or macOS:
+Python **3.11+**; no third-party runtime dependencies. On Linux/macOS:
 
 ```bash
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -e ".[dev]"
-
-smcsignal
-python -m smcsignal --version
 python -m pytest
 ```
 
 On Windows, use `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-Expected default CLI output:
+## Offline market data example
 
-```text
-Professional Halal SMC/ICT Spot Signal Bot
-Phase 1: project scaffold only.
-No market data, signal generation, exchange connectivity, or order execution.
+The default example uses five **synthetic** candles, not real Binance history:
+
+```python
+from dataclasses import asdict
+
+from smcsignal.data import create_data_provider, load_data_config
+
+config = load_data_config("config/example.toml")
+provider = create_data_provider(config)  # no fetch during construction
+batch = provider.fetch_ohlcv()  # explicit local CSV read
+for candle in batch.candles:
+    print(candle.to_record())
+print(asdict(batch.report))
 ```
 
-Only default status output, `--help`, and `--version` are supported. The CLI does
-not load configuration or credentials.
+For sequential replay, construct `CsvDataProvider(config)` and iterate
+`provider.replay()`. It yields the same latest-N snapshot oldest-first, without
+sleeping or executing anything.
 
-## Project tree
+## Binance public Spot data
+
+Network access occurs only when explicitly fetching from this source:
+
+```python
+from smcsignal.data import create_data_provider, load_data_config
+
+config = load_data_config("config/binance-public.example.toml")
+batch = create_data_provider(config).fetch_ohlcv()
+```
+
+No API keys or account access are required. Requests use one bounded public REST
+page, a timeout, and a captured closed-candle cutoff. A result can contain fewer
+than the configured limit. HTTP/rate-limit/network failures raise actionable errors;
+there are no automatic retries or source fallbacks. Live availability is not
+asserted by the offline test suite.
+
+## Data contract
+
+- Exactly `timestamp`, `open`, `high`, `low`, `close`, `volume` per candle.
+- UTC, timezone-aware **opening** timestamps; integer epoch milliseconds or aware
+  ISO-8601 input; no guessing between seconds, milliseconds, and microseconds.
+- Finite `Decimal` OHLCV values; positive prices, nonnegative base-asset volume,
+  and consistent high/low bounds.
+- Ascending unique results: exact duplicates removed, conflicting duplicates rejected.
+- Strict missing-value errors by default; optional audited whole-row `drop`.
+- No fabricated candles, interpolation, forward filling, resampling, or gap repair.
+
+See [methodology and limits](docs/market-data-methodology.md), especially CSV
+provenance/closure assumptions, Binance page limits, and the cleaning report.
+
+## Configuration
+
+`[market_data]` requires `symbol`, `timeframe`, `data_source`, and `history_limit`.
+CSV additionally requires `csv_path`. Optional settings control missing-cell policy
+and HTTP timeout. Paths in TOML resolve relative to the configuration file.
+Unknown market-data settings and credentials are rejected.
+
+[Configuration guide](config/README.md) · [Offline example](config/example.toml) ·
+[Public Binance example](config/binance-public.example.toml)
+
+The informational CLI remains available:
+
+```bash
+smcsignal
+smcsignal --help
+python -m smcsignal --version
+```
+
+It does not load settings, fetch data, or start a worker automatically. Market data
+operations currently use the Python API shown above.
+
+## Project layout
 
 ```text
 .
@@ -52,62 +105,71 @@ not load configuration or credentials.
 ├── pyproject.toml
 ├── config/
 │   ├── README.md
+│   ├── binance-public.example.toml
 │   └── example.toml
 ├── docs/
 │   ├── README.md
 │   ├── architecture.md
-│   └── development.md
-├── src/
-│   └── smcsignal/
+│   ├── development.md
+│   └── market-data-methodology.md
+├── src/smcsignal/
+│   ├── __init__.py
+│   ├── __main__.py
+│   ├── cli.py
+│   ├── py.typed
+│   └── data/
 │       ├── __init__.py
-│       ├── __main__.py
-│       ├── cli.py
-│       └── py.typed
+│       ├── base.py
+│       ├── binance.py
+│       ├── config.py
+│       ├── csv.py
+│       ├── errors.py
+│       ├── factory.py
+│       ├── models.py
+│       └── validation.py
 └── tests/
     ├── __init__.py
+    ├── conftest.py
     ├── test_cli.py
     ├── test_config_template.py
-    └── test_package.py
+    ├── test_package.py
+    ├── data/
+    │   ├── __init__.py
+    │   ├── conftest.py
+    │   ├── test_binance.py
+    │   ├── test_config.py
+    │   ├── test_csv.py
+    │   └── test_validation.py
+    └── fixtures/
+        ├── README.md
+        └── ohlcv.csv
 ```
 
-Generated environments, caches, package metadata, and build outputs are ignored.
-
 ## Development checks
-
-With the environment activated:
 
 ```bash
 python -m ruff check .
 python -m ruff format --check .
+python -m mypy --strict src/smcsignal
 python -m pytest
 python -m pip check
 python -m build
 ```
 
-See the [development guide](docs/development.md) for packaging checks and test
-scope. Runtime code is under `src/smcsignal`; tests require installing the package,
-as shown above.
+All provider tests are offline and use synthetic fixtures/injected transports.
+Environments, caches, build outputs, and downloaded root `data/` files are ignored.
+See the [development guide](docs/development.md) and [architecture](docs/architecture.md).
 
-## Configuration and boundaries
+## Explicit exclusions and next phase
 
-[`config/example.toml`](config/example.toml) is a **reference template only**.
-It is not loaded or enforced by Phase 1. Its spot-only, long-only, signal-only and
-disabled-feature values document intent; changing them cannot enable a feature.
-See [configuration guidance](config/README.md).
+No trend detection, SMC, BOS, CHoCH, liquidity analysis, signals, charts, Telegram,
+or halal filter is implemented. There is no backtesting, paper trading, leverage,
+margin, short selling, authentication, or order execution.
 
-This phase includes no market-data adapters, indicators, SMC/ICT detection,
-signal delivery, risk engine, backtesting, exchange integration, or order
-execution. No leverage, margin, short selling, or derivatives are implemented.
-Never commit credentials or account data.
+“Halal” remains a design goal, **not a Sharia certification**. This code performs
+no religious screening and offers no investment advice or guarantee of profit.
 
-“Halal” is a design goal, **not a Sharia certification**. Asset and venue
-eligibility and future implementation details require qualified review. This
-scaffold provides no investment advice or guarantee of profit.
+[Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
+[Documentation](docs/README.md)
 
-## Documentation and next phase
-
-- [Documentation index](docs/README.md)
-- [Architecture and explicit exclusions](docs/architecture.md)
-- [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1)
-
-**Stop at Phase 1. Phase 2 requires explicit approval.**
+**Stop after Phase 2. Phase 3 requires explicit approval.**

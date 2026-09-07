@@ -5,13 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "smcsignal"
 dynamic = ["version"]
-description = "Professional Halal SMC/ICT Spot Signal Bot — Phase 1 scaffold"
+description = "Professional Halal SMC/ICT Spot Signal Bot — Phase 2 market data foundation"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
 keywords = ["smc", "ict", "spot", "signals", "halal"]
 classifiers = [
-  "Development Status :: 1 - Planning",
+  "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
@@ -21,6 +21,7 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
   "build>=1.2,<2",
+  "mypy>=1.15,<2",
   "pytest>=8.3,<10",
   "ruff>=0.11,<1",
 ]
