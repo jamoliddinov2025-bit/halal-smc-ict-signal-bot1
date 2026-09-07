@@ -1,4 +1,4 @@
-"""Informational CLI; market data fetching is an explicit Python API operation."""
+"""Informational CLI; market data and analysis are explicit Python API operations."""
 
 from __future__ import annotations
 
@@ -12,14 +12,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Print project status or standard help/version information."""
     parser = argparse.ArgumentParser(
         prog="smcsignal",
-        description="Professional Halal SMC/ICT Spot Signal Bot — Phase 2 market data foundation.",
-        epilog="No strategy logic is implemented. Phase 3 requires explicit approval.",
+        description=(
+            "Professional Halal SMC/ICT Spot Signal Bot — Phase 3 trend and market structure."
+        ),
+        epilog="No signal engine is implemented. Phase 4 requires explicit approval.",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.parse_args(argv)
 
     print("Professional Halal SMC/ICT Spot Signal Bot")
-    print("Phase 2: market data foundation.")
-    print("CSV replay and Binance public OHLCV are available through the Python data API.")
-    print("No strategy logic, signals, or trading.")
+    print("Phase 3: confirmed swings, trend, and market structure.")
+    print("Market data and analysis are available through the Python API.")
+    print("No signal engine or trading.")
     return 0

@@ -1,41 +1,70 @@
-# Market data configuration
+# Configuration — market data and Phase 3 analysis
 
-Phase 2 explicitly loads `[market_data]` using `smcsignal.data.load_data_config`.
-The informational CLI does not load settings or fetch data automatically.
+Two explicit loaders consume separate tables:
 
-- `example.toml`: offline CSV example using a tiny **synthetic** test fixture.
-- `binance-public.example.toml`: explicit unauthenticated Binance Spot REST example.
+- `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
+- `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
 
-## Settings
+Loading settings does not fetch data or run analysis. The CLI remains informational.
+
+## Included examples
+
+- `example.toml`: original five-candle **synthetic** offline data example with the
+  default five-candle fractal. This tiny monotonic sample has insufficient swing
+  evidence for a ready trend; no results are fabricated to overcome warm-up.
+- `binance-public.example.toml`: unauthenticated Binance Spot source plus default
+  analysis settings; network access requires an explicit provider fetch.
+- `analysis.example.toml`: fourteen **synthetic** candles and a three-candle fractal
+  for the hand-computed BOS/CHoCH demonstration.
+
+## Market data settings (unchanged)
 
 | Key | Contract |
 | --- | --- |
-| `symbol` | Required exchange symbol, e.g. `BTCUSDT`; 2–30 ASCII alphanumeric characters, normalized to uppercase. Slash/derivative notation is rejected. |
+| `symbol` | Required exchange symbol, e.g. `BTCUSDT`; 2–30 ASCII alphanumeric characters, normalized to uppercase. |
 | `timeframe` | Required, case-sensitive supported interval; `1m` means minute, `1M` means month. |
 | `data_source` | Required: `csv` or `binance_public`; no fallback or automatic selection. |
-| `history_limit` | Required integer from 1 to 1000. Return **up to** this many candles, ascending, from the latest validated window. |
+| `history_limit` | Required integer from 1 to 1000; return up to this many candles, oldest-first within the latest validated window. |
 | `csv_path` | Required only for CSV and forbidden for Binance. Relative TOML paths resolve against the TOML directory. |
-| `missing_value_policy` | `error` (default) or explicit `drop`; never fill prices or fabricate candles. |
-| `timeout_seconds` | Finite number greater than zero and at most 60; default 10. Applies to HTTP I/O, not CSV. |
+| `missing_value_policy` | `error` (default) or explicit whole-row `drop`; never fill/fabricate prices. |
+| `timeout_seconds` | Finite number greater than zero and at most 60; default 10. HTTP I/O only. |
 
-Unknown keys inside `[market_data]`, including credentials, are rejected. The four
-required settings cannot be silently supplied by defaults. Direct `MarketDataConfig`
-construction resolves relative CSV paths against the working directory at construction.
-Files are not opened until configuration loading or an explicit provider fetch.
+Unknown market-data settings, including credentials, are rejected. Direct
+`MarketDataConfig` construction resolves relative CSV paths against the current
+working directory at construction. Files are not opened by provider construction.
 
-The existing `[project]`, `[scope]`, and `[safety]` tables document intent only and
-are not consumed by the data loader. In particular, `authenticated_exchange_access`
-is not a toggle for public data; no authenticated/execution implementation exists.
-No halal filter or asset-eligibility decision is implemented.
+## Analysis settings
 
-## Secrets and local data
+```toml
+[analysis]
+fractal_length = 5
+```
 
-Do not add API keys, tokens, passwords, or account information. Binance public
-klines need no exchange credentials. Local `config/local*.toml` and
-`config/secrets*.toml` are ignored, but ignoring a path is not secret management.
-Downloaded data under the root `data/` directory is also ignored.
+The table must contain **exactly** `fractal_length`: an odd integer from 3 to 1001.
+It is the total window width, not the count on each flank. Five means two left
+candles + pivot + two right candles, with a two-candle confirmation delay.
 
-The source distribution explicitly includes only the three configuration files
-listed in `MANIFEST.in`, not arbitrary local TOML files. See the
-[market data methodology](../docs/market-data-methodology.md) for validation,
-replay, missing-data behavior, and important limits.
+`AnalysisConfig()` defaults to 5 for direct Python use; the TOML loader requires
+an explicit table/key so a missing/typoed setting cannot silently choose another
+methodology. The upper bound limits scan/buffer size, not the amount of available
+source history. Two highs and two lows may require substantially more candles
+than a single window; `TrendState.ready` distinguishes insufficient evidence.
+
+Settings are frozen during a stream. Use a new analyzer for a different length,
+symbol/timeframe, or replay starting point. There is no wick-break toggle, event
+lookback fitting, future-data setting, or excluded-feature configuration in Phase 3.
+
+## Metadata, secrets, and artifacts
+
+`[project]`, `[scope]`, and `[safety]` in the original example describe intent only;
+they are not a runtime trading-policy or halal-screening engine. No authenticated
+exchange access, orders, margin, leverage, or short selling can be enabled.
+
+Never add API keys, tokens, passwords, or account data. Public klines need no keys.
+Local `config/local*.toml` / `config/secrets*.toml` and downloaded root `data/` files
+are ignored; ignore rules are not secret management. `MANIFEST.in` explicitly
+includes only the example configurations and README, not arbitrary local files.
+
+See [market data methodology](../docs/market-data-methodology.md),
+[market structure definitions](../docs/market-structure-methodology.md), and
+[no-look-ahead guarantees](../docs/no-look-ahead.md).

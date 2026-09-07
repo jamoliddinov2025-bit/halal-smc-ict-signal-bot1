@@ -9,3 +9,7 @@ data_source = "binance_public"
 history_limit = 500
 missing_value_policy = "error"
 timeout_seconds = 10.0
+
+[analysis]
+# Total window of five candles: two left + pivot + two right.
+fractal_length = 5

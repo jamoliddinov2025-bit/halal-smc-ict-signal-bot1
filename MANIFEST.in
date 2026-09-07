@@ -3,5 +3,6 @@ include .gitignore
 include config/README.md
 include config/example.toml
 include config/binance-public.example.toml
+include config/analysis.example.toml
 recursive-include docs *.md
 recursive-include tests *.py *.csv *.md

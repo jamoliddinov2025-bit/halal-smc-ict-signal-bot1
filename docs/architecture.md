@@ -1,75 +1,103 @@
-# Architecture — Phase 2
+# Architecture — Phase 3
 
-## Data flow
+## Layers and explicit I/O
 
 ```text
-Explicit TOML file / MarketDataConfig
-                  |
-          create_data_provider
-             /           \
-     CsvDataProvider   BinancePublicDataProvider
-      local CSV        public HTTPS GET /api/v3/klines
-             \           /
-         six-field source mappings
-                  |
-           normalize_ohlcv
-                  |
-      OHLCVBatch(candles, report)
+TOML [market_data] -> DataProvider -> canonical OHLCVBatch
+                      /       \
+                  local CSV   public Binance Spot klines
+                                      |
+                           explicit fetch only
+
+TOML [analysis] + completed, chronological OHLCV candles
+                                      |
+                       MarketStructureAnalyzer.update
+                                      |
+             AnalysisSnapshot(confirmed_swings, trend, events)
 ```
 
-Both providers implement the abstract `DataProvider.fetch_ohlcv()` contract. A
-provider is configured for one declared symbol/timeframe. Importing packages and
-constructing providers perform no data fetch. `fetch_ohlcv()` is the explicit I/O
-boundary; there is no automatic fallback to another source or synthetic data.
+The Phase 2 data provider interface, schema validation, cleaning reports, and
+source behavior remain unchanged. Phase 3 operates on their canonical immutable
+`OHLCV` records; it performs no fetching, sorting, resampling, or source selection.
+Package imports, analyzer construction, and the CLI do not initiate I/O or analysis.
 
-## Modules
+## Market data package
+
+`src/smcsignal/data/` retains the provider contract, validated settings, provider
+factory, OHLCV models, normalization, CSV replay, Binance public transport, and
+error types. See the [market data methodology](market-data-methodology.md).
+Runtime dependencies remain Python's standard library only.
+
+## New analysis package
 
 | Module | Responsibility |
 | --- | --- |
-| `data/base.py` | Provider interface |
-| `data/config.py` | Frozen settings, type/range checks, source selection values, explicit TOML loading |
-| `data/factory.py` | Construct the configured provider without fetching |
-| `data/models.py` | Immutable OHLCV records, serialization, batches, cleaning reports |
-| `data/validation.py` | Schema, UTC/decimal conversion, missing-value policy, sorting, duplicates, history window |
-| `data/csv.py` | Strict local CSV ingestion and independent snapshot replay iterators |
-| `data/binance.py` | Read-only public Spot klines, bounded HTTP response, timeout, closed-candle cutoff |
-| `data/errors.py` | Distinct configuration, validation, provider, HTTP, and rate-limit errors |
-| `cli.py` | Informational status/help/version only; no implicit data fetch |
+| `analysis/config.py` | Frozen odd-window configuration and explicit `[analysis]` TOML loader |
+| `analysis/models.py` | Typed enums and immutable Swing, TrendState, StructureEvent, AnalysisSnapshot |
+| `analysis/swings.py` | Bounded trailing window; publish strict symmetric pivots only upon confirmation |
+| `analysis/trend.py` | Strict HH/HL or LH/LL classification from available two-high/two-low evidence |
+| `analysis/structure.py` | Prior-level close crossings, BOS/CHoCH classification, consumption, and replay orchestration |
+| `analysis/errors.py` | Configuration and analysis-input failures |
+| `analysis/__init__.py` | Explicit public API exports |
 
-The public API is exported through `smcsignal.data`. The `src` layout and editable
-installation prevent tests from depending on accidental repository-root imports.
-Runtime dependencies remain Python's standard library only. Binance transport
-and clock are injectable for offline, deterministic tests.
+`MarketStructureAnalyzer.update(candle)` is the primary stateful API. The
+`analyze(candles, config)` batch helper performs exactly the same sequential
+updates and returns one snapshot per candle. `SwingDetector` / `detect_swings`
+also expose confirmation-only detection without a structure engine.
 
-## Configuration versus metadata
+## Per-candle flow
 
-Only the `[market_data]` table is consumed. Project/scope/safety tables in the
-example describe product intent; they are not runtime trading controls. Unknown
-market-data settings are errors, not silently ignored options. The provider code
-has no authentication, order submission, or derivatives endpoints to enable.
+1. Validate the new candle's type and strictly increasing timestamp before any
+   state mutation. Calculate fractal confirmations from the trailing closed window.
+2. Evaluate this candle's close against levels and trend available through the
+   **previous** candle; consume crossings and emit eligible BOS/CHoCH events.
+3. Publish this candle's new confirmations; replace active levels and update
+   the two most recent highs/lows.
+4. Classify the current swing-derived trend and return a frozen snapshot.
 
-Configuration holds the declared symbol/timeframe; the canonical candle has only
-the six OHLCV fields. Keep a batch with its provider's configuration when retaining
-provenance. A CSV cannot prove its declared market identity from those six columns.
+Calculating new confirmations in step 1 does not activate them early in step 2.
+A CHoCH does not force the separate swing-derived trend to reverse. A ranging-state
+cross consumes its level but has no BOS/CHoCH label. These are explicit project
+conventions, not claims of a universal SMC definition.
+
+The stream retains O(fractal_length) observations plus a bounded set of swing
+references and the latest snapshot. Earlier returned snapshots contain immutable
+records/tuples, not views into mutable deques. The batch helper additionally
+retains O(number of candles) output snapshots.
+
+## Time, provenance, and series boundaries
+
+Indices are local to a replay, starting at zero. All timestamps identify candle
+opening times, while results are available only after the relevant candle closes.
+`Swing` separates pivot time from confirmation time; `StructureEvent` retains its
+broken level, prior/current closes, and prior trend for auditability.
+
+Use one analyzer per symbol/timeframe/configuration and feed each completed candle
+once. Configuration is immutable. Start a fresh analyzer when changing the series
+or settings. There is no symbol metadata inside six-column OHLCV, no automatic
+series mixing detection, no persistence, and no rolling-window restart equivalence.
 
 ## Testing and packaging
 
-`tests/data/` covers normalization, configuration, CSV replay, Binance mapping,
-closure cutoffs, and transport failures. `tests/conftest.py` blocks socket access
-in the pytest process. All provider tests use synthetic fixtures or injected
-transports; no live exchange calls or credentials are used.
+The original data tests are retained. `tests/analysis/` adds swing, trend, BOS,
+CHoCH, configuration/model, replay, and explicit no-look-ahead tests. Synthetic
+fixtures have hand-computed event outcomes. Socket access remains blocked in the
+pytest process; provider integration uses injected responses rather than live I/O.
 
-The source distribution includes docs, explicit example configurations, tests,
-and tiny labeled fixtures. The wheel includes the runtime package and typing
-marker, not repository-local configuration or tests. Build outputs and downloaded
-datasets remain Git-ignored.
+The source distribution includes explicit example configurations, docs, tests,
+and tiny labeled CSV fixtures. The wheel includes both runtime subpackages and
+the typing marker, not repository-local configuration/tests. Build outputs and
+large/downloaded datasets remain Git-ignored.
 
-## Boundaries and phase gate
+## Methodology and phase boundary
 
-This phase is **data ingestion and validation**, not analysis. It implements none
-of: trend detection, SMC, BOS, CHoCH, liquidity analysis, signals, charts, Telegram,
-a halal filter, backtesting, paper trading, or order execution. “Halal” remains a
-design goal, not certification; this code makes no asset-eligibility decision.
+- [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
+- [Trend classification and readiness](trend-methodology.md)
+- [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 2 ends with the full offline suite, packaging checks, commit, push, and
-remote SHA verification. Stop here; Phase 3 requires explicit approval.
+Phase 3 implements none of: liquidity pools, sweeps, displacement, fair value gaps,
+order blocks, premium/discount, a signal engine, charts, Telegram, or a halal filter.
+There are also no orders, authenticated account access, or trading-performance
+claims. “Halal” remains a design goal, not certification.
+
+Stop after Phase 3. Phase 4 requires explicit approval.

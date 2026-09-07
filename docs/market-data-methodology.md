@@ -166,5 +166,8 @@ urllib request boundary with a fake response. These verify protocol mapping,
 validation, replay, configuration, and error handling—not live endpoint availability,
 market accuracy, strategy performance, or religious compliance.
 
-Phase 2 stops at this data foundation. No trend detection, SMC, BOS, CHoCH,
-liquidity analysis, signals, charts, Telegram, or halal filter is included.
+This page describes the unchanged data foundation introduced in Phase 2.
+Phase 3 adds a separate [confirmed market structure layer](market-structure-methodology.md)
+with [historical trend](trend-methodology.md) and [no-look-ahead guarantees](no-look-ahead.md).
+It does not add liquidity pools, sweeps, displacement, fair value gaps, order blocks,
+premium/discount, a signal engine, charts, Telegram, or a halal filter.

@@ -1,9 +1,9 @@
-"""Professional Halal SMC/ICT Spot Signal Bot: Phase 2 market data foundation.
+"""Professional Halal SMC/ICT Spot Signal Bot: Phase 3 historical analysis.
 
-Importing this package does not load configuration, connect to services,
-generate signals, or execute orders. Fetching market data is explicit.
+Importing the package performs no data fetch, analysis, signal generation, or
+order execution. Market data and confirmed structure analysis use explicit APIs.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = ["__version__"]
