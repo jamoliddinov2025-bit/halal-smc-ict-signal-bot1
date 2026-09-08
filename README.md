@@ -1,11 +1,11 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 8 — deterministic Premium/Discount context and immutable PD array annotations.**
+**Status: Phase 9 — deterministic, provenance-backed Market Structure Shift evidence.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
-per-candle structure, liquidity, displacement, FVG, Order Block, and Premium/Discount snapshots. It does **not** generate trading signals,
+per-candle structure, liquidity, displacement, FVG, OB, PD, and MSS evidence snapshots. It does **not** generate trading signals,
 execute orders, or make asset-eligibility decisions.
 
 ## Install and verify
@@ -22,7 +22,75 @@ python -m pytest
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-## Phase 8 offline Premium/Discount example
+## Phase 9 offline MSS example
+
+The new 28-observation dataset is **synthetic**, not live market data:
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    analyze_liquidity,
+    analyze_displacement,
+    analyze_fvg,
+    analyze_order_blocks,
+    analyze_pd,
+    analyze_mss,
+    load_analysis_config,
+    load_liquidity_config,
+    load_displacement_config,
+    load_fvg_config,
+    load_order_block_config,
+    load_pd_config,
+    load_mss_config,
+)
+from smcsignal.data import create_data_provider, load_data_config
+
+path = "config/mss.example.toml"
+data, liquidity = load_data_config(path), load_liquidity_config(path)
+series = SeriesProvenance(
+    data.symbol,
+    data.timeframe,
+    "synthetic_spot",
+    data.data_source,
+    "mss-demo:v1:from-first-row:missing=error",
+)
+a = analyze_liquidity(
+    create_data_provider(data).fetch_ohlcv().candles,
+    series=series,
+    config=liquidity,
+    analysis_config=load_analysis_config(path),
+)
+b = analyze_displacement(a, load_displacement_config(path), price_unit=liquidity.price_unit)
+c = analyze_fvg(b, load_fvg_config(path))
+d = analyze_order_blocks(c, load_order_block_config(path))
+e = analyze_pd(d, load_pd_config(path))
+frames = analyze_mss(e, load_mss_config(path))
+for frame in frames:
+    for event in frame.events:
+        print(event.detection_index, event.direction.value, event.evidence.level_price)
+```
+
+```text
+22 bearish 13
+27 bullish 15
+```
+
+`MSSAnalyzer().update(pd_frame)` is the streaming equivalent and consumes the
+original Phase 8 frame once. Strict MSS requires directional Phase 3 control known
+before the bar opens, a previously confirmed opposite structure level, an actual
+current opposing CHoCH, and matching Phase 5 displacement. Continuation BOS,
+wick-only/equal closes, missing displacement, and prior ranging control do not qualify.
+
+Original liquidity/sweep, structure, displacement, concurrent FVG, matching OB,
+and PD references are retained without changing earlier objects/IDs. Concurrent
+FVG context is **not** attributed to the current displacement's future C3, and no
+later evidence enriches an old MSS. No trend label is forcibly reversed.
+
+See [MSS methodology](docs/mss-methodology.md) for exact confirmation/availability,
+strict invariant configuration, relationship roles, causality, and limitations.
+This is analysis evidence, not signals, entries, risk rules, or scores.
+
+## Existing Phase 8 Premium/Discount example
 
 The new seven-candle fixture is **synthetic**, not live market data:
 
@@ -494,6 +562,8 @@ Live Binance availability is not asserted by the offline tests.
 - `[fvg]`: quoted `min_gap_size` (default zero) and boolean `require_displacement` (default false).
 - `[order_blocks]`: explicit selection/zone/lookback, structure, doji, and FVG-confirmation rules.
 - `[premium_discount]`: quoted `equilibrium_half_width_fraction`, default zero.
+- `[mss]`: explicit structure/displacement requirement flags, both mandatory true.
+- `config/mss.example.toml`: default-threshold synthetic MSS and relationship example.
 - `config/premium-discount.example.toml`: exact range/equilibrium and all five PD labels.
 - `config/order-block.example.toml`: hand-audited Phase 7 formation example.
 - `config/fvg.example.toml`: complete default Phase 6 geometry/evidence example.
@@ -517,6 +587,7 @@ src/smcsignal/
 │   ├── __init__.py            # Public API
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
+│   ├── mss/                  # Phase 9 strict opposing-break/displacement evidence
 │   ├── premium_discount/     # Phase 8 ranges, exact equilibrium, and immutable sidecars
 │   ├── order_blocks/         # Phase 7 confirmed formation, never lifecycle or entries
 │   ├── fvg/                  # Phase 6 strict three-candle creation evidence
@@ -536,6 +607,7 @@ tests/displacement/           # ATR, displacement, context, boundaries, and caus
 tests/fvg/                    # FVG geometry, relationships, provenance, and causal replay
 tests/order_blocks/           # Selection, confirmations, timing, provenance, and causal replay
 tests/premium_discount/       # Range/band boundaries, sidecars, provenance, and causal replay
+tests/mss/                    # MSS definitions, relationships, immutable evidence, causal replay
 tests/fixtures/               # Tiny, explicitly synthetic CSV fixtures
 docs/                         # Architecture and methodologies
 ```
@@ -553,6 +625,7 @@ python -m pytest tests/displacement
 python -m pytest tests/fvg
 python -m pytest tests/order_blocks
 python -m pytest tests/premium_discount
+python -m pytest tests/mss
 python -m pip check
 python -m build
 ```
@@ -566,7 +639,7 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 8
+## Evidence provenance through Phase 9
 
 `LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
@@ -577,7 +650,7 @@ and exact snapshot dependencies. Older pool versions are never edited in place.
 The [evidence contract](docs/evidence-provenance-contract.md) also preserves the
 **deferred** scoring policy: future configurable threshold default 75, quality over
 quantity, valid zero-signal outcomes, and no signal-count targets. No scoring or
-active publication-threshold configuration is implemented in Phase 8.
+active publication-threshold configuration is implemented in Phase 9.
 
 ## Phase boundary
 
@@ -593,4 +666,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 8. Phase 9 requires explicit approval.**
+**Stop after Phase 9. Phase 10 requires explicit approval.**

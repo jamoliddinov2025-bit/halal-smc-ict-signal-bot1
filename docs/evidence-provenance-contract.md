@@ -13,7 +13,7 @@ see [displacement methodology](displacement-methodology.md).
 
 No scoring, weights, normalized quality values, confidence ratings, ranking,
 signal publishing, or active publication-threshold configuration is implemented.
-Scoring remains excluded through Phase 8 and deferred to Phase 11. Existing Phase 3 swings, trend,
+Scoring remains excluded through Phase 9 and deferred to Phase 11. Existing Phase 3 swings, trend,
 BOS/CHoCH definitions, results, and data-provider behavior remain unchanged.
 
 ## 1. Composition, not feature/scoring coupling
@@ -146,7 +146,7 @@ prerequisites, once defined, cannot be overridden by a favorable aggregate resul
 The eventual signal engine must:
 
 - Calculate a **Setup Quality Score on a 0–100 scale** in a later approved phase,
-  **not through Phase 8; deferred to Phase 11**.
+  **not through Phase 9; deferred to Phase 11**.
 - Publish only valid setups **above** a configurable threshold; the required
   future default is **75**. No active setting or comparison is added now.
 - Prioritize quality over quantity. **Zero signals is a valid result** when no
@@ -173,7 +173,7 @@ Liquidity/sweep producer tests must establish that:
 5. Later touches, invalidations, reclaims, or added future data do not mutate or
    rename historical evidence. New states use new immutable snapshot identities.
 6. The required liquidity/sweep fields above survive any future serialization.
-7. There is still no scoring or signal publishing through Phase 8 and no count-target
+7. There is still no scoring or signal publishing through Phase 9 and no count-target
    mechanism influencing analytical outputs.
 
 Shared-contract tests retain their original coverage. `tests/liquidity/` now also
@@ -227,3 +227,13 @@ are explicit. `PDContextReference` is a timeframe-bearing data hook for future H
 consumers, not an HTF join or execution engine. See
 [PD methodology](premium-discount-methodology.md). No scores, entries, portfolio
 risk, ranking, or optimization are produced.
+
+## Phase 9 MSS evidence
+
+`MSSEvidence`, `MSSEvent`, and `MSSSnapshot` retain their own approved provenance
+records. MSS direction is immutable vocabulary, not an order side. The actual prior
+control context, original confirmed level, opposing CHoCH, matching displacement,
+and available relationship objects are linked without changing their IDs.
+MSS uses the current consumed prefix and a fully known publication cutoff, never a
+later confirmation or revised upstream state. See [MSS methodology](mss-methodology.md).
+No scoring, risk, entries, optimization, or reporting engine is added.

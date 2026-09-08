@@ -42,3 +42,9 @@ confirmed fractals, the last four snapshots classify closes as PREMIUM, DISCOUNT
 EQUILIBRIUM, and OUTSIDE_RANGE; the first three lack a confirmed opposing pair.
 Ranges are [11,16] at indices 3–5 and [11,14.5] at 6. These are mathematical software
 checks, not real prices, entries, scores, profitability, or asset eligibility.
+
+`mss.csv` contains 28 **synthetic** Phase 9 observations. With the example's compact
+three-candle fractals and unchanged default displacement thresholds/ATR(14), bearish
+MSS at 22 breaks known low 13 with close 11; bullish MSS at 27 breaks known high 15
+with close 30. The actual prior-control, CHoCH, displacement, and optional context
+are retained. These are software-verification facts, not signals or performance.

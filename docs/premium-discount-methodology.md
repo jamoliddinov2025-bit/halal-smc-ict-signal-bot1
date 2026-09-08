@@ -288,4 +288,6 @@ backtesting statistics, monthly performance, halal filtering, strategy ranking,
 AI optimization, or multi-timeframe execution logic is implemented. The existing
 future quality policy (0–100, default publication threshold 75, zero signals valid,
 no quotas) remains documentation only; scoring remains deferred to Phase 11.
-**Stop after Phase 8. Phase 9 requires explicit approval.**
+Phase 9 now consumes these unchanged outputs in a separate
+[MSS evidence engine](mss-methodology.md).
+**Stop after Phase 9. Phase 10 requires explicit approval.**

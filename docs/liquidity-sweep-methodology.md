@@ -230,4 +230,5 @@ signal engines, charts, Telegram, halal filtering, and scoring remain absent.
 The deferred Setup Quality Score policy remains unchanged in the
 [evidence contract](evidence-provenance-contract.md): future threshold default 75,
 quality over quantity, valid zero-signal outcomes, and no signal-count targets.
-**Stop after Phase 8; Phase 9 requires explicit approval.**
+Phase 9 consumes the original relationships in [MSS evidence](mss-methodology.md).
+**Stop after Phase 9; Phase 10 requires explicit approval.**

@@ -41,3 +41,7 @@ require_fvg = false
 
 [premium_discount]
 equilibrium_half_width_fraction = "0"
+
+[mss]
+enable_displacement_requirement = true
+enable_structure_requirement = true

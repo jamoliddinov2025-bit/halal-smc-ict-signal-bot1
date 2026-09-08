@@ -1,4 +1,4 @@
-"""Public analysis API through Phase 8: existing evidence and immutable PD context."""
+"""Public analysis API through Phase 9: existing evidence and strict MSS detection."""
 
 from smcsignal.analysis.config import AnalysisConfig, load_analysis_config
 from smcsignal.analysis.displacement import (
@@ -48,6 +48,16 @@ from smcsignal.analysis.models import (
     TrendDirection,
     TrendState,
 )
+from smcsignal.analysis.mss import (
+    MSSAnalyzer,
+    MSSConfig,
+    MSSDirection,
+    MSSEvent,
+    MSSEvidence,
+    MSSSnapshot,
+    analyze_mss,
+    load_mss_config,
+)
 from smcsignal.analysis.order_blocks import (
     CandidateSelection,
     CandleClassification,
@@ -86,6 +96,14 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "MSSAnalyzer",
+    "MSSConfig",
+    "MSSDirection",
+    "MSSEvent",
+    "MSSEvidence",
+    "MSSSnapshot",
+    "analyze_mss",
+    "load_mss_config",
     "DealingRange",
     "Equilibrium",
     "PDAnalyzer",

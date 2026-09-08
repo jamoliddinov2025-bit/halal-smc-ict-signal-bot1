@@ -157,4 +157,5 @@ without changing these structure definitions. Phase 5 adds a separate
 Phase 7 consumes this unchanged context for [Order Block formation](order-block-methodology.md).
 Phase 8 consumes these same confirmed swings for [PD context](premium-discount-methodology.md).
 Signals, charts, Telegram, halal filtering, and scoring remain unimplemented.
-Phase 9 requires explicit approval.
+Phase 9 consumes these exact events in [MSS evidence](mss-methodology.md), without
+changing structure definitions. Phase 10 requires explicit approval.

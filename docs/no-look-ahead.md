@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 8
+# No-look-ahead guarantees — Phases 3 through 9
 
 ## Contract
 
@@ -182,6 +182,22 @@ replay, stable IDs/hashes, complete provenance graphs, and original serialized
 objects. HTF references are data-only hooks; no cross-timeframe joining occurs.
 See [PD methodology](premium-discount-methodology.md) for exact rules and limits.
 
+## Phase 9 MSS
+
+The MSS consumer reads prior/current PD frames, not future input. It requires
+ready prior directional Phase 3 control and the exact broken confirmed swing to
+be available by the break candle's open. Current matching displacement and the
+existing opposing CHoCH provide the closed-candle confirmation. New current
+confirmations cannot retrospectively establish prior control or replace the level.
+
+Actual source objects and references are retained. Sweep context comes from the
+existing displacement; concurrent FVG context has its original C2 identity; OBs
+must match the exact current displacement; PD is context rather than a signal
+gate. No future C3 or delayed OB enriches an old MSS. There is no forced rewrite
+of prior structure labels. Event/evidence/frame IDs and prefix hashes remain
+stable across every prefix, future-price shocks, and batch/stream/chunk replay.
+See [MSS methodology](mss-methodology.md) for the exact operational definition.
+
 ## What this guarantee does not mean
 
 - Candle opening timestamps are identifiers, **not** claims that a close-based
@@ -199,6 +215,6 @@ See [PD methodology](premium-discount-methodology.md) for exact rules and limits
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 8 adds Premium/Discount context only. No breaker/
+All tests are offline. Phase 9 adds MSS evidence only. No breaker/
 mitigation block, OB/FVG lifecycle, OTE, session strategy, signals, risk management,
 position sizing, Telegram, halal filter, backtesting, execution, or scoring is implemented.

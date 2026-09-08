@@ -305,4 +305,6 @@ Phase 7 adds [Order Block formation](order-block-methodology.md), consuming the
 exact displacement event without changing its definition.
 Phase 8 now adds separate [PD context sidecars](premium-discount-methodology.md)
 without changing these earlier formation rules or evidence IDs.
-**Stop after Phase 8. Phase 9 requires explicit approval.**
+Phase 9 now consumes these unchanged outputs in a separate
+[MSS evidence engine](mss-methodology.md).
+**Stop after Phase 9. Phase 10 requires explicit approval.**

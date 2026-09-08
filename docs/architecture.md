@@ -1,4 +1,4 @@
-# Architecture — Phase 8
+# Architecture — Phase 9
 
 ## Layers and explicit I/O
 
@@ -238,16 +238,41 @@ and availability for future HTF consumers. The current evaluator is local-only:
 no range resampling, HTF join, or multi-timeframe execution is implemented.
 See [Premium/Discount methodology](premium-discount-methodology.md) for full rules.
 
+## Phase 9 strict MSS consumer
+
+`analysis/mss/` consumes existing `PDSnapshot` frames. It does not construct a new
+trend, break, sweep, displacement, FVG, OB, or PD detector. Prior ready directional
+structure and the exact prior confirmed level must have been known by the current
+bar open. Current matching displacement and the existing opposing CHoCH then
+produce one immutable `MSSEvidence` / `MSSEvent`; `MSSSnapshot` retains the original
+previous/current frames and publication provenance.
+
+Configuration declares both mandatory structure/displacement requirements; false
+is rejected rather than enabling incomplete MSS. No size, score, optimization,
+lookback, cooldown, or signal-threshold parameter is added.
+
+The event is a shift-warning fact, not a forced upstream trend reversal. Relationships
+retain actual broken-level pool updates, pre-sweep target pools, original preceding
+sweeps, current same-direction concurrent FVGs, current OBs for the exact displacement,
+and current PD classifications/sidecars. Concurrent gaps are not misattributed to
+the current displacement's future C3. Nothing is later backfilled into an old MSS.
+
+The configuration/identity factory reuses the existing canonical codec and current
+consumed-prefix hash. Required confirmation data is already available when the MSS
+is published; the dependency graph remains acyclic. See
+[MSS methodology](mss-methodology.md) for exact criteria, time semantics, relation
+roles, frozen model fields, tests, and limits.
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 8 implements none of:
+Phase 9 implements none of:
 breaker/ mitigation blocks, OTE, session strategy, a signal
 engine, BUY/SELL signals, charts, Telegram, a halal filter, or scoring.
 There are also no orders, authenticated account access, or trading-performance
 claims. “Halal” remains a design goal, not certification.
 
-Stop after Phase 8. Phase 9 requires explicit approval.
+Stop after Phase 9. Phase 10 requires explicit approval.

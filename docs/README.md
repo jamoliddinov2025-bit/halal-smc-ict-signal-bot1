@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 8 — confirmed local Premium/Discount ranges and PD array context**.
+Current scope: **Phase 9 — strict displacement-confirmed Market Structure Shift evidence**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -19,10 +19,12 @@ Current scope: **Phase 8 — confirmed local Premium/Discount ranges and PD arra
   mandatory displacement, structure/FVG choices, immutable timing, and provenance.
 - [Premium/Discount methodology](premium-discount-methodology.md): latest confirmed opposing
   pairs, exact midpoint/bands, categorical close/array context, and immutable sidecars.
+- [MSS methodology](mss-methodology.md): pre-known directional structure, confirmed
+  opposing level breaks, displacement, exact relationships, publication, and causality.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; scoring remains deferred to Phase 11.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
 No breaker/ mitigation blocks, OTE, session strategy, signals, charts, Telegram, halal filter, or scoring is implemented.
-Phase 9 requires explicit approval.
+Phase 10 requires explicit approval.

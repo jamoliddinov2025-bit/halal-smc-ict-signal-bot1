@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 8
+# Configuration — market data and analysis through Phase 9
 
-Seven explicit loaders consume separate tables:
+Eight explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -9,6 +9,7 @@ Seven explicit loaders consume separate tables:
 - `smcsignal.analysis.load_fvg_config(path)` reads only `[fvg]`.
 - `smcsignal.analysis.load_order_block_config(path)` reads only `[order_blocks]`.
 - `smcsignal.analysis.load_pd_config(path)` reads only `[premium_discount]`.
+- `smcsignal.analysis.load_mss_config(path)` reads only `[mss]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -36,6 +37,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 
 - `premium-discount.example.toml`: seven synthetic candles illustrating confirmed
   bullish/bearish ranges and all five PD classifications.
+
+- `mss.example.toml`: 28 synthetic observations with default displacement ATR(14)
+  and strict bullish/bearish MSS confirmations and evidence relationships.
 
 ## Market data settings (unchanged)
 
@@ -195,6 +199,25 @@ There is no independent swing detector, older-range fallback, price-point fittin
 HTF execution flag, score threshold, or strategy setting. Sidecars preserve the
 exact original evidence IDs. See
 [Premium/Discount methodology](../docs/premium-discount-methodology.md).
+
+## Market Structure Shift requirements (Phase 9)
+
+```toml
+[mss]
+enable_displacement_requirement = true
+enable_structure_requirement = true
+```
+
+The loader requires exactly these two boolean keys. **Both must remain true** in
+strict `mss-v1`. False is an explicit configuration error: it does not silently
+turn a move without displacement/structure into an MSS. These are invariant
+requirement declarations, not optimization or scoring switches.
+
+The existing prior directional structure and break level must be known before
+the current candle opens. A same-candle existing CHoCH and matching displacement
+confirm MSS at actual observation availability. Other existing evidence is
+context only. No MSS price, score, probability, quota, entry, or output-threshold
+settings are exposed. See [MSS methodology](../docs/mss-methodology.md).
 
 ## Metadata, secrets, and artifacts
 
