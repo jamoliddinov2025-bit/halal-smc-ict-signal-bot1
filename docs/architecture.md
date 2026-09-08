@@ -1,4 +1,4 @@
-# Architecture — Phase 4
+# Architecture — Phase 5
 
 ## Layers and explicit I/O
 
@@ -125,15 +125,59 @@ composition contract. The future Setup Quality Score policy (0–100, configurab
 threshold default 75, quality over quantity, valid zero-signal outcomes, no count
 targets) remains documentation only. Scoring is not implemented in Phase 4.
 
+## Phase 5 displacement layer: consume frames, do not duplicate producers
+
+```text
+canonical OHLCV -> existing LiquidityAnalyzer.update
+                   (existing structure + liquidity/sweep + provenance)
+                              |
+                        LiquiditySnapshot
+                              |
+                  DisplacementAnalyzer.update(frame)
+                              |
+          DisplacementSnapshot(metrics, prior ATR, next ATR, events)
+```
+
+The original frame instance is retained. No second market-data, structure, pool,
+sweep, closure, canonical-hash, or provenance implementation is introduced.
+
+| New module in `analysis/displacement/` | Responsibility |
+| --- | --- |
+| `config.py` | Frozen explicit displacement thresholds and strict TOML loading |
+| `calculation.py` | Exact finite-decimal arithmetic, true range, and descriptive ratios |
+| `models.py` | Immutable ATRReference, DisplacementMetrics, DisplacementEvent, and frame records |
+| `evidence.py` | New producer/configuration artifacts using the existing canonical codec and provenance factory |
+| `analyzer.py` | Prior-ATR classification, optional known-prior sweep association, and batch/stream replay |
+| `__init__.py` | Public API for current and future consumers |
+
+ATR is a rolling SMA of prior true ranges, not Wilder smoothing. At t, the engine
+classifies from the ATR reference through t−1, then publishes ATR through t for
+the next candle. Sweep context is optional, direction-neutral, and restricted to
+prior eligible cohorts known before the candidate opened. New state is committed
+only after all input, arithmetic, evidence, and model checks succeed.
+
+The current input-prefix hash is inherited directly from the upstream frame. An
+event depends on prior ATR, current structure context, and optional prior sweeps,
+not current ATR; the enclosing frame can reference both ATRs without cycles.
+Separate configuration artifacts make ATR evidence independent of unrelated
+body/close/context threshold changes.
+
+Future FVG, raid/displacement, Order Block, location, multi-timeframe, and quality
+components can consume typed raw records and `provenance.as_reference()` without
+turning this detector into a strategy/scoring API. None of those components is
+implemented now. See [Phase 5 methodology](displacement-methodology.md) for exact
+conditions, defaults, input/availability assumptions, and memory/numeric limits.
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 4 implements none of: displacement, fair value gaps,
-order blocks, premium/discount, a signal engine, charts, Telegram, a halal filter, or scoring.
+Phase 5 implements none of: fair value gaps,
+order/ breaker/ mitigation blocks, premium/discount, OTE, session strategy, a signal
+engine, BUY/SELL signals, charts, Telegram, a halal filter, or scoring.
 There are also no orders, authenticated account access, or trading-performance
 claims. “Halal” remains a design goal, not certification.
 
-Stop after Phase 4. Phase 5 requires explicit approval.
+Stop after Phase 5. Phase 6 / Fair Value Gaps require explicit approval.

@@ -1,11 +1,11 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 4 — liquidity pools and sweep detection, with immutable provenance.**
+**Status: Phase 5 — objective, provenance-backed bullish/bearish displacement analysis.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
-per-candle trend/structure, liquidity-pool, and sweep snapshots. It does **not** generate trading signals,
+per-candle trend/structure, liquidity, sweep, ATR, and displacement snapshots. It does **not** generate trading signals,
 execute orders, or make asset-eligibility decisions.
 
 ## Install and verify
@@ -22,9 +22,96 @@ python -m pytest
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-## Phase 4 offline liquidity and sweep example
+## Phase 5 offline displacement example
 
-The new example uses twelve **synthetic** candles, not real exchange observations:
+The included twenty-candle dataset is **synthetic**, not live exchange data:
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    analyze_displacement,
+    analyze_liquidity,
+    load_analysis_config,
+    load_displacement_config,
+    load_liquidity_config,
+)
+from smcsignal.data import create_data_provider, load_data_config
+
+path = "config/displacement.example.toml"
+data_config = load_data_config(path)
+liquidity_config = load_liquidity_config(path)
+series = SeriesProvenance(
+    data_config.symbol,
+    data_config.timeframe,
+    "synthetic_spot",
+    data_config.data_source,
+    "displacement-demo:v1:from-first-row:missing=error",
+)
+liquidity_frames = analyze_liquidity(
+    create_data_provider(data_config).fetch_ohlcv().candles,
+    series=series,
+    config=liquidity_config,
+    analysis_config=load_analysis_config(path),
+)
+frames = analyze_displacement(
+    liquidity_frames,
+    load_displacement_config(path),
+    price_unit=liquidity_config.price_unit,
+)
+for frame in frames:
+    for event in frame.events:
+        print(
+            event.detection_index,
+            event.direction.value,
+            event.body_size,
+            event.range_size,
+            event.atr_reference.end_index,
+            event.sweep_context.value,
+        )
+```
+
+Expected raw analysis events (index, direction, body, range, ATR reference index, context):
+
+```text
+15 bullish 3 5 14 none
+16 bearish 5 7 15 none
+```
+
+`DisplacementAnalyzer.update` consumes an **existing Phase 4 frame**, not raw candles:
+
+```python
+from smcsignal.analysis import DisplacementAnalyzer, LiquidityAnalyzer
+from smcsignal.data import CsvDataProvider
+
+liquidity = LiquidityAnalyzer(
+    series=series,
+    config=liquidity_config,
+    analysis_config=load_analysis_config(path),
+)
+displacement = DisplacementAnalyzer(
+    load_displacement_config(path),
+    price_unit=liquidity.config.price_unit,
+)
+for candle in CsvDataProvider(data_config).replay():
+    result = displacement.update(liquidity.update(candle))
+```
+
+This reuses the upstream engine once; precomputed frames can also be consumed
+without rerunning any provider, trend, pool, or sweep detection.
+
+**Defaults:** prior SMA ATR(14), body ≥ 1.0× ATR, range ≥ 1.5× ATR, bullish close
+location ≥ 0.70 / bearish ≤ 0.30, absolute ATR floor zero, optional preceding-sweep
+window 20 observed bars. ATR excludes the candidate; first eligibility is index
+15. Exact comparisons do not use rounded ratios. A sweep is not required, and
+same-candle or not-yet-known sweeps are never retroactively attached.
+
+See [displacement methodology](docs/displacement-methodology.md) for true-range
+calculation, warm-up, thresholds, contextual timing, exact numeric boundaries,
+provenance, and limitations. These are analysis facts, **not BUY/SELL signals**.
+
+## Existing Phase 4 liquidity and sweep example
+
+This retained example uses twelve **synthetic** candles, not real exchange observations:
 
 ```python
 from smcsignal.analysis import (
@@ -117,7 +204,7 @@ These are hand-computed software-test outcomes, not trade recommendations or
 performance evidence. The example uses a compact total three-candle fractal;
 normal defaults use a total five-candle window.
 
-## Streaming API
+## Existing Phase 3 streaming API
 
 Use a fresh analyzer and feed each **completed candle once**:
 
@@ -191,6 +278,8 @@ Live Binance availability is not asserted by the offline tests.
 - `[analysis]`: exactly `fractal_length`, an odd **total window size** from 3 to 1001.
   Direct `AnalysisConfig()` defaults to 5; the TOML loader requires an explicit key.
 - `[liquidity]`: explicit `price_unit` and quoted `equal_tolerance_bps` (default zero).
+- `[displacement]`: explicit ATR/body/range/close/context settings; no scoring settings.
+- `config/displacement.example.toml`: default Phase 5 warm-up and displacement example.
 - `config/liquidity.example.toml`: hand-audited Phase 4 pool/sweep example.
 - `config/analysis.example.toml`: retained Phase 3 structure example.
 - `config/example.toml`: retains the tiny five-candle data fixture; expect
@@ -210,6 +299,7 @@ src/smcsignal/
 │   ├── __init__.py            # Public API
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
+│   ├── displacement/         # Phase 5 metrics, ATR evidence, and frame-native producer
 │   ├── liquidity/            # Phase 4 models, producer, artifacts, config, time
 │   ├── provenance.py         # Approved shared evidence contracts
 │   ├── models.py             # Immutable swings, trend, events, snapshots
@@ -221,6 +311,7 @@ src/smcsignal/
 tests/data/                   # Existing offline data-provider/validation tests
 tests/analysis/               # Existing structure and shared-provenance tests
 tests/liquidity/              # Pools, sweeps, lifecycle, artifacts, and causal replay
+tests/displacement/           # ATR, displacement, context, boundaries, and causal replay
 tests/fixtures/               # Tiny, explicitly synthetic CSV fixtures
 docs/                         # Architecture and methodologies
 ```
@@ -234,6 +325,7 @@ python -m mypy --strict src/smcsignal
 python -m pytest
 python -m pytest tests/analysis
 python -m pytest tests/liquidity
+python -m pytest tests/displacement
 python -m pip check
 python -m build
 ```
@@ -247,9 +339,9 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance in actual Phase 4 outputs
+## Evidence provenance through Phase 5
 
-`LiquidityPool` and `SweepEvent` now compose the approved immutable provenance
+`LiquidityPool`, `SweepEvent`, `ATRReference`, and `DisplacementEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
 hashes, raw candle/swing evidence, historical context, true availability instants,
 and exact snapshot dependencies. Older pool versions are never edited in place.
@@ -258,12 +350,13 @@ and exact snapshot dependencies. Older pool versions are never edited in place.
 The [evidence contract](docs/evidence-provenance-contract.md) also preserves the
 **deferred** scoring policy: future configurable threshold default 75, quality over
 quantity, valid zero-signal outcomes, and no signal-count targets. No scoring or
-active threshold configuration is implemented in Phase 4.
+active publication-threshold configuration is implemented in Phase 5.
 
 ## Phase boundary
 
-No displacement, fair value gaps, order blocks,
-premium/discount, signal engine, charts, Telegram, halal filter, or scoring is implemented.
+No fair value gaps, order/ breaker/ mitigation blocks, premium/discount, OTE,
+session strategy, signal engine, BUY/SELL signals, charts, Telegram, halal filter,
+or scoring is implemented.
 There is no authentication, order execution, leverage/margin/shorting, backtesting,
 or trading-performance claim.
 
@@ -273,4 +366,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 4. Phase 5 requires explicit approval.**
+**Stop after Phase 5. Phase 6 / Fair Value Gaps require explicit approval.**

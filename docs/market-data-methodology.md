@@ -170,5 +170,6 @@ This page describes the unchanged data foundation introduced in Phase 2.
 Phase 3 adds a separate [confirmed market structure layer](market-structure-methodology.md)
 with [historical trend](trend-methodology.md) and [no-look-ahead guarantees](no-look-ahead.md).
 Phase 4 adds [liquidity pools and sweeps](liquidity-sweep-methodology.md) on these
-same canonical observations. No displacement, fair value gaps, order blocks,
+same canonical observations. Phase 5 adds [displacement](displacement-methodology.md)
+without duplicating these providers. No fair value gaps, order blocks,
 premium/discount, signals, charts, Telegram, halal filter, or scoring is added.

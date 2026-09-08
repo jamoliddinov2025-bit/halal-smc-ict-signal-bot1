@@ -1,6 +1,17 @@
-"""Public analysis API through Phase 4: structure, liquidity pools, and sweeps."""
+"""Public analysis API through Phase 5: structure, liquidity, sweeps, and displacement."""
 
 from smcsignal.analysis.config import AnalysisConfig, load_analysis_config
+from smcsignal.analysis.displacement import (
+    ATRReference,
+    DisplacementAnalyzer,
+    DisplacementConfig,
+    DisplacementEvent,
+    DisplacementMetrics,
+    DisplacementSnapshot,
+    SweepContext,
+    analyze_displacement,
+    load_displacement_config,
+)
 from smcsignal.analysis.errors import AnalysisConfigurationError, AnalysisError, AnalysisInputError
 from smcsignal.analysis.liquidity import (
     InvalidationReason,
@@ -41,6 +52,15 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "ATRReference",
+    "DisplacementAnalyzer",
+    "DisplacementConfig",
+    "DisplacementEvent",
+    "DisplacementMetrics",
+    "DisplacementSnapshot",
+    "SweepContext",
+    "analyze_displacement",
+    "load_displacement_config",
     "InvalidationReason",
     "LiquidityAnalyzer",
     "LiquidityConfig",

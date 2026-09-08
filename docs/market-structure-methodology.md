@@ -151,6 +151,7 @@ multiple-series mixing, persistence, or rolling-window equivalence guarantees.
 
 [No-look-ahead guarantees and tests](no-look-ahead.md) explain the fixed-prefix
 contract and its limits. Phase 4 adds a separate [liquidity/sweep layer](liquidity-sweep-methodology.md)
-without changing these structure definitions. Displacement, fair value gaps,
+without changing these structure definitions. Phase 5 adds a separate
+[displacement consumer](displacement-methodology.md). Fair value gaps,
 order blocks, premium/discount, signals, charts, Telegram, halal filtering, and
-scoring remain unimplemented. Phase 5 requires explicit approval.
+scoring remain unimplemented. Phase 6 / Fair Value Gaps require explicit approval.

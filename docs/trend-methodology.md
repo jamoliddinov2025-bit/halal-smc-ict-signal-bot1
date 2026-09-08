@@ -84,3 +84,6 @@ warm-up/evidence and is not equivalent to continuing an existing analyzer.
 See [no-look-ahead guarantees](no-look-ahead.md). No trend strength, trading signal,
 entry/exit logic or scoring is implemented here. Phase 4 adds a separate
 [liquidity/sweep producer](liquidity-sweep-methodology.md) without changing this classifier.
+
+Phase 5 consumes this unchanged context in its separate
+[displacement engine](displacement-methodology.md), without adding a trend-direction filter.

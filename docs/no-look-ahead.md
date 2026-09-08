@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 and 4
+# No-look-ahead guarantees — Phases 3 through 5
 
 ## Contract
 
@@ -113,6 +113,22 @@ Binance equivalence. The [Phase 4 methodology](liquidity-sweep-methodology.md)
 defines the exact rules and historical-availability assumptions. Use identical
 explicit availability annotations when comparing delayed-arrival stream replays.
 
+## Phase 5 displacement
+
+`DisplacementAnalyzer` consumes the original Phase 4 frames. At candidate t it
+uses only the available ATR ending at t−1, raw current closed-candle measurements,
+and the optional latest prior sweep cohort known by the candidate open. The
+current candle is added to ATR only for the next candidate. Current-candle sweeps
+are cached only after classification and cannot become preceding context on t.
+
+Every-prefix/future-replacement/append tests compare full frames, ATR evidence,
+event IDs, and provenance hashes. Batch and chunk helpers are the same update
+loop. Data hashes and canonical encoding come from the existing upstream contract,
+not from a file containing future rows or a recomputed independent source pipeline.
+Only a successful update commits local state. See
+[displacement methodology](displacement-methodology.md) for the exact warm-up,
+arrival-time, numeric-boundary, source-trust, and fixed-history assumptions.
+
 ## What this guarantee does not mean
 
 - Candle opening timestamps are identifiers, **not** claims that a close-based
@@ -130,6 +146,6 @@ explicit availability annotations when comparing delayed-arrival stream replays.
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 4 stops at liquidity pools and sweeps on top of the
-existing structure analysis. It adds no displacement, fair value gaps, order
-blocks, premium/discount, signals, charts, Telegram, halal filter, or scoring.
+All tests are offline. Phase 5 adds displacement only. No FVG, order/ breaker/
+mitigation block, premium/discount, OTE, session strategy, signal engine, chart,
+Telegram, halal filter, backtesting, execution, or scoring is implemented.

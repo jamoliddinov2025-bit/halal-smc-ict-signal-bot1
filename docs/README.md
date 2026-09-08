@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 4 — liquidity pools and sweeps, retaining Phase 3 structure analysis**.
+Current scope: **Phase 5 — objective displacement, retaining all prior analysis layers**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -11,11 +11,13 @@ Current scope: **Phase 4 — liquidity pools and sweeps, retaining Phase 3 struc
   prefix/future-shock tests, and input/history assumptions.
 - [Liquidity and sweep methodology](liquidity-sweep-methodology.md): actual pool formation,
   equality bands, sweep rules, lifecycle, causal artifacts, and replay limits.
+- [Displacement methodology](displacement-methodology.md): prior ATR, objective inclusive
+  boundaries, optional sweep context, availability, deterministic evidence, and limits.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
-  now used by actual liquidity/sweep producers; scoring is deferred beyond Phase 4.
+  now used by actual liquidity/sweep producers; scoring remains deferred beyond Phase 5.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
-No displacement, fair value gaps, order blocks,
-premium/discount, signal engine, charts, Telegram, halal filter, or scoring is implemented.
-Phase 5 requires explicit approval.
+No fair value gaps, order/ breaker/ mitigation blocks,
+premium/discount, OTE, session strategy, signals, charts, Telegram, halal filter, or scoring is implemented.
+Phase 6 / Fair Value Gaps require explicit approval.

@@ -7,11 +7,13 @@ protocol in `src/smcsignal/analysis/provenance.py` remain unchanged. After expli
 Phase 4 approval, actual `LiquidityPool` and `SweepEvent` producers now compose
 this contract. Their implemented payload mapping, lifecycle choices, canonical
 artifacts, and tests are documented in the
-[Phase 4 methodology](liquidity-sweep-methodology.md).
+[Phase 4 methodology](liquidity-sweep-methodology.md). Phase 5 now also adds
+`ATRReference`, `DisplacementEvent`, and frame records using these same contracts;
+see [displacement methodology](displacement-methodology.md).
 
 No scoring, weights, normalized quality values, confidence ratings, ranking,
-signal publishing, or active threshold configuration is implemented. Phase 4
-must not implement those capabilities either. Existing Phase 3 swings, trend,
+signal publishing, or active publication-threshold configuration is implemented.
+Scoring remains excluded from both Phase 4 and Phase 5. Existing Phase 3 swings, trend,
 BOS/CHoCH definitions, results, and data-provider behavior remain unchanged.
 
 ## 1. Composition, not feature/scoring coupling
@@ -144,7 +146,7 @@ prerequisites, once defined, cannot be overridden by a favorable aggregate resul
 The eventual signal engine must:
 
 - Calculate a **Setup Quality Score on a 0–100 scale** in a later approved phase,
-  **not in Phase 4**.
+  **not in Phase 4 or Phase 5**.
 - Publish only valid setups **above** a configurable threshold; the required
   future default is **75**. No active setting or comparison is added now.
 - Prioritize quality over quantity. **Zero signals is a valid result** when no
@@ -171,7 +173,7 @@ Liquidity/sweep producer tests must establish that:
 5. Later touches, invalidations, reclaims, or added future data do not mutate or
    rename historical evidence. New states use new immutable snapshot identities.
 6. The required liquidity/sweep fields above survive any future serialization.
-7. There is still no scoring or signal publishing in Phase 4 and no count-target
+7. There is still no scoring or signal publishing through Phase 5 and no count-target
    mechanism influencing analytical outputs.
 
 Shared-contract tests retain their original coverage. `tests/liquidity/` now also
@@ -179,3 +181,16 @@ verifies actual producers, immutable membership/lifecycle versions, raw JSON
 payloads, configuration artifacts, independently framed prefix digests, complete
 resolvable dependency graphs, and prefix/future/replay invariance. A persistent
 evidence artifact registry, scoring, and signal publishing are not implemented.
+
+## Phase 5 displacement producers
+
+The frame-native displacement layer reuses the original observations, series,
+current-prefix hash, canonical codec, and provenance factory. Its event references
+prior ATR, current structure context, and optional prior sweeps. Current ATR is
+published separately for the next candidate. Raw OHLC, true ranges and exact total,
+reference period/candle, body/range/close metrics, configuration version, and actual
+availability are retained; no raw facts are replaced by quality/probability values.
+
+Producer tests now also cover independent ATR reconstruction, full dependency
+graph resolution, exact boundary comparisons, deterministic identity, arrival-time
+association, and all-prefix/future/replay invariance for actual displacement events.

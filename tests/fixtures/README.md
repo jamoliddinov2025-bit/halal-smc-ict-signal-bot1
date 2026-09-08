@@ -16,3 +16,10 @@ fractal and exact equality, a buy-side sweep of equal highs at 16 is confirmed a
 index 9 (high 17, close 12); a sell-side sweep of equal lows at 9 is confirmed at
 index 10 (low 8, close 12). The BTCUSDT label and tiny prices are for software
 verification, not real market observations, asset eligibility, or trading results.
+
+`displacement.csv` contains twenty **synthetic** Phase 5 candles. Default ATR(14)
+uses prior true ranges only. The expected single-candle displacement events are
+index 15 (bullish, body 3, range 5, prior ATR 2) and 16 (bearish, body 5, range 7,
+prior ATR 31/14). There is no preceding sweep required. Later doji, small-body/long-wick,
+and gap-only examples do not qualify. These are software checks, not historical
+exchange observations, trading signals, eligibility evidence, or performance data.

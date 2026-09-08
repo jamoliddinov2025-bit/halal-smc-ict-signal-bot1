@@ -1,10 +1,11 @@
-# Configuration — market data and analysis through Phase 4
+# Configuration — market data and analysis through Phase 5
 
-Three explicit loaders consume separate tables:
+Four explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
 - `smcsignal.analysis.load_liquidity_config(path)` reads only `[liquidity]`.
+- `smcsignal.analysis.load_displacement_config(path)` reads only `[displacement]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -20,6 +21,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 
 - `liquidity.example.toml`: twelve synthetic candles with hand-computed Phase 4
   equal-high and equal-low sweeps.
+
+- `displacement.example.toml`: twenty synthetic candles demonstrating default
+  prior ATR(14) and bullish/bearish displacement.
 
 ## Market data settings (unchanged)
 
@@ -80,6 +84,39 @@ series identity and fixed dataset/replay origin are supplied explicitly through
 No scoring table, active quality threshold, signal-count target, multi-bar reclaim
 window, pool expiry, or unapproved feature setting is available. Unknown keys are
 errors. See [Phase 4 methodology](../docs/liquidity-sweep-methodology.md).
+
+## Displacement settings (Phase 5)
+
+```toml
+[displacement]
+atr_period = 14
+min_body_atr = "1.0"
+min_range_atr = "1.5"
+bullish_close_min = "0.70"
+bearish_close_max = "0.30"
+atr_floor = "0"
+sweep_lookback_bars = 20
+```
+
+The loader requires all seven keys and rejects unknown keys. Decimal quantities
+are quoted strings; direct Python configuration requires finite `Decimal` values.
+Period is an integer 1–1000, and sweep lookback is 0–10000 observed bars (zero
+disables association). Multipliers are greater than zero and at most 1000. Close
+thresholds satisfy `0 <= bearish <= bullish <= 1`. The absolute ATR floor is
+nonnegative, in the price unit passed from the existing liquidity configuration.
+
+Displacement uses a **prior** rolling SMA of true ranges; default first eligibility
+is index 15. Body/range/close thresholds are inclusive, but ATR must exceed the
+floor strictly. Sweep context is optional, not a signal prerequisite. These are
+physical detection settings, not probabilities or Setup Quality Score values.
+
+`DisplacementAnalyzer` consumes existing `LiquiditySnapshot` frames. Pass
+`price_unit=liquidity.config.price_unit`; do not invent a second upstream engine or
+infer asset eligibility from the unit label. See the complete
+[displacement methodology](../docs/displacement-methodology.md).
+
+No score, publication-threshold, quota, strategy, order, or credential settings are
+added. Configuration is fixed per replay, with its exact canonical artifact hashed.
 
 ## Metadata, secrets, and artifacts
 

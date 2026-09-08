@@ -78,7 +78,7 @@ transport responses and clocks; no live requests, exchange credentials, or exter
 service availability are part of the test results. Fixtures are labeled synthetic.
 
 They do **not** validate a trading strategy, financial performance, or religious
-compliance; those features and assessments do not exist in Phase 4.
+compliance; those features and assessments do not exist in Phase 5.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -114,6 +114,21 @@ boundaries, delayed availability, and data-provider replay consistency.
 
 No scoring is implemented or tested as a feature. No signal-count target is used.
 
+## Phase 5 tests and example
+
+```bash
+python -m pytest tests/displacement
+python -m pytest --collect-only -q tests/displacement
+```
+
+The default twenty-candle `config/displacement.example.toml` example must emit
+bullish displacement at index 15 and bearish displacement at 16. Feed the existing
+Phase 4 frames to `DisplacementAnalyzer`; do not run duplicate upstream detectors.
+Tests cover ATR gaps/warm-up/reference timing, exact threshold boundaries, tiny/zero
+ATR, doji/long-wick cases, optional sweep cohorts, raw artifacts, immutable models,
+independent graph/ATR reconstruction, every-prefix equality, and future invariance.
+These tests do not evaluate returns or implement a backtesting/strategy engine.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -123,7 +138,9 @@ package does not rely on an editable installation or the current directory. Also
 import `smcsignal.data` and `smcsignal.analysis`, replay the explicit Phase 3 CSV
 fixture through the installed wheel, and verify its known structure event indices.
 Also replay the Phase 4 liquidity fixture and verify sweeps at 9 and 10, prefix
-identity, and public liquidity/provenance imports. Repository configuration and
+identity, and public liquidity/provenance imports. Then feed the default Phase 5
+fixture through the installed pipeline and verify displacement at 15/16, raw
+serialization, and every-prefix equivalence. Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
 ## Before committing
@@ -134,4 +151,4 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 4. Do not implement Phase 5 without approval.
+the designated working branch. Stop after Phase 5. Do not implement Phase 6 / Fair Value Gaps without explicit approval.

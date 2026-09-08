@@ -1,11 +1,11 @@
-# Phase 4 offline configuration. Separate loaders consume each runtime table.
+# Phase 5 offline configuration. Separate loaders consume each runtime table.
 # Project/scope/safety tables document intent, not a runtime trading policy engine.
 # This CSV is explicitly synthetic test data, not historical Binance observations.
 # Never add credentials or account data.
 
 [project]
 name = "Professional Halal SMC/ICT Spot Signal Bot"
-phase = 4
+phase = 5
 
 [scope]
 market = "spot"
@@ -36,3 +36,12 @@ fractal_length = 5
 [liquidity]
 price_unit = "USDT"
 equal_tolerance_bps = "0"
+
+[displacement]
+atr_period = 14
+min_body_atr = "1.0"
+min_range_atr = "1.5"
+bullish_close_min = "0.70"
+bearish_close_max = "0.30"
+atr_floor = "0"
+sweep_lookback_bars = 20
