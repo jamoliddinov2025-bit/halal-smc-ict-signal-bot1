@@ -1,4 +1,4 @@
-# Architecture — Phase 15
+# Architecture — Phase 16
 
 ## Layers and explicit I/O
 
@@ -367,16 +367,32 @@ flag, not a BUY/SELL signal. State commits only after validation and provenance
 succeed. The current consumed-prefix hash is reused. See
 [setup quality methodology](setup-quality-methodology.md).
 
+## Phase 16 signal eligibility
+
+`analysis/signal_eligibility/` consumes existing `ScoreSnapshot` frames. It does
+not rerun or modify Phases 1–15. Eligibility requires HALAL plus
+`threshold_passed`. Nested MTF, structure, order-block, and inside-OTE facts
+vote `LONG_BIAS` or `SHORT_BIAS`. Mixed or opposing votes stay `NEUTRAL`; the
+engine does not force a direction. MSS, Breaker, and Mitigation are not on the
+nested Halal→MTF graph, so those votes abstain in eligibility-v1.
+
+`SignalEligibility`, `EligibilityDecision`, and `EligibilitySnapshot` retain the
+original SQS object and ID. Status is `ELIGIBLE` or `NOT_ELIGIBLE`. Bias is
+`LONG_BIAS`, `SHORT_BIAS`, or `NEUTRAL`. Neither status nor bias is a BUY/SELL
+signal, entry, or stop. State commits only after validation and provenance
+succeed. The current consumed-prefix hash is reused. See
+[signal eligibility methodology](signal-eligibility-methodology.md).
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 15 implements none of:
+Phase 16 implements none of:
 session strategy, a signal
 engine, BUY/SELL signals, charts, or Telegram.
 There are also no orders, authenticated account access, or trading-performance
 claims. The filter is a caller-supplied registry, not Sharia certification.
 
-Stop after Phase 15. Phase 16 — Signal Engine requires explicit approval.
+Stop after Phase 16. Phase 17 — Signal Engine requires explicit approval.

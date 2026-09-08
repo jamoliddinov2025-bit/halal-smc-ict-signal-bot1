@@ -80,3 +80,7 @@ allowed_assets = [
 
 [setup_quality]
 publish_threshold = 75
+
+[signal_eligibility]
+enabled = true
+conflict_policy = "neutral"

@@ -12,7 +12,8 @@ artifacts, and tests are documented in the
 see [displacement methodology](displacement-methodology.md).
 
 Phase 15 implements the integer Setup Quality Score (0–100, frozen weights,
-`publish_threshold` default 75). Ranking, signal publishing, probabilities, and
+`publish_threshold` default 75). Phase 16 implements eligibility over those
+already-published facts. Ranking, BUY/SELL publishing, probabilities, and
 confidence ratings remain unimplemented. Existing Phase 3 swings, trend,
 BOS/CHoCH definitions, results, and data-provider behavior remain unchanged.
 
@@ -145,8 +146,9 @@ prerequisites, once defined, cannot be overridden by a favorable aggregate resul
 
 The eventual signal engine must:
 
-- Consume the Phase 15 **Setup Quality Score on a 0–100 scale**; it must not
-  recalculate a second score or treat `threshold_passed` as a trade.
+- Consume the Phase 16 **eligibility decision** and the Phase 15 **Setup Quality
+  Score on a 0–100 scale**; it must not recalculate a second score or treat
+  `ELIGIBLE` / `threshold_passed` as a trade.
 - Publish only valid setups meeting a configurable threshold; the implemented
   default is **75**.
 - Prioritize quality over quantity. **Zero signals is a valid result** when no
@@ -157,7 +159,8 @@ The eventual signal engine must:
   manufacture activity. Future observability counts must not become generator inputs.
 
 Phase 15 now stores frozen component weights, integer totals, missing-factor
-zeros, and the executable `publish_threshold`. Signal publish logic is still
+zeros, and the executable `publish_threshold`. Phase 16 stores HALAL-and-threshold
+eligibility and nested directional bias. BUY/SELL publish logic is still
 not implemented.
 
 ## 7. Producer acceptance requirements
@@ -173,8 +176,8 @@ Liquidity/sweep producer tests must establish that:
 5. Later touches, invalidations, reclaims, or added future data do not mutate or
    rename historical evidence. New states use new immutable snapshot identities.
 6. The required liquidity/sweep fields above survive any future serialization.
-7. There is still no signal publishing and no count-target
-   mechanism influencing analytical outputs. Phase 15 scoring is integer quality
+7. There is still no BUY/SELL publishing and no count-target
+   mechanism influencing analytical outputs. Phase 16 eligibility is a gate
    only.
 
 Shared-contract tests retain their original coverage. `tests/liquidity/` now also
@@ -271,3 +274,23 @@ decision. Original upstream IDs are preserved. UNKNOWN is retained as absence of
 approval, never a default HALAL quality value. See
 [halal filter methodology](halal-filter-methodology.md).
 No scoring, signal, Telegram, or autonomous religious ruling is added.
+
+## Phase 15 setup quality producers
+
+`SetupQualityScore` and `ScoreSnapshot` compose the same unchanged provenance
+contract. The score reuses the current Halal consumed-prefix hash and depends on
+the original Halal frame. The snapshot depends on that frame plus the score.
+Original upstream IDs are preserved. HARAM and UNKNOWN force total 0. Missing
+nested evidence contributes 0 points. See
+[setup quality methodology](setup-quality-methodology.md).
+No BUY/SELL signal, rank, probability, or Telegram is added.
+
+## Phase 16 eligibility producers
+
+`EligibilityDecision` and `EligibilitySnapshot` compose the same unchanged
+provenance contract. The decision reuses the current SQS consumed-prefix hash
+and depends on the original SQS frame. The snapshot depends on that frame plus
+the decision. Original upstream IDs are preserved. HARAM and UNKNOWN force
+`NOT_ELIGIBLE` and `NEUTRAL`. Conflicting nested votes stay `NEUTRAL`. See
+[signal eligibility methodology](signal-eligibility-methodology.md).
+No BUY/SELL signal, entry, stop, rank, probability, or Telegram is added.

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "smcsignal"
 dynamic = ["version"]
-description = "Professional Halal SMC/ICT Spot Signal Bot — Phase 15 deterministic setup quality score"
+description = "Professional Halal SMC/ICT Spot Signal Bot — Phase 16 deterministic signal eligibility"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []

@@ -78,8 +78,9 @@ transport responses and clocks; no live requests, exchange credentials, or exter
 service availability are part of the test results. Fixtures are labeled synthetic.
 
 They do **not** validate a trading strategy, financial performance, or religious
-compliance; the Phase 14 registry only enforces a caller-supplied list, and
-Phase 15 scores already-published facts without claiming expected returns.
+compliance; the Phase 14 registry only enforces a caller-supplied list,
+Phase 15 scores already-published facts without claiming expected returns, and
+Phase 16 gates those facts without emitting BUY/SELL signals.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -275,6 +276,21 @@ evidence as 0 points, frozen weights, threshold flags, immutable provenance,
 every-prefix identity, batch/stream/chunk replay, and provider integration.
 No signal, ranking, probability, Telegram, or performance test is included.
 
+## Phase 16 signal eligibility tests and example
+
+```bash
+python -m pytest tests/signal_eligibility
+python -m pytest --collect-only -q tests/signal_eligibility
+```
+
+`config/signal-eligibility.example.toml` marks synthetic allow-listed `BTCUSDT`
+`NOT_ELIGIBLE`/`NEUTRAL` at index 0 and `NOT_ELIGIBLE`/`LONG_BIAS` at index 4
+against default SQS threshold 75. Tests cover HARAM/UNKNOWN hard gates,
+conflicting votes remaining NEUTRAL, missing evidence as abstention, immutable
+provenance, every-prefix identity, batch/stream/chunk replay, and provider
+integration. No BUY/SELL, entry, ranking, probability, Telegram, or performance
+test is included.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -307,7 +323,10 @@ wheel. For Phase 14 verify allow-list HALAL, unlisted UNKNOWN, deny-list HARAM,
 case normalization, unchanged upstream IDs, and prefix/batch/stream equivalence
 through the installed wheel. For Phase 15 verify integer totals 10 then 25 on
 the synthetic example, HARAM/UNKNOWN zeros, unchanged upstream IDs, threshold
-flags, and prefix/batch/stream equivalence through the installed wheel.
+flags, and prefix/batch/stream equivalence through the installed wheel. For
+Phase 16 verify `NOT_ELIGIBLE`/`NEUTRAL` then `NOT_ELIGIBLE`/`LONG_BIAS` on the
+synthetic example at threshold 75, HARAM/UNKNOWN hard gates, unchanged upstream
+IDs, and prefix/batch/stream equivalence through the installed wheel.
 Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
@@ -319,5 +338,5 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 15. Do not implement Phase 16
+the designated working branch. Stop after Phase 16. Do not implement Phase 17
 Signal Engine without explicit approval.

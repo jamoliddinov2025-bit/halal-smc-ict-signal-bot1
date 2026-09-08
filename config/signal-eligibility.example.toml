@@ -1,37 +1,18 @@
-# Phase 16 offline configuration. Separate loaders consume each runtime table.
-# Project/scope/safety tables document intent, not a runtime trading policy engine.
-# This CSV is explicitly synthetic test data, not historical Binance observations.
-# Never add credentials or account data.
-
-[project]
-name = "Professional Halal SMC/ICT Spot Signal Bot"
-phase = 16
-
-[scope]
-market = "spot"
-direction = "long_only"
-signal_only = true
-
-[safety]
-authenticated_exchange_access = false
-order_execution = false
-leverage = false
-margin = false
-short_selling = false
-
+# Phase 16: eligibility over existing nested Halal/SQS evidence.
+# Primary 15m CSV; HTF frames are generated separately from tests/fixtures/mtf-1h.csv
+# and tests/fixtures/mtf-4h.csv. Missing directional evidence abstains.
+# HARAM/UNKNOWN force NOT_ELIGIBLE and NEUTRAL. This is not a BUY/SELL signal.
 [market_data]
 symbol = "BTCUSDT"
 timeframe = "15m"
 data_source = "csv"
 history_limit = 500
-# Resolved relative to this TOML file, not the process working directory.
-csv_path = "../tests/fixtures/ohlcv.csv"
+csv_path = "../tests/fixtures/mtf-15m.csv"
 missing_value_policy = "error"
 timeout_seconds = 10.0
 
 [analysis]
-# Total window of five candles: two left + pivot + two right.
-fractal_length = 5
+fractal_length = 3
 
 [liquidity]
 price_unit = "USDT"
@@ -60,21 +41,6 @@ require_fvg = false
 
 [premium_discount]
 equilibrium_half_width_fraction = "0"
-
-[mss]
-enable_displacement_requirement = true
-enable_structure_requirement = true
-
-[breaker_blocks]
-require_displacement = true
-require_mss = true
-invalidation_basis = "close_through_far_boundary"
-zone_basis = "original_order_block"
-
-[mitigation_blocks]
-interaction_basis = "range_intersection"
-first_interaction_only = true
-ignore_after_breaker = true
 
 [ote]
 lower_retracement = "0.62"

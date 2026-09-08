@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 15
+# Configuration — market data and analysis through Phase 16
 
-Fourteen explicit loaders consume separate tables:
+Fifteen explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -16,6 +16,7 @@ Fourteen explicit loaders consume separate tables:
 - `smcsignal.analysis.load_mtf_config(path)` reads only `[mtf]`.
 - `smcsignal.analysis.load_halal_filter_config(path)` reads only `[halal_filter]`.
 - `smcsignal.analysis.load_setup_quality_config(path)` reads only `[setup_quality]`.
+- `smcsignal.analysis.load_signal_eligibility_config(path)` reads only `[signal_eligibility]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -65,6 +66,8 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
   default allow-list registry (`BTCUSDT`, `ETHUSDT`, `BNBUSDT`, `SOLUSDT`).
 - `setup-quality.example.toml`: the same synthetic MTF/halal history plus
   integer `publish_threshold = 75`.
+- `signal-eligibility.example.toml`: the same synthetic history plus frozen
+  eligibility-v1 `enabled = true` and `conflict_policy = "neutral"`.
 
 ## Market data settings (unchanged)
 
@@ -374,6 +377,24 @@ weights, scores, signals, probabilities, and ranks, are rejected.
 force total 0. Missing nested evidence contributes 0 points. `threshold_passed`
 is a quality flag, not a BUY/SELL signal. See
 [setup quality methodology](../docs/setup-quality-methodology.md).
+
+## Signal eligibility settings (Phase 16)
+
+```toml
+[signal_eligibility]
+enabled = true
+conflict_policy = "neutral"
+```
+
+The table requires exactly these two keys. `enabled` must be true.
+`conflict_policy` accepts only `neutral`. Direct `SignalEligibilityConfig()`
+uses the same defaults. Unknown keys, including signal, entry, buy, sell,
+Telegram, and ranking options, are rejected.
+
+`SignalEligibilityAnalyzer` consumes existing Phase 15 frames. Eligibility
+requires HALAL plus the upstream SQS threshold flag. Conflicting nested votes
+stay `NEUTRAL`. Missing evidence abstains. `ELIGIBLE` is not a BUY/SELL signal.
+See [signal eligibility methodology](../docs/signal-eligibility-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

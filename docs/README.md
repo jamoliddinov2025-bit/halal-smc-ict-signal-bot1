@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 15 — deterministic setup quality score**.
+Current scope: **Phase 16 — deterministic signal eligibility**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -33,11 +33,13 @@ Current scope: **Phase 15 — deterministic setup quality score**.
   enforcement, explicit UNKNOWN, no internet or autonomous religious rulings.
 - [Setup quality methodology](setup-quality-methodology.md): integer 0–100 score
   from nested facts, HARAM/UNKNOWN gate, missing-evidence zeros, threshold 75.
+- [Signal eligibility methodology](signal-eligibility-methodology.md): HALAL plus
+  SQS threshold gate, nested directional votes, conflict stays NEUTRAL.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
-  now used by actual liquidity/sweep producers; Phase 15 implements the integer
-  setup quality score, while signal publishing remains deferred.
+  now used by actual liquidity/sweep producers; Phase 16 implements eligibility
+  over existing nested facts, while BUY/SELL publishing remains deferred.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
-No session strategy, signals, charts, or Telegram is implemented.
-Phase 16 — Signal Engine requires explicit approval.
+No session strategy, BUY/SELL signals, charts, or Telegram is implemented.
+Phase 17 — Signal Engine requires explicit approval.

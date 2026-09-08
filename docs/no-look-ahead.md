@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 15
+# No-look-ahead guarantees — Phases 3 through 16
 
 ## Contract
 
@@ -283,6 +283,21 @@ Prefix, future-suffix, batch/stream/chunk, identity, and original-object
 immutability tests cover HALAL totals 10 then 25 on the synthetic example,
 unlisted UNKNOWN zeros, and deny-list HARAM zeros. See
 [setup quality methodology](setup-quality-methodology.md).
+
+## Phase 16 signal eligibility
+
+The eligibility engine reads only already-published nested facts on the current
+`ScoreSnapshot`. It does not inspect future candles or prices to upgrade an old
+`NOT_ELIGIBLE` decision, and it does not treat UNKNOWN or HARAM as HALAL.
+Conflicting nested votes stay `NEUTRAL`; they are not forced into a side.
+Snapshot identities reuse the current SQS consumed-prefix hash, so appending
+later frames cannot rename earlier decisions.
+
+Prefix, future-suffix, batch/stream/chunk, identity, and original-object
+immutability tests cover HALAL `NOT_ELIGIBLE`/`NEUTRAL` then
+`NOT_ELIGIBLE`/`LONG_BIAS` on the synthetic example at threshold 75, unlisted
+UNKNOWN hard gates, and deny-list HARAM hard gates. See
+[signal eligibility methodology](signal-eligibility-methodology.md).
 
 ## What this guarantee does not mean
 

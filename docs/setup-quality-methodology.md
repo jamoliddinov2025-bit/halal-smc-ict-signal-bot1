@@ -162,4 +162,4 @@ claims, entries, stops, targets, risk/reward, position sizing, trade
 management, Telegram, live trading, credentials, futures, leverage,
 backtesting, monthly statistics, AI optimization, portfolio management, or
 strategy ranking is implemented.
-**Stop after Phase 15. Phase 16 — Signal Engine requires explicit approval.**
+**Phase 16 consumes these integer scores for eligibility only.**
