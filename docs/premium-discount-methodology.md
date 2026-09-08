@@ -287,7 +287,9 @@ No signal scoring, trade entries, risk management, position sizing, Telegram,
 backtesting statistics, monthly performance, halal filtering, strategy ranking,
 AI optimization, or multi-timeframe execution logic is implemented. The existing
 future quality policy (0–100, default publication threshold 75, zero signals valid,
-no quotas) remains documentation only; scoring remains deferred to Phase 11.
+no quotas) remains documentation only; scoring remains deferred to a separately approved later phase.
 Phase 9 now consumes these unchanged outputs in a separate
 [MSS evidence engine](mss-methodology.md).
-**Stop after Phase 9. Phase 10 requires explicit approval.**
+Phase 10 now consumes these unchanged outputs for
+[Breaker formation](breaker-block-methodology.md).
+**Stop after Phase 10. Phase 11 — Mitigation Blocks requires explicit approval.**

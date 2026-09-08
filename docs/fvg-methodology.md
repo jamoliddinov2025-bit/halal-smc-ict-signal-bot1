@@ -273,4 +273,6 @@ Phase 8 now adds separate [PD context sidecars](premium-discount-methodology.md)
 without changing these earlier formation rules or evidence IDs.
 Phase 9 now consumes these unchanged outputs in a separate
 [MSS evidence engine](mss-methodology.md).
-**Stop after Phase 9. Phase 10 requires explicit approval.**
+Phase 10 now consumes these unchanged outputs for
+[Breaker formation](breaker-block-methodology.md).
+**Stop after Phase 10. Phase 11 — Mitigation Blocks requires explicit approval.**

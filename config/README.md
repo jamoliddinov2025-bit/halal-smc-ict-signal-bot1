@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 9
+# Configuration — market data and analysis through Phase 10
 
-Eight explicit loaders consume separate tables:
+Nine explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -10,6 +10,7 @@ Eight explicit loaders consume separate tables:
 - `smcsignal.analysis.load_order_block_config(path)` reads only `[order_blocks]`.
 - `smcsignal.analysis.load_pd_config(path)` reads only `[premium_discount]`.
 - `smcsignal.analysis.load_mss_config(path)` reads only `[mss]`.
+- `smcsignal.analysis.load_breaker_block_config(path)` reads only `[breaker_blocks]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -40,6 +41,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 
 - `mss.example.toml`: 28 synthetic observations with default displacement ATR(14)
   and strict bullish/bearish MSS confirmations and evidence relationships.
+
+- `breaker-block.example.toml`: 28 synthetic observations with strict first-close
+  conversions of actual earlier OBs using existing displacement/MSS evidence.
 
 ## Market data settings (unchanged)
 
@@ -218,6 +222,29 @@ the current candle opens. A same-candle existing CHoCH and matching displacement
 confirm MSS at actual observation availability. Other existing evidence is
 context only. No MSS price, score, probability, quota, entry, or output-threshold
 settings are exposed. See [MSS methodology](../docs/mss-methodology.md).
+
+## Breaker formation settings (Phase 10)
+
+```toml
+[breaker_blocks]
+require_displacement = true
+require_mss = true
+invalidation_basis = "close_through_far_boundary"
+zone_basis = "original_order_block"
+```
+
+Exactly four keys are required. Both requirement flags must remain true in strict
+`breaker-v1`. The rule values accept only those shown; direct Python construction
+uses the typed `InvalidationBasis` / `BreakerZoneBasis` enums. No alternate wick,
+zone, score, probability, signal, retest, or confirmation-delay mode is provided.
+
+An original OB must already be known by the first violating candle's open. The
+close must strictly cross its opposing far boundary with matching same-candle
+displacement and MSS. Rejected first violations are recorded, never retrospectively
+upgraded. All independently qualifying source IDs are retained; there is no
+nearest-only ranking or silent history expiry/cap. FVG and PD are existing context,
+not new requirements or recomputed outputs. See
+[Breaker methodology](../docs/breaker-block-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

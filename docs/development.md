@@ -78,7 +78,7 @@ transport responses and clocks; no live requests, exchange credentials, or exter
 service availability are part of the test results. Fixtures are labeled synthetic.
 
 They do **not** validate a trading strategy, financial performance, or religious
-compliance; those features and assessments do not exist in Phase 9.
+compliance; those features and assessments do not exist in Phase 10.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -186,6 +186,20 @@ or missing displacement, prior range/warm-up states, real relationship reference
 late availability, unchanged source IDs, every-prefix identity, future invariance,
 provider integration, and frozen evidence. No trading-performance test is included.
 
+## Phase 10 Breaker tests and example
+
+```bash
+python -m pytest tests/breaker_blocks
+python -m pytest --collect-only -q tests/breaker_blocks
+```
+
+`config/breaker-block.example.toml` produces a bearish Breaker at 22 from original
+bullish OB 20 and a bullish Breaker at 27 from original bearish OB 22. The original
+zones/IDs and candidate times remain unchanged. Tests include strict boundary,
+wick/equality/gap cases, all-source multiple conversions, rejected first violations,
+future-data invariance, frozen evidence, identity, and provider integration. No
+entry, retest, trade-management, performance, or backtesting engine is introduced.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -204,7 +218,9 @@ raw serialization, and prefix identity in the installed wheel. Finally verify
 Phase 8 classifications, range/sidecar provenance, source identity preservation,
 and full-pipeline streaming through the installed wheel. For Phase 9 verify the
 MSS default example, both directions/levels, every prefix, original evidence links,
-and isolated package imports as well.
+and isolated package imports as well. For Phase 10 verify original-zone Breakers,
+source-OB identity, prior/publication timestamps, serialization, both directions,
+and prefix/batch/stream equivalence through the installed wheel.
 Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
@@ -216,4 +232,4 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 9. Do not implement Phase 10 without explicit approval.
+the designated working branch. Stop after Phase 10. Do not implement Phase 11 / Mitigation Blocks without explicit approval.

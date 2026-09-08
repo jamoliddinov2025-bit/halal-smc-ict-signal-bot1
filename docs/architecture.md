@@ -1,4 +1,4 @@
-# Architecture — Phase 9
+# Architecture — Phase 10
 
 ## Layers and explicit I/O
 
@@ -263,16 +263,37 @@ is published; the dependency graph remains acyclic. See
 [MSS methodology](mss-methodology.md) for exact criteria, time semantics, relation
 roles, frozen model fields, tests, and limits.
 
+## Phase 10 Breaker Block formation consumer
+
+`analysis/breaker_blocks/` consumes existing `MSSSnapshot` frames and exact published
+OB objects. It keeps private first-violation eligibility/seen-ID bookkeeping, not
+a live zone manager. No earlier detector, price model, or provenance implementation
+is changed or rerun.
+
+The original OB must be known before the violation bar opens. Only a first strict
+opposing close-through, supported by matching current displacement and MSS, creates
+a `BreakerBlock`. Other first violations retain immutable rejected `BreakerEvidence`
+with reasons, and cannot later be upgraded. All qualifying source IDs are processed
+in original publication order; identical, nested and overlapping zones are not merged.
+Original and breaker zone boundaries remain equal.
+
+`BreakerEvidence`, `BreakerBlock`, and `BreakerSnapshot` retain the original OB,
+actual observations, same-candle confirmation, source sweep/FVG/PD context, exact
+references, and separate origin/invalidation/publication times. State commits only
+after all checks and construction succeed. The source-prefix hash and canonical
+factory are reused. See [Breaker methodology](breaker-block-methodology.md) for the
+precise strict-v1 contract, configuration, causal rules, and limitations.
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 9 implements none of:
-breaker/ mitigation blocks, OTE, session strategy, a signal
+Phase 10 implements none of:
+Mitigation Blocks, OTE, session strategy, a signal
 engine, BUY/SELL signals, charts, Telegram, a halal filter, or scoring.
 There are also no orders, authenticated account access, or trading-performance
 claims. “Halal” remains a design goal, not certification.
 
-Stop after Phase 9. Phase 10 requires explicit approval.
+Stop after Phase 10. Phase 11 — Mitigation Blocks requires explicit approval.

@@ -231,4 +231,5 @@ The deferred Setup Quality Score policy remains unchanged in the
 [evidence contract](evidence-provenance-contract.md): future threshold default 75,
 quality over quantity, valid zero-signal outcomes, and no signal-count targets.
 Phase 9 consumes the original relationships in [MSS evidence](mss-methodology.md).
-**Stop after Phase 9; Phase 10 requires explicit approval.**
+Phase 10 consumes existing context in [Breaker formation](breaker-block-methodology.md).
+**Stop after Phase 10; Phase 11 — Mitigation Blocks requires explicit approval.**

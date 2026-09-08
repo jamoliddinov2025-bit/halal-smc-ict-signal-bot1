@@ -13,7 +13,7 @@ see [displacement methodology](displacement-methodology.md).
 
 No scoring, weights, normalized quality values, confidence ratings, ranking,
 signal publishing, or active publication-threshold configuration is implemented.
-Scoring remains excluded through Phase 9 and deferred to Phase 11. Existing Phase 3 swings, trend,
+Scoring remains excluded through Phase 10 and deferred to separate future approval. Existing Phase 3 swings, trend,
 BOS/CHoCH definitions, results, and data-provider behavior remain unchanged.
 
 ## 1. Composition, not feature/scoring coupling
@@ -146,7 +146,7 @@ prerequisites, once defined, cannot be overridden by a favorable aggregate resul
 The eventual signal engine must:
 
 - Calculate a **Setup Quality Score on a 0–100 scale** in a later approved phase,
-  **not through Phase 9; deferred to Phase 11**.
+  **not through Phase 10; deferred to separate future approval**.
 - Publish only valid setups **above** a configurable threshold; the required
   future default is **75**. No active setting or comparison is added now.
 - Prioritize quality over quantity. **Zero signals is a valid result** when no
@@ -173,7 +173,7 @@ Liquidity/sweep producer tests must establish that:
 5. Later touches, invalidations, reclaims, or added future data do not mutate or
    rename historical evidence. New states use new immutable snapshot identities.
 6. The required liquidity/sweep fields above survive any future serialization.
-7. There is still no scoring or signal publishing through Phase 9 and no count-target
+7. There is still no scoring or signal publishing through Phase 10 and no count-target
    mechanism influencing analytical outputs.
 
 Shared-contract tests retain their original coverage. `tests/liquidity/` now also
@@ -237,3 +237,15 @@ and available relationship objects are linked without changing their IDs.
 MSS uses the current consumed prefix and a fully known publication cutoff, never a
 later confirmation or revised upstream state. See [MSS methodology](mss-methodology.md).
 No scoring, risk, entries, optimization, or reporting engine is added.
+
+## Phase 10 original-OB Breaker formations
+
+`BreakerEvidence` retains the exact original OB and first closing violation,
+including rejection reasons when confirmation is absent. `BreakerBlock` exists
+only for a previously known source with matching current displacement and MSS;
+original and breaker zone boundaries remain identical. Original candidate/OB,
+invalidation, displacement/MSS and publication times remain distinct. Existing
+sweep, concurrent-FVG and PD references are copied without later enrichment.
+The current input prefix, configuration artifacts and canonical provenance factory
+are reused. See [Breaker methodology](breaker-block-methodology.md).
+No trading state, retests, mitigation, scoring, or performance tracking is added.

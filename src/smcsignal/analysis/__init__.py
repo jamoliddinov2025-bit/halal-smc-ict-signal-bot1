@@ -1,5 +1,18 @@
-"""Public analysis API through Phase 9: existing evidence and strict MSS detection."""
+"""Public analysis API through Phase 10: existing evidence and strict Breaker formation."""
 
+from smcsignal.analysis.breaker_blocks import (
+    BreakerBlock,
+    BreakerBlockAnalyzer,
+    BreakerBlockConfig,
+    BreakerDirection,
+    BreakerEvidence,
+    BreakerRejection,
+    BreakerSnapshot,
+    BreakerZoneBasis,
+    InvalidationBasis,
+    analyze_breaker_blocks,
+    load_breaker_block_config,
+)
 from smcsignal.analysis.config import AnalysisConfig, load_analysis_config
 from smcsignal.analysis.displacement import (
     ATRReference,
@@ -96,6 +109,17 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "BreakerBlock",
+    "BreakerBlockAnalyzer",
+    "BreakerBlockConfig",
+    "BreakerDirection",
+    "BreakerEvidence",
+    "BreakerRejection",
+    "BreakerSnapshot",
+    "BreakerZoneBasis",
+    "InvalidationBasis",
+    "analyze_breaker_blocks",
+    "load_breaker_block_config",
     "MSSAnalyzer",
     "MSSConfig",
     "MSSDirection",

@@ -48,3 +48,9 @@ three-candle fractals and unchanged default displacement thresholds/ATR(14), bea
 MSS at 22 breaks known low 13 with close 11; bullish MSS at 27 breaks known high 15
 with close 30. The actual prior-control, CHoCH, displacement, and optional context
 are retained. These are software-verification facts, not signals or performance.
+
+`breaker_blocks.csv` contains 28 **synthetic** Phase 10 observations. The bullish
+OB published at 20 (candidate 18, zone [13,15]) forms a bearish Breaker at 22; the
+bearish OB published at 22 (candidate 21, zone [16,18]) forms a bullish Breaker at
+27. These are first-close-violation plus actual displacement/MSS formation checks,
+not entries, retests, lifecycle management, exchange observations, or performance.

@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 9 — strict displacement-confirmed Market Structure Shift evidence**.
+Current scope: **Phase 10 — strict original-OB Breaker formation evidence**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -21,10 +21,12 @@ Current scope: **Phase 9 — strict displacement-confirmed Market Structure Shif
   pairs, exact midpoint/bands, categorical close/array context, and immutable sidecars.
 - [MSS methodology](mss-methodology.md): pre-known directional structure, confirmed
   opposing level breaks, displacement, exact relationships, publication, and causality.
+- [Breaker Block methodology](breaker-block-methodology.md): original OB eligibility,
+  strict first closing violation, displacement/MSS confirmation, exact zones, and timing.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
-  now used by actual liquidity/sweep producers; scoring remains deferred to Phase 11.
+  now used by actual liquidity/sweep producers; scoring remains deferred to a separately approved later phase.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
-No breaker/ mitigation blocks, OTE, session strategy, signals, charts, Telegram, halal filter, or scoring is implemented.
-Phase 10 requires explicit approval.
+No Mitigation Blocks, OTE, session strategy, signals, charts, Telegram, halal filter, or scoring is implemented.
+Phase 11 — Mitigation Blocks requires explicit approval.

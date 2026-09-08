@@ -324,7 +324,7 @@ costs remain significant; no bounded-total-memory or production-throughput guara
 is claimed. No zone lifecycle, mitigation, breaker conversion, invalidation, entry,
 stop loss, take profit, or trade management exists in Phase 7.
 
-Future Setup Quality Score/probability work remains deferred to Phase 11. The
+Future Setup Quality Score/probability work remains deferred to a separately approved later phase. The
 existing future policy stays documentation only: scale 0–100, future configurable
 publication threshold default 75, zero signals valid, and no signal quotas.
 No scores, probabilities, BUY/SELL signals, Telegram, halal filtering, CryptoIslam
@@ -335,4 +335,6 @@ Phase 8 now adds separate [PD context sidecars](premium-discount-methodology.md)
 without changing these earlier formation rules or evidence IDs.
 Phase 9 now consumes these unchanged outputs in a separate
 [MSS evidence engine](mss-methodology.md).
-**Stop after Phase 9. Phase 10 requires explicit approval.**
+Phase 10 now consumes these unchanged outputs for
+[Breaker formation](breaker-block-methodology.md).
+**Stop after Phase 10. Phase 11 — Mitigation Blocks requires explicit approval.**

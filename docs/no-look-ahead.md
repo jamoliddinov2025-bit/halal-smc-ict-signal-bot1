@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 9
+# No-look-ahead guarantees — Phases 3 through 10
 
 ## Contract
 
@@ -198,6 +198,22 @@ of prior structure labels. Event/evidence/frame IDs and prefix hashes remain
 stable across every prefix, future-price shocks, and batch/stream/chunk replay.
 See [MSS methodology](mss-methodology.md) for the exact operational definition.
 
+## Phase 10 Breaker formation
+
+The Breaker consumer registers original published OB IDs after processing older
+sources for the current closed candle. A source is assessed once on its first
+strict opposing closing violation. It must have been known before the bar opens,
+and matching current displacement/MSS must exist before publication. A missing
+confirmation creates immutable rejected evidence, not a candidate to relabel later.
+
+All independent qualifying sources are retained, with original zone boundaries
+and IDs. Same-candle/future sweeps, future FVGs, later PD ranges, new OBs and future
+MSS evidence cannot enrich an already-published Breaker. All formation bookkeeping
+is committed only after successful validation; failed frames cannot consume an
+eligible source. Prefix, future-suffix, batch/stream/chunk, identity, and original
+object immutability tests cover both confirmed and rejected first violations.
+See [Breaker methodology](breaker-block-methodology.md) for exact rules and limits.
+
 ## What this guarantee does not mean
 
 - Candle opening timestamps are identifiers, **not** claims that a close-based
@@ -215,6 +231,6 @@ See [MSS methodology](mss-methodology.md) for the exact operational definition.
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 9 adds MSS evidence only. No breaker/
+All tests are offline. Phase 10 adds Breaker formation evidence only. No
 mitigation block, OB/FVG lifecycle, OTE, session strategy, signals, risk management,
 position sizing, Telegram, halal filter, backtesting, execution, or scoring is implemented.

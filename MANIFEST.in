@@ -10,5 +10,6 @@ include config/fvg.example.toml
 include config/order-block.example.toml
 include config/premium-discount.example.toml
 include config/mss.example.toml
+include config/breaker-block.example.toml
 recursive-include docs *.md
 recursive-include tests *.py *.csv *.md

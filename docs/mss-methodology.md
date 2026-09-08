@@ -294,5 +294,7 @@ probability estimates, performance/monthly reporting, Telegram, halal filtering,
 MTF execution, AI optimization, strategy ranking, Breaker/Mitigation Blocks, OTE,
 trading, or later-phase functionality is implemented. Existing future quality
 policy remains documentation only: scale 0–100, future default publication
-threshold 75, valid zero-signal outcomes, no quotas; scoring is deferred to Phase 11.
-**Stop after Phase 9. Phase 10 requires explicit approval.**
+threshold 75, valid zero-signal outcomes, no quotas; scoring is deferred to a separately approved later phase.
+Phase 10 now consumes these unchanged outputs for
+[Breaker formation](breaker-block-methodology.md).
+**Stop after Phase 10. Phase 11 — Mitigation Blocks requires explicit approval.**
