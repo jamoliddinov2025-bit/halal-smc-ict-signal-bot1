@@ -1,18 +1,17 @@
-# Explicit, read-only public Spot data. No API key or account access is required.
-# Loading/constructing a provider does not make a request; fetch_ohlcv() does.
-# Do not add csv_path or credentials to this source configuration.
-
+# Phase 13: synthetic MTF confluence. Primary 15m CSV; HTF frames are generated
+# separately from tests/fixtures/mtf-1h.csv and tests/fixtures/mtf-4h.csv.
+# Never treat this as entries, scores, or exchange observations.
 [market_data]
 symbol = "BTCUSDT"
 timeframe = "15m"
-data_source = "binance_public"
+data_source = "csv"
 history_limit = 500
+csv_path = "../tests/fixtures/mtf-15m.csv"
 missing_value_policy = "error"
 timeout_seconds = 10.0
 
 [analysis]
-# Total window of five candles: two left + pivot + two right.
-fractal_length = 5
+fractal_length = 3
 
 [liquidity]
 price_unit = "USDT"
@@ -41,21 +40,6 @@ require_fvg = false
 
 [premium_discount]
 equilibrium_half_width_fraction = "0"
-
-[mss]
-enable_displacement_requirement = true
-enable_structure_requirement = true
-
-[breaker_blocks]
-require_displacement = true
-require_mss = true
-invalidation_basis = "close_through_far_boundary"
-zone_basis = "original_order_block"
-
-[mitigation_blocks]
-interaction_basis = "range_intersection"
-first_interaction_only = true
-ignore_after_breaker = true
 
 [ote]
 lower_retracement = "0.62"

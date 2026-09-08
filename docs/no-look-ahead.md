@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 12
+# No-look-ahead guarantees — Phases 3 through 13
 
 ## Contract
 
@@ -244,6 +244,19 @@ zone IDs and never rewrite earlier observations. Prefix, future-suffix,
 batch/stream/chunk, identity, and original object immutability tests cover all
 four classification labels. See [OTE methodology](ote-methodology.md) for exact
 rules and limits.
+
+## Phase 13 multi-timeframe confluence
+
+The MTF consumer reads existing primary OTE frames and a buffer of already-generated
+HTF OTE frames. At primary open t, only HTF evidence with `available_at <= t` may
+appear on the published snapshot. Future HTF candles sitting in the input buffer
+are ignored and must not be referenced, even as rejected IDs. A later HTF close
+may affect later LTF contexts; it cannot rewrite published ones.
+
+Prefix, future-suffix, batch/stream/chunk, identity, and original-object
+immutability tests cover incomplete 4h candles versus 15m 09:00 opens, delayed HTF
+arrival, and independent 1h/4h labels. See
+[MTF methodology](mtf-confluence-methodology.md) for the exact cutoff.
 
 ## What this guarantee does not mean
 

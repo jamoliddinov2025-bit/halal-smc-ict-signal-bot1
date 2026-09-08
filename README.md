@@ -1,12 +1,12 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 12 — deterministic, provenance-backed Optimal Trade Entry location context.**
+**Status: Phase 13 — deterministic, provenance-backed multi-timeframe confluence context.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
 per-candle structure, liquidity, displacement, FVG, OB, PD, MSS, Breaker,
-Mitigation, and OTE evidence snapshots. It does **not** generate trading signals,
+Mitigation, OTE, and multi-timeframe confluence snapshots. It does **not** generate trading signals,
 execute orders, or make asset-eligibility decisions.
 
 ## Install and verify
@@ -23,7 +23,103 @@ python -m pytest
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-## Phase 12 offline OTE example
+## Phase 13 offline multi-timeframe example
+
+The included 15m/1h/4h datasets are **synthetic**, not exchange observations or
+returns. Each timeframe is analysed independently; 1h/4h bars are not resampled
+from 15m:
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    analyze_liquidity,
+    analyze_displacement,
+    analyze_fvg,
+    analyze_order_blocks,
+    analyze_pd,
+    analyze_ote,
+    analyze_mtf,
+    load_analysis_config,
+    load_liquidity_config,
+    load_displacement_config,
+    load_fvg_config,
+    load_order_block_config,
+    load_pd_config,
+    load_ote_config,
+    load_mtf_config,
+)
+from smcsignal.data import CsvDataProvider, MarketDataConfig, load_data_config
+
+path = "config/mtf.example.toml"
+data, liquidity, mtf = load_data_config(path), load_liquidity_config(path), load_mtf_config(path)
+
+
+def frames(candles, timeframe):
+    series = SeriesProvenance(
+        data.symbol,
+        timeframe,
+        "synthetic_spot",
+        "csv",
+        f"mtf-demo:{timeframe}:v1:from-first-row:missing=error",
+    )
+    a = analyze_liquidity(
+        candles, series=series, config=liquidity, analysis_config=load_analysis_config(path)
+    )
+    b = analyze_displacement(a, load_displacement_config(path), price_unit=liquidity.price_unit)
+    c = analyze_order_blocks(analyze_fvg(b, load_fvg_config(path)), load_order_block_config(path))
+    return analyze_ote(analyze_pd(c, load_pd_config(path)), load_ote_config(path))
+
+
+primary = frames(CsvDataProvider(data).fetch_ohlcv().candles, "15m")
+hourly = frames(
+    CsvDataProvider(
+        MarketDataConfig(
+            symbol="BTCUSDT",
+            timeframe="1h",
+            data_source="csv",
+            history_limit=500,
+            csv_path="tests/fixtures/mtf-1h.csv",
+        )
+    )
+    .fetch_ohlcv()
+    .candles,
+    "1h",
+)
+four = frames(
+    CsvDataProvider(
+        MarketDataConfig(
+            symbol="BTCUSDT",
+            timeframe="4h",
+            data_source="csv",
+            history_limit=500,
+            csv_path="tests/fixtures/mtf-4h.csv",
+        )
+    )
+    .fetch_ohlcv()
+    .candles,
+    "4h",
+)
+results = analyze_mtf(primary, {"1h": hourly, "4h": four}, mtf)
+print(results[4].direction.value, results[4].relations[1].latest is None)
+print(results[16].relations[1].latest is not None)
+```
+
+```text
+BULLISH True
+True
+```
+
+`MTFAnalyzer(config, higher=...).update(ote_frame)` is the streaming equivalent.
+It consumes already-generated OTE frames and does not rerun prior engines. Strict
+v1 treats HTF evidence as eligible only when `available_at <= primary open`.
+A 4h candle 08:00–12:00 is unknown to a 15m observation at 09:00. Multiple HTFs
+remain independent; disagreement is `MIXED`, never a score.
+
+This is context only: no entries, stops, targets, scores, or trading. See
+[MTF methodology](docs/mtf-confluence-methodology.md) for exact eligibility,
+labels, and limits.
+
+## Existing Phase 12 offline OTE example
 
 The included 10-candle dataset is **synthetic**, not exchange observations or returns:
 
@@ -382,8 +478,8 @@ labels include endpoint labels so they cannot be mistaken for whole-zone placeme
 
 See [Premium/Discount methodology](docs/premium-discount-methodology.md) for exact
 selection, boundaries, publication-time context, provenance, and limitations.
-HTF references are architecture only: no multi-timeframe processing, scoring,
-entries, risk management, or ranking is implemented.
+HTF references on Phase 8 frames remain local-series hooks; Phase 13 joins
+already-generated HTF frames without changing Phase 8.
 
 ## Existing Phase 7 Order Block example
 
@@ -791,6 +887,8 @@ Live Binance availability is not asserted by the offline tests.
 - `[breaker_blocks]`: strict displacement/MSS requirements, close-through invalidation, original OB zone.
 - `[mitigation_blocks]`: range-intersection geometry, first interaction only, ignore-after-breaker.
 - `[ote]`: quoted 0.62/0.79 retracements, inclusive boundaries, close evaluation.
+- `[mtf]`: enabled completed-candle join of configured higher timeframes onto a primary series.
+- `config/mtf.example.toml`: hand-audited Phase 13 15m/1h/4h causal confluence example.
 - `config/ote.example.toml`: hand-audited Phase 12 OTE location example.
 - `config/mitigation-block.example.toml`: hand-audited Phase 11 first-interaction evidence.
 - `config/breaker-block.example.toml`: hand-audited Phase 10 opposite-zone formations.
@@ -818,6 +916,7 @@ src/smcsignal/
 │   ├── __init__.py            # Public API
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
+│   ├── mtf/                  # Phase 13 causal HTF confluence from existing OTE frames
 │   ├── ote/                  # Phase 12 OTE location context from existing dealing ranges
 │   ├── mitigation_blocks/    # Phase 11 first-interaction mitigation evidence only
 │   ├── breaker_blocks/       # Phase 10 first-violation formation evidence only
@@ -844,6 +943,7 @@ tests/premium_discount/       # Range/band boundaries, sidecars, provenance, and
 tests/mss/                    # MSS definitions, relationships, immutable evidence, causal replay
 tests/breaker_blocks/         # Strict conversions, rejection facts, exact timing, causal replay
 tests/ote/                    # Retracement geometry, close classification, timing, causal replay
+tests/mtf/                    # HTF eligibility, independent labels, MIXED confluence, causal replay
 tests/mitigation_blocks/      # First-interaction geometry, Breaker policy, exact timing, causal replay
 tests/fixtures/               # Tiny, explicitly synthetic CSV fixtures
 docs/                         # Architecture and methodologies
@@ -866,6 +966,7 @@ python -m pytest tests/mss
 python -m pytest tests/breaker_blocks
 python -m pytest tests/mitigation_blocks
 python -m pytest tests/ote
+python -m pytest tests/mtf
 python -m pip check
 python -m build
 ```
@@ -879,7 +980,7 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 12
+## Evidence provenance through Phase 13
 
 `LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
@@ -890,7 +991,7 @@ and exact snapshot dependencies. Older pool versions are never edited in place.
 The [evidence contract](docs/evidence-provenance-contract.md) also preserves the
 **deferred** scoring policy: future configurable threshold default 75, quality over
 quantity, valid zero-signal outcomes, and no signal-count targets. No scoring or
-active publication-threshold configuration is implemented in Phase 12.
+active publication-threshold configuration is implemented in Phase 13.
 
 ## Phase boundary
 

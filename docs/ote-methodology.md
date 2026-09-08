@@ -226,4 +226,5 @@ management, Telegram, halal filter, scraping, live trading, credentials, futures
 leverage, backtesting, monthly statistics, multi-timeframe confluence, AI
 optimization, or strategy ranking is implemented. Future quality policy remains
 documentation only.
-**Stop after Phase 12. Phase 13 — Multi-Timeframe Confluence requires explicit approval.**
+**Stop after Phase 12 for this layer. Phase 13 — Multi-Timeframe Confluence is a
+separate consumer of existing OTE frames.**

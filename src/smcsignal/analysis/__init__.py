@@ -1,4 +1,4 @@
-"""Public analysis API through Phase 12: existing evidence and OTE location context."""
+"""Public analysis API through Phase 13: existing evidence and MTF confluence."""
 
 from smcsignal.analysis.breaker_blocks import (
     BreakerBlock,
@@ -82,6 +82,19 @@ from smcsignal.analysis.mss import (
     analyze_mss,
     load_mss_config,
 )
+from smcsignal.analysis.mtf import (
+    AvailabilityPolicy,
+    MTFAnalyzer,
+    MTFConfig,
+    MTFDirection,
+    MTFEvidenceKind,
+    MTFEvidenceReference,
+    MTFRelation,
+    MTFSnapshot,
+    analyze_mtf,
+    load_mtf_config,
+    timeframe_seconds,
+)
 from smcsignal.analysis.order_blocks import (
     CandidateSelection,
     CandleClassification,
@@ -133,6 +146,17 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "AvailabilityPolicy",
+    "MTFAnalyzer",
+    "MTFConfig",
+    "MTFDirection",
+    "MTFEvidenceKind",
+    "MTFEvidenceReference",
+    "MTFRelation",
+    "MTFSnapshot",
+    "analyze_mtf",
+    "load_mtf_config",
+    "timeframe_seconds",
     "BoundaryPolicy",
     "OTEAnalyzer",
     "OTEClassification",

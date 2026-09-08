@@ -1,4 +1,4 @@
-# Architecture — Phase 12
+# Architecture — Phase 13
 
 ## Layers and explicit I/O
 
@@ -323,16 +323,31 @@ The source-prefix hash and canonical factory are reused. See
 [OTE methodology](ote-methodology.md) for geometry, timing, multiple-range policy,
 and limitations.
 
+## Phase 13 multi-timeframe confluence consumer
+
+`analysis/mtf/` consumes existing `OTESnapshot` frames for one primary timeframe
+and independently generated OTE sequences for each configured higher timeframe.
+It does not resample OHLCV or rerun Phases 1–12. HTF evidence is eligible only
+when `available_at <= primary_candle.opened_at`. Incomplete HTF candles are
+excluded. Multiple HTFs stay independent; label disagreement is `MIXED` without
+a score.
+
+`MTFRelation`, `MTFEvidenceReference`, and `MTFSnapshot` retain original HTF
+objects and IDs. State commits only after validation and provenance succeed.
+The primary consumed-prefix hash is reused. See
+[MTF methodology](mtf-confluence-methodology.md) for eligibility, labels, and
+limits.
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 12 implements none of:
+Phase 13 implements none of:
 session strategy, a signal
 engine, BUY/SELL signals, charts, Telegram, a halal filter, or scoring.
 There are also no orders, authenticated account access, or trading-performance
 claims. “Halal” remains a design goal, not certification.
 
-Stop after Phase 12. Phase 13 — Multi-Timeframe Confluence requires explicit approval.
+Stop after Phase 13. Phase 14 — Setup Quality Scoring requires explicit approval.

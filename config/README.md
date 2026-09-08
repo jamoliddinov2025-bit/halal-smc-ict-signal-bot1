@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 12
+# Configuration — market data and analysis through Phase 13
 
-Eleven explicit loaders consume separate tables:
+Twelve explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -13,6 +13,7 @@ Eleven explicit loaders consume separate tables:
 - `smcsignal.analysis.load_breaker_block_config(path)` reads only `[breaker_blocks]`.
 - `smcsignal.analysis.load_mitigation_block_config(path)` reads only `[mitigation_blocks]`.
 - `smcsignal.analysis.load_ote_config(path)` reads only `[ote]`.
+- `smcsignal.analysis.load_mtf_config(path)` reads only `[mtf]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -54,6 +55,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 - `ote.example.toml`: ten synthetic candles illustrating a confirmed bullish
   dealing range and all four OTE close classifications, including exact 0.62/0.79
   boundaries.
+
+- `mtf.example.toml`: synthetic 15m primary history from 08:00–12:00 with
+  independent 1h/4h OTE frames demonstrating completed-candle HTF eligibility.
 
 ## Market data settings (unchanged)
 
@@ -300,6 +304,26 @@ is classified only against the current dealing range if that range was known bef
 the bar opened. Missing or not-yet-known ranges yield `INSUFFICIENT_CONTEXT` with
 no older-range fallback. No score, entry, stop, target, or multi-timeframe setting
 is exposed. See [OTE methodology](../docs/ote-methodology.md).
+
+## Multi-timeframe confluence settings (Phase 13)
+
+```toml
+[mtf]
+enabled = true
+primary_timeframe = "15m"
+higher_timeframes = ["1h", "4h"]
+availability_policy = "completed_candle"
+```
+
+Exactly four keys are required. `enabled` must be true. Higher timeframes must be
+a nonempty array of unique supported fixed-duration intervals that are strictly
+longer integer multiples of the primary. `1M` and non-multiples such as 3d/1w are
+rejected. `availability_policy` accepts only `completed_candle`.
+
+`MTFAnalyzer` consumes existing Phase 12 frames per timeframe. HTF evidence is
+eligible only when `available_at <= primary open`. Multiple HTFs stay independent;
+disagreement is `MIXED` with no score. Unknown keys, including weight or signal
+settings, are rejected. See [MTF methodology](../docs/mtf-confluence-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

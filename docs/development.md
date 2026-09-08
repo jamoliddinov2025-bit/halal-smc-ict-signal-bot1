@@ -78,7 +78,7 @@ transport responses and clocks; no live requests, exchange credentials, or exter
 service availability are part of the test results. Fixtures are labeled synthetic.
 
 They do **not** validate a trading strategy, financial performance, or religious
-compliance; those features and assessments do not exist in Phase 12.
+compliance; those features and assessments do not exist in Phase 13.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -231,6 +231,21 @@ availability, no older-range fallback, independent successive zones, unchanged
 upstream IDs, every-prefix identity, future invariance, and provider integration.
 No entry, stop, target, score, or backtesting engine is introduced.
 
+## Phase 13 MTF tests and example
+
+```bash
+python -m pytest tests/mtf
+python -m pytest --collect-only -q tests/mtf
+```
+
+`config/mtf.example.toml` joins synthetic 15m primary frames to independent 1h and
+4h OTE histories. A 4h candle 08:00–12:00 is unknown at 15m 09:00 and eligible at
+15m 12:00. Ready 1h bullish structure at 09:00 is not collapsed by missing 4h
+context. Tests cover integer-multiple timeframes, completed-candle eligibility,
+delayed HTF arrival, MIXED independent labels, symbol isolation, immutable
+provenance, every-prefix identity, and provider integration. No score, entry, or
+backtesting engine is introduced.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -256,7 +271,10 @@ original-zone Mitigations, source-OB identity, interaction geometry, both direct
 Breaker policy, and prefix/batch/stream equivalence through the installed wheel.
 For Phase 12 verify OTE classifications, exact 0.62/0.79 bounds, before-open
 timing, source-range identity, serialization, both directions, and
-prefix/batch/stream equivalence through the installed wheel.
+prefix/batch/stream equivalence through the installed wheel. For Phase 13 verify
+completed-candle HTF eligibility, independent 1h/4h labels, MIXED confluence,
+primary-prefix hashes, and prefix/batch/stream equivalence through the installed
+wheel.
 Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
@@ -268,4 +286,5 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 12. Do not implement Phase 13 / Multi-Timeframe Confluence without explicit approval.
+the designated working branch. Stop after Phase 13. Do not implement Phase 14 /
+Setup Quality Scoring without explicit approval.

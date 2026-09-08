@@ -13,7 +13,7 @@ see [displacement methodology](displacement-methodology.md).
 
 No scoring, weights, normalized quality values, confidence ratings, ranking,
 signal publishing, or active publication-threshold configuration is implemented.
-Scoring remains excluded through Phase 12 and deferred to separate future approval. Existing Phase 3 swings, trend,
+Scoring remains excluded through Phase 13 and deferred to separate future approval. Existing Phase 3 swings, trend,
 BOS/CHoCH definitions, results, and data-provider behavior remain unchanged.
 
 ## 1. Composition, not feature/scoring coupling
@@ -146,7 +146,7 @@ prerequisites, once defined, cannot be overridden by a favorable aggregate resul
 The eventual signal engine must:
 
 - Calculate a **Setup Quality Score on a 0–100 scale** in a later approved phase,
-  **not through Phase 12; deferred to separate future approval**.
+  **not through Phase 13; deferred to separate future approval**.
 - Publish only valid setups **above** a configurable threshold; the required
   future default is **75**. No active setting or comparison is added now.
 - Prioritize quality over quantity. **Zero signals is a valid result** when no
@@ -173,7 +173,7 @@ Liquidity/sweep producer tests must establish that:
 5. Later touches, invalidations, reclaims, or added future data do not mutate or
    rename historical evidence. New states use new immutable snapshot identities.
 6. The required liquidity/sweep fields above survive any future serialization.
-7. There is still no scoring or signal publishing through Phase 12 and no count-target
+7. There is still no scoring or signal publishing through Phase 13 and no count-target
    mechanism influencing analytical outputs.
 
 Shared-contract tests retain their original coverage. `tests/liquidity/` now also
@@ -249,3 +249,13 @@ sweep, concurrent-FVG and PD references are copied without later enrichment.
 The current input prefix, configuration artifacts and canonical provenance factory
 are reused. See [Breaker methodology](breaker-block-methodology.md).
 No trading state, retests, mitigation, scoring, or performance tracking is added.
+
+## Phase 13 multi-timeframe confluence
+
+`MTFSnapshot` is published on the primary series and reuses that series'
+consumed-prefix hash. HTF dependencies are exact `EvidenceReference` records
+whose `available_at` is not later than the primary open. Original HTF evidence
+IDs are preserved. Future HTF rows in an input buffer are not hashed into past
+identities and are not listed on earlier snapshots. See
+[MTF methodology](mtf-confluence-methodology.md). No score, weight, or signal
+is added.

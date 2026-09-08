@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 12 — Optimal Trade Entry location context**.
+Current scope: **Phase 13 — multi-timeframe confluence context**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -27,10 +27,12 @@ Current scope: **Phase 12 — Optimal Trade Entry location context**.
   eligibility, interior range overlap, first interaction only, Breaker policy, and timing.
 - [OTE methodology](ote-methodology.md): Phase 8 dealing-range retracements,
   inclusive 0.62–0.79 close classification, before-open timing, and independent zones.
+- [MTF confluence methodology](mtf-confluence-methodology.md): completed-candle HTF
+  eligibility at the LTF open, independent labels, unweighted MIXED confluence.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; scoring remains deferred to a separately approved later phase.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
 No session strategy, signals, charts, Telegram, halal filter, or scoring is implemented.
-Phase 13 — Multi-Timeframe Confluence requires explicit approval.
+Phase 14 — Setup Quality Scoring requires explicit approval.
