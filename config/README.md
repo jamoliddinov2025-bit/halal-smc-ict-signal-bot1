@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 13
+# Configuration — market data and analysis through Phase 14
 
-Twelve explicit loaders consume separate tables:
+Thirteen explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -14,6 +14,7 @@ Twelve explicit loaders consume separate tables:
 - `smcsignal.analysis.load_mitigation_block_config(path)` reads only `[mitigation_blocks]`.
 - `smcsignal.analysis.load_ote_config(path)` reads only `[ote]`.
 - `smcsignal.analysis.load_mtf_config(path)` reads only `[mtf]`.
+- `smcsignal.analysis.load_halal_filter_config(path)` reads only `[halal_filter]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -58,6 +59,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 
 - `mtf.example.toml`: synthetic 15m primary history from 08:00–12:00 with
   independent 1h/4h OTE frames demonstrating completed-candle HTF eligibility.
+
+- `halal-filter.example.toml`: the Phase 13 synthetic MTF history plus the
+  default allow-list registry (`BTCUSDT`, `ETHUSDT`, `BNBUSDT`, `SOLUSDT`).
 
 ## Market data settings (unchanged)
 
@@ -324,6 +328,32 @@ rejected. `availability_policy` accepts only `completed_candle`.
 eligible only when `available_at <= primary open`. Multiple HTFs stay independent;
 disagreement is `MIXED` with no score. Unknown keys, including weight or signal
 settings, are rejected. See [MTF methodology](../docs/mtf-confluence-methodology.md).
+
+## Halal asset filter settings (Phase 14)
+
+```toml
+[halal_filter]
+mode = "allow_list"
+
+allowed_assets = [
+  "BTCUSDT",
+  "ETHUSDT",
+  "BNBUSDT",
+  "SOLUSDT"
+]
+```
+
+Allow-list tables require exactly `mode` and `allowed_assets`. Deny-list tables
+require exactly `mode` and `denied_assets`. Listed allow-list assets are HALAL;
+everything else is UNKNOWN. Listed deny-list assets are HARAM; everything else
+is UNKNOWN. Deny-list mode never emits HALAL. Symbols use the market-data
+contract and are normalized to uppercase. Unknown keys, including score, signal,
+or scraping settings, are rejected.
+
+`HalalFilterAnalyzer` consumes existing Phase 13 frames. The filter does not
+fetch the internet or make autonomous religious decisions. UNKNOWN is never
+silently treated as HALAL. See
+[halal filter methodology](../docs/halal-filter-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

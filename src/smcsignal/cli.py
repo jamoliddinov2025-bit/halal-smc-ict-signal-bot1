@@ -13,15 +13,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="smcsignal",
         description=(
-            "Professional Halal SMC/ICT Spot Signal Bot — Phase 13 multi-timeframe confluence."
+            "Professional Halal SMC/ICT Spot Signal Bot — Phase 14 configuration-driven "
+            "halal asset filter."
         ),
-        epilog="No signal engine is implemented. Phase 14 requires explicit approval.",
+        epilog="No signal engine is implemented. Phase 15 requires explicit approval.",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.parse_args(argv)
 
     print("Professional Halal SMC/ICT Spot Signal Bot")
-    print("Phase 13: deterministic multi-timeframe confluence context.")
+    print("Phase 14: configuration-driven halal asset filter.")
     print("Market data and analysis are available through the Python API.")
     print("No signal engine, scoring, or trading.")
     return 0

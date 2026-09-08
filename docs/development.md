@@ -78,7 +78,7 @@ transport responses and clocks; no live requests, exchange credentials, or exter
 service availability are part of the test results. Fixtures are labeled synthetic.
 
 They do **not** validate a trading strategy, financial performance, or religious
-compliance; those features and assessments do not exist in Phase 13.
+compliance; the Phase 14 registry only enforces a caller-supplied list.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -246,6 +246,20 @@ delayed HTF arrival, MIXED independent labels, symbol isolation, immutable
 provenance, every-prefix identity, and provider integration. No score, entry, or
 backtesting engine is introduced.
 
+## Phase 14 halal filter tests and example
+
+```bash
+python -m pytest tests/halal_filter
+python -m pytest --collect-only -q tests/halal_filter
+```
+
+`config/halal-filter.example.toml` classifies synthetic `BTCUSDT` as HALAL under
+the default allow list and leaves `ADAUSDT` UNKNOWN. Tests cover allow/deny
+modes, unknown assets, case normalization, config validation, immutable
+provenance, every-prefix identity, batch/stream/chunk replay, and provider
+integration. No scoring, signal, Telegram, or religious-authority test is
+included.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -274,7 +288,9 @@ timing, source-range identity, serialization, both directions, and
 prefix/batch/stream equivalence through the installed wheel. For Phase 13 verify
 completed-candle HTF eligibility, independent 1h/4h labels, MIXED confluence,
 primary-prefix hashes, and prefix/batch/stream equivalence through the installed
-wheel.
+wheel. For Phase 14 verify allow-list HALAL, unlisted UNKNOWN, deny-list HARAM,
+case normalization, unchanged upstream IDs, and prefix/batch/stream equivalence
+through the installed wheel.
 Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 

@@ -15,7 +15,7 @@ def test_default_command_reports_analysis_scope(capsys: pytest.CaptureFixture[st
     captured = capsys.readouterr()
     assert captured.out == (
         "Professional Halal SMC/ICT Spot Signal Bot\n"
-        "Phase 13: deterministic multi-timeframe confluence context.\n"
+        "Phase 14: configuration-driven halal asset filter.\n"
         "Market data and analysis are available through the Python API.\n"
         "No signal engine, scoring, or trading.\n"
     )
@@ -35,8 +35,8 @@ def test_help_option(capsys: pytest.CaptureFixture[str]) -> None:
     assert exc.value.code == 0
     output = " ".join(capsys.readouterr().out.split())
     assert "--version" in output
-    assert "Phase 13 multi-timeframe confluence" in output
-    assert "Phase 14 requires explicit approval" in output
+    assert "Phase 14 configuration-driven" in output
+    assert "Phase 15 requires explicit approval" in output
 
 
 @pytest.mark.parametrize("option", ["--live", "--trade", "--config"])
@@ -60,6 +60,6 @@ def test_module_entrypoint_works_outside_checkout(tmp_path: Path) -> None:
         timeout=10,
         check=True,
     )
-    assert "Phase 13: deterministic multi-timeframe confluence context." in result.stdout
+    assert "Phase 14: configuration-driven halal asset filter." in result.stdout
     assert "No signal engine, scoring, or trading." in result.stdout
     assert result.stderr == ""

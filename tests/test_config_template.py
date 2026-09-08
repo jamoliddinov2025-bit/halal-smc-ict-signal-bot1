@@ -14,8 +14,8 @@ def config_template() -> dict[str, Any]:
         return tomllib.load(stream)
 
 
-def test_template_describes_phase_thirteen(config_template: dict[str, Any]) -> None:
-    assert config_template["project"]["phase"] == 13
+def test_template_describes_phase_fourteen(config_template: dict[str, Any]) -> None:
+    assert config_template["project"]["phase"] == 14
     assert config_template["project"]["name"] == "Professional Halal SMC/ICT Spot Signal Bot"
 
 

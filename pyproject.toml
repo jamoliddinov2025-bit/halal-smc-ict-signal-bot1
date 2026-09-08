@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "smcsignal"
 dynamic = ["version"]
-description = "Professional Halal SMC/ICT Spot Signal Bot — Phase 13 multi-timeframe confluence"
+description = "Professional Halal SMC/ICT Spot Signal Bot — Phase 14 configuration-driven halal asset filter"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []

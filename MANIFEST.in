@@ -14,5 +14,6 @@ include config/breaker-block.example.toml
 include config/mitigation-block.example.toml
 include config/ote.example.toml
 include config/mtf.example.toml
+include config/halal-filter.example.toml
 recursive-include docs *.md
 recursive-include tests *.py *.csv *.md

@@ -1,4 +1,4 @@
-# Architecture — Phase 13
+# Architecture — Phase 14
 
 ## Layers and explicit I/O
 
@@ -338,16 +338,30 @@ The primary consumed-prefix hash is reused. See
 [MTF methodology](mtf-confluence-methodology.md) for eligibility, labels, and
 limits.
 
+## Phase 14 halal asset filter
+
+`analysis/halal_filter/` consumes existing `MTFSnapshot` frames. It does not
+rerun or modify Phases 1–13. Classification is a frozen allow-list or deny-list
+registry lookup on the series symbol. There is no internet fetch, screening API,
+or autonomous religious decision.
+
+`AssetClassification`, `HalalDecision`, and `HalalSnapshot` retain the original
+MTF object and ID. Only `HALAL` is eligible for future signal phases.
+`UNKNOWN` is never silently treated as `HALAL`. Deny-list mode never emits
+`HALAL`. State commits only after validation and provenance succeed. The current
+consumed-prefix hash is reused. See
+[halal filter methodology](halal-filter-methodology.md).
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 13 implements none of:
+Phase 14 implements none of:
 session strategy, a signal
-engine, BUY/SELL signals, charts, Telegram, a halal filter, or scoring.
+engine, BUY/SELL signals, charts, Telegram, or scoring.
 There are also no orders, authenticated account access, or trading-performance
-claims. “Halal” remains a design goal, not certification.
+claims. The filter is a caller-supplied registry, not Sharia certification.
 
-Stop after Phase 13. Phase 14 — Setup Quality Scoring requires explicit approval.
+Stop after Phase 14. Phase 15 — Setup Quality Scoring requires explicit approval.

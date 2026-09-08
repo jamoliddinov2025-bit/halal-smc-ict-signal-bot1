@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 13
+# No-look-ahead guarantees — Phases 3 through 14
 
 ## Contract
 
@@ -258,6 +258,19 @@ immutability tests cover incomplete 4h candles versus 15m 09:00 opens, delayed H
 arrival, and independent 1h/4h labels. See
 [MTF methodology](mtf-confluence-methodology.md) for the exact cutoff.
 
+## Phase 14 halal asset filter
+
+The filter reads only the configured registry and the current series symbol from
+an existing MTF frame. It does not inspect future candles, prices, or HTF
+context to upgrade UNKNOWN into HALAL. The registry decision is bound on the
+first observation and reused. Snapshot identities reuse the current MTF
+consumed-prefix hash, so appending later frames cannot rename earlier ones.
+
+Prefix, future-suffix, batch/stream/chunk, identity, and original-object
+immutability tests cover allow-list HALAL, unlisted UNKNOWN, deny-list HARAM,
+and case normalization. See
+[halal filter methodology](halal-filter-methodology.md).
+
 ## What this guarantee does not mean
 
 - Candle opening timestamps are identifiers, **not** claims that a close-based
@@ -275,6 +288,6 @@ arrival, and independent 1h/4h labels. See
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 12 adds OTE location context only. No
+All tests are offline. Phase 14 adds registry enforcement only. No
 OB/FVG lifecycle, session strategy, signals, risk management,
-position sizing, Telegram, halal filter, backtesting, execution, or scoring is implemented.
+position sizing, Telegram, backtesting, execution, or scoring is implemented.

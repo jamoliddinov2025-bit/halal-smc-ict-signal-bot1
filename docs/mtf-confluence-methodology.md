@@ -188,4 +188,5 @@ profitability claims, entries, stops, targets, risk/reward, position sizing, tra
 management, Telegram, halal filter, scraping, live trading, credentials, futures,
 leverage, backtesting, monthly statistics, AI optimization, or strategy ranking
 is implemented.
-**Stop after Phase 13. Phase 14 — Setup Quality Scoring requires explicit approval.**
+**Stop after Phase 13 for this layer. Phase 14 — Halal Asset Filter is a
+separate registry consumer of existing MTF frames.**

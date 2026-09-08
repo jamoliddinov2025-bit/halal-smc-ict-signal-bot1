@@ -1,4 +1,4 @@
-"""Public analysis API through Phase 13: existing evidence and MTF confluence."""
+"""Public analysis API through Phase 14: existing evidence and halal registry."""
 
 from smcsignal.analysis.breaker_blocks import (
     BreakerBlock,
@@ -33,6 +33,17 @@ from smcsignal.analysis.fvg import (
     FVGSnapshot,
     analyze_fvg,
     load_fvg_config,
+)
+from smcsignal.analysis.halal_filter import (
+    AssetClassification,
+    FilterMode,
+    HalalDecision,
+    HalalFilterAnalyzer,
+    HalalFilterConfig,
+    HalalSnapshot,
+    analyze_halal,
+    classify_asset,
+    load_halal_filter_config,
 )
 from smcsignal.analysis.liquidity import (
     InvalidationReason,
@@ -146,6 +157,15 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "AssetClassification",
+    "FilterMode",
+    "HalalDecision",
+    "HalalFilterAnalyzer",
+    "HalalFilterConfig",
+    "HalalSnapshot",
+    "analyze_halal",
+    "classify_asset",
+    "load_halal_filter_config",
     "AvailabilityPolicy",
     "MTFAnalyzer",
     "MTFConfig",

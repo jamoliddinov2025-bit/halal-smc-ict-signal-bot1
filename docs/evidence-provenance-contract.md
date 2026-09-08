@@ -13,7 +13,7 @@ see [displacement methodology](displacement-methodology.md).
 
 No scoring, weights, normalized quality values, confidence ratings, ranking,
 signal publishing, or active publication-threshold configuration is implemented.
-Scoring remains excluded through Phase 13 and deferred to separate future approval. Existing Phase 3 swings, trend,
+Scoring remains excluded through Phase 14 and deferred to separate future approval. Existing Phase 3 swings, trend,
 BOS/CHoCH definitions, results, and data-provider behavior remain unchanged.
 
 ## 1. Composition, not feature/scoring coupling
@@ -146,7 +146,7 @@ prerequisites, once defined, cannot be overridden by a favorable aggregate resul
 The eventual signal engine must:
 
 - Calculate a **Setup Quality Score on a 0–100 scale** in a later approved phase,
-  **not through Phase 13; deferred to separate future approval**.
+  **not through Phase 14; deferred to separate future approval**.
 - Publish only valid setups **above** a configurable threshold; the required
   future default is **75**. No active setting or comparison is added now.
 - Prioritize quality over quantity. **Zero signals is a valid result** when no
@@ -173,7 +173,7 @@ Liquidity/sweep producer tests must establish that:
 5. Later touches, invalidations, reclaims, or added future data do not mutate or
    rename historical evidence. New states use new immutable snapshot identities.
 6. The required liquidity/sweep fields above survive any future serialization.
-7. There is still no scoring or signal publishing through Phase 13 and no count-target
+7. There is still no scoring or signal publishing through Phase 14 and no count-target
    mechanism influencing analytical outputs.
 
 Shared-contract tests retain their original coverage. `tests/liquidity/` now also
@@ -259,3 +259,14 @@ IDs are preserved. Future HTF rows in an input buffer are not hashed into past
 identities and are not listed on earlier snapshots. See
 [MTF methodology](mtf-confluence-methodology.md). No score, weight, or signal
 is added.
+
+## Phase 14 halal registry producers
+
+`HalalDecision` and `HalalSnapshot` compose the same unchanged provenance
+contract. The decision is registry evidence: empty source candles, a prefix hash
+of series/symbol identity, and no future-file hash. The snapshot reuses the
+current MTF consumed-prefix hash and depends on the original MTF frame plus the
+decision. Original upstream IDs are preserved. UNKNOWN is retained as absence of
+approval, never a default HALAL quality value. See
+[halal filter methodology](halal-filter-methodology.md).
+No scoring, signal, Telegram, or autonomous religious ruling is added.
