@@ -13,9 +13,11 @@ see [displacement methodology](displacement-methodology.md).
 
 Phase 15 implements the integer Setup Quality Score (0–100, frozen weights,
 `publish_threshold` default 75). Phase 16 implements eligibility over those
-already-published facts. Ranking, BUY/SELL publishing, probabilities, and
-confidence ratings remain unimplemented. Existing Phase 3 swings, trend,
-BOS/CHoCH definitions, results, and data-provider behavior remain unchanged.
+already-published facts. Phase 17 publishes spot `BUY_SIGNAL` / `BEARISH_AVOID`
+/ `NO_SIGNAL` facts from that eligibility. Ranking, SELL/SHORT trades,
+probabilities, and confidence ratings remain unimplemented. Existing Phase 3
+swings, trend, BOS/CHoCH definitions, results, and data-provider behavior remain
+unchanged.
 
 ## 1. Composition, not feature/scoring coupling
 
@@ -142,9 +144,9 @@ Preserving the facts allows later methodology changes without rerunning an
 untraceable or hindsight-contaminated detector. Mandatory safety/eligibility
 prerequisites, once defined, cannot be overridden by a favorable aggregate result.
 
-## 6. Deferred signal policy — documentation only
+## 6. Phase 17 signal policy
 
-The eventual signal engine must:
+The signal engine must:
 
 - Consume the Phase 16 **eligibility decision** and the Phase 15 **Setup Quality
   Score on a 0–100 scale**; it must not recalculate a second score or treat
@@ -160,8 +162,9 @@ The eventual signal engine must:
 
 Phase 15 now stores frozen component weights, integer totals, missing-factor
 zeros, and the executable `publish_threshold`. Phase 16 stores HALAL-and-threshold
-eligibility and nested directional bias. BUY/SELL publish logic is still
-not implemented.
+eligibility and nested directional bias. Phase 17 maps those facts to spot
+`BUY_SIGNAL` publications only; there is still no SELL, SHORT trade, entry, or
+order.
 
 ## 7. Producer acceptance requirements
 
@@ -176,9 +179,9 @@ Liquidity/sweep producer tests must establish that:
 5. Later touches, invalidations, reclaims, or added future data do not mutate or
    rename historical evidence. New states use new immutable snapshot identities.
 6. The required liquidity/sweep fields above survive any future serialization.
-7. There is still no BUY/SELL publishing and no count-target
-   mechanism influencing analytical outputs. Phase 16 eligibility is a gate
-   only.
+7. There is still no count-target mechanism influencing analytical outputs.
+   Phase 16 eligibility is a gate only. Phase 17 spot publication is a separate
+   consumer and never a SELL or short trade.
 
 Shared-contract tests retain their original coverage. `tests/liquidity/` now also
 verifies actual producers, immutable membership/lifecycle versions, raw JSON

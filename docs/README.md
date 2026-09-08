@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 16 — deterministic signal eligibility**.
+Current scope: **Phase 17 — deterministic spot signal engine**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -35,11 +35,14 @@ Current scope: **Phase 16 — deterministic signal eligibility**.
   from nested facts, HARAM/UNKNOWN gate, missing-evidence zeros, threshold 75.
 - [Signal eligibility methodology](signal-eligibility-methodology.md): HALAL plus
   SQS threshold gate, nested directional votes, conflict stays NEUTRAL.
+- [Signal engine methodology](signal-engine-methodology.md): spot `BUY_SIGNAL`
+  from eligible `LONG_BIAS`, `BEARISH_AVOID` from eligible `SHORT_BIAS`,
+  one-per-setup, causal publication.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
-  now used by actual liquidity/sweep producers; Phase 16 implements eligibility
-  over existing nested facts, while BUY/SELL publishing remains deferred.
+  now used by actual liquidity/sweep producers; Phase 17 publishes spot
+  `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
-No session strategy, BUY/SELL signals, charts, or Telegram is implemented.
-Phase 17 — Signal Engine requires explicit approval.
+No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
+**Stop after Phase 17. Phase 18 requires explicit approval.**

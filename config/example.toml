@@ -1,11 +1,11 @@
-# Phase 16 offline configuration. Separate loaders consume each runtime table.
+# Phase 17 offline configuration. Separate loaders consume each runtime table.
 # Project/scope/safety tables document intent, not a runtime trading policy engine.
 # This CSV is explicitly synthetic test data, not historical Binance observations.
 # Never add credentials or account data.
 
 [project]
 name = "Professional Halal SMC/ICT Spot Signal Bot"
-phase = 16
+phase = 17
 
 [scope]
 market = "spot"
@@ -103,3 +103,9 @@ publish_threshold = 75
 [signal_eligibility]
 enabled = true
 conflict_policy = "neutral"
+
+[signal_engine]
+enabled = true
+publish_threshold = 75
+spot_only = true
+duplicate_policy = "one_per_setup"

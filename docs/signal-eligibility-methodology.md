@@ -63,8 +63,8 @@ else:
     bias = NEUTRAL   # no_directional_evidence
 ```
 
-A future engine may later map `LONG_BIAS` / `SHORT_BIAS` onto a side. Phase 16
-does not emit BUY, SELL, entries, or stops.
+Phase 17 maps `LONG_BIAS` / `SHORT_BIAS` onto spot publication statuses. Phase 16
+itself does not emit BUY, SELL, entries, or stops.
 
 ## 3. Configuration
 
@@ -163,5 +163,5 @@ No BUY/SELL signals, ranking, probability, win-rate, profitability claims,
 entries, stops, targets, risk/reward, position sizing, trade management,
 Telegram, live trading, credentials, futures, leverage, backtesting, monthly
 statistics, AI optimization, portfolio management, or strategy ranking is
-implemented.
-**Stop after Phase 16. Phase 17 — Signal Engine requires explicit approval.**
+implemented in this phase.
+**Phase 17 consumes these eligibility decisions for spot publication only.**

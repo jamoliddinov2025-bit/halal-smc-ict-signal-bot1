@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 16
+# Configuration — market data and analysis through Phase 17
 
-Fifteen explicit loaders consume separate tables:
+Sixteen explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -17,6 +17,7 @@ Fifteen explicit loaders consume separate tables:
 - `smcsignal.analysis.load_halal_filter_config(path)` reads only `[halal_filter]`.
 - `smcsignal.analysis.load_setup_quality_config(path)` reads only `[setup_quality]`.
 - `smcsignal.analysis.load_signal_eligibility_config(path)` reads only `[signal_eligibility]`.
+- `smcsignal.analysis.load_signal_engine_config(path)` reads only `[signal_engine]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -68,6 +69,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
   integer `publish_threshold = 75`.
 - `signal-eligibility.example.toml`: the same synthetic history plus frozen
   eligibility-v1 `enabled = true` and `conflict_policy = "neutral"`.
+- `signal-engine.example.toml`: the same synthetic history plus frozen
+  signal-engine-v1 `enabled = true`, `publish_threshold = 75`, `spot_only = true`,
+  and `duplicate_policy = "one_per_setup"`.
 
 ## Market data settings (unchanged)
 
@@ -395,6 +399,29 @@ Telegram, and ranking options, are rejected.
 requires HALAL plus the upstream SQS threshold flag. Conflicting nested votes
 stay `NEUTRAL`. Missing evidence abstains. `ELIGIBLE` is not a BUY/SELL signal.
 See [signal eligibility methodology](../docs/signal-eligibility-methodology.md).
+
+## Spot signal engine settings (Phase 17)
+
+```toml
+[signal_engine]
+enabled = true
+publish_threshold = 75
+spot_only = true
+duplicate_policy = "one_per_setup"
+```
+
+The table requires exactly these four keys. `enabled` and `spot_only` must remain
+true. `publish_threshold` is an integer in 0–100 and must match the consumed SQS
+threshold. `duplicate_policy` accepts only `one_per_setup`. Direct
+`SignalEngineConfig()` uses the same defaults. Unknown keys, including entry,
+stop, target, Telegram, and ranking options, are rejected.
+
+`SignalEngineAnalyzer` consumes existing Phase 16 frames. Eligible `LONG_BIAS`
+maps to `BUY_SIGNAL`. Eligible `SHORT_BIAS` maps to `BEARISH_AVOID` and never a
+short trade. Missing HALAL, a failed threshold, or `NEUTRAL` maps to `NO_SIGNAL`.
+Under `one_per_setup`, later BUY candidates that share a published setup identity
+become `NO_SIGNAL` with reason `duplicate_setup`. See
+[signal engine methodology](../docs/signal-engine-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

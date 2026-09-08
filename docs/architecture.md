@@ -1,4 +1,4 @@
-# Architecture — Phase 16
+# Architecture — Phase 17
 
 ## Layers and explicit I/O
 
@@ -383,16 +383,31 @@ signal, entry, or stop. State commits only after validation and provenance
 succeed. The current consumed-prefix hash is reused. See
 [signal eligibility methodology](signal-eligibility-methodology.md).
 
+## Phase 17 spot signal engine
+
+`analysis/signal_engine/` consumes existing `EligibilitySnapshot` frames. It does
+not rerun or modify Phases 1–16. Direction is copied from Phase 16 bias. Eligible
+`LONG_BIAS` maps to `BUY_SIGNAL` / `LONG`. Eligible `SHORT_BIAS` maps to
+`BEARISH_AVOID` / `NONE` and never a short trade. HARAM, UNKNOWN, failed SQS,
+`NEUTRAL`, missing evidence, and already-published setups map to `NO_SIGNAL`.
+
+`Signal`, `SignalCandidate`, and `SignalSnapshot` retain the original eligibility
+object and ID. `publish_threshold` must match the consumed SQS threshold.
+`one_per_setup` publishes at most one BUY per setup identity in a stream.
+State commits only after validation and provenance succeed. The current
+consumed-prefix hash is reused. See
+[signal engine methodology](signal-engine-methodology.md).
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 16 implements none of:
-session strategy, a signal
-engine, BUY/SELL signals, charts, or Telegram.
+Phase 17 implements none of:
+session strategy, SELL/SHORT trades, entries, stops, targets, sizing, charts,
+or Telegram.
 There are also no orders, authenticated account access, or trading-performance
 claims. The filter is a caller-supplied registry, not Sharia certification.
 
-Stop after Phase 16. Phase 17 — Signal Engine requires explicit approval.
+Stop after Phase 17. Phase 18 requires explicit approval.

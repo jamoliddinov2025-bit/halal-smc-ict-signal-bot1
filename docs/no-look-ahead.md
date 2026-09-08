@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 16
+# No-look-ahead guarantees — Phases 3 through 17
 
 ## Contract
 
@@ -316,6 +316,6 @@ UNKNOWN hard gates, and deny-list HARAM hard gates. See
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 15 adds integer setup quality only. No
-OB/FVG lifecycle, session strategy, signals, risk management,
+All tests are offline. Phase 17 adds spot publication records only. No
+OB/FVG lifecycle, session strategy, SELL/SHORT trades, risk management,
 position sizing, Telegram, backtesting, or execution is implemented.

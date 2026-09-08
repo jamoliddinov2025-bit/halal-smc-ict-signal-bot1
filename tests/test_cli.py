@@ -15,9 +15,9 @@ def test_default_command_reports_analysis_scope(capsys: pytest.CaptureFixture[st
     captured = capsys.readouterr()
     assert captured.out == (
         "Professional Halal SMC/ICT Spot Signal Bot\n"
-        "Phase 16: deterministic signal eligibility.\n"
+        "Phase 17: deterministic spot signal engine.\n"
         "Market data and analysis are available through the Python API.\n"
-        "No BUY/SELL signals or trading.\n"
+        "Spot BUY_SIGNAL publications only; no SELL, SHORT, or trading.\n"
     )
     assert captured.err == ""
 
@@ -35,8 +35,8 @@ def test_help_option(capsys: pytest.CaptureFixture[str]) -> None:
     assert exc.value.code == 0
     output = " ".join(capsys.readouterr().out.split())
     assert "--version" in output
-    assert "Phase 16 deterministic" in output
-    assert "Phase 17 requires explicit approval" in output
+    assert "Phase 17 deterministic" in output
+    assert "Phase 18 requires explicit approval" in output
 
 
 @pytest.mark.parametrize("option", ["--live", "--trade", "--config"])
@@ -60,6 +60,6 @@ def test_module_entrypoint_works_outside_checkout(tmp_path: Path) -> None:
         timeout=10,
         check=True,
     )
-    assert "Phase 16: deterministic signal eligibility." in result.stdout
-    assert "No BUY/SELL signals or trading." in result.stdout
+    assert "Phase 17: deterministic spot signal engine." in result.stdout
+    assert "Spot BUY_SIGNAL publications only; no SELL, SHORT, or trading." in result.stdout
     assert result.stderr == ""

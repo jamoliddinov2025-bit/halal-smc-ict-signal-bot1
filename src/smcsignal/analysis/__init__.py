@@ -1,4 +1,4 @@
-"""Public analysis API through Phase 16: existing evidence and signal eligibility."""
+"""Public analysis API through Phase 17: existing evidence and spot signal facts."""
 
 from smcsignal.analysis.breaker_blocks import (
     BreakerBlock,
@@ -177,6 +177,20 @@ from smcsignal.analysis.signal_eligibility import (
     analyze_signal_eligibility,
     load_signal_eligibility_config,
 )
+from smcsignal.analysis.signal_engine import (
+    DuplicatePolicy,
+    Signal,
+    SignalCandidate,
+    SignalDirection,
+    SignalEngineAnalyzer,
+    SignalEngineConfig,
+    SignalReason,
+    SignalSnapshot,
+    SignalStatus,
+    analyze_signal_engine,
+    build_signal_snapshot,
+    load_signal_engine_config,
+)
 from smcsignal.analysis.structure import MarketStructureAnalyzer, analyze
 from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
@@ -193,6 +207,18 @@ __all__ = [
     "SignalEligibilityConfig",
     "analyze_signal_eligibility",
     "load_signal_eligibility_config",
+    "DuplicatePolicy",
+    "Signal",
+    "SignalCandidate",
+    "SignalDirection",
+    "SignalEngineAnalyzer",
+    "SignalEngineConfig",
+    "SignalReason",
+    "SignalSnapshot",
+    "SignalStatus",
+    "analyze_signal_engine",
+    "build_signal_snapshot",
+    "load_signal_engine_config",
     "DEFAULT_PUBLISH_THRESHOLD",
     "WEIGHTS",
     "ScoreBreakdown",

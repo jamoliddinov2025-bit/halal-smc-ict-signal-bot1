@@ -79,8 +79,9 @@ service availability are part of the test results. Fixtures are labeled syntheti
 
 They do **not** validate a trading strategy, financial performance, or religious
 compliance; the Phase 14 registry only enforces a caller-supplied list,
-Phase 15 scores already-published facts without claiming expected returns, and
-Phase 16 gates those facts without emitting BUY/SELL signals.
+Phase 15 scores already-published facts without claiming expected returns,
+Phase 16 gates those facts without emitting trades, and Phase 17 publishes
+spot `BUY_SIGNAL` records without SELL, SHORT, entries, or execution.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -291,6 +292,22 @@ provenance, every-prefix identity, batch/stream/chunk replay, and provider
 integration. No BUY/SELL, entry, ranking, probability, Telegram, or performance
 test is included.
 
+## Phase 17 signal engine tests and example
+
+```bash
+python -m pytest tests/signal_engine
+python -m pytest --collect-only -q tests/signal_engine
+```
+
+`config/signal-engine.example.toml` maps synthetic allow-listed `BTCUSDT` to
+`NO_SIGNAL` at indices 0 and 4 against default SQS threshold 75. Lowering only
+the SQS threshold to 10, with a matching engine threshold, makes index 4
+`BUY_SIGNAL` and later same-identity candles `NO_SIGNAL` / `duplicate_setup`.
+Tests cover HARAM/UNKNOWN hard gates, eligible SHORT as `BEARISH_AVOID`,
+missing evidence, one-per-setup, immutable provenance, every-prefix identity,
+batch/stream/chunk replay, and provider integration. No SELL, SHORT trade,
+entry, ranking, probability, Telegram, or performance test is included.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -326,7 +343,10 @@ the synthetic example, HARAM/UNKNOWN zeros, unchanged upstream IDs, threshold
 flags, and prefix/batch/stream equivalence through the installed wheel. For
 Phase 16 verify `NOT_ELIGIBLE`/`NEUTRAL` then `NOT_ELIGIBLE`/`LONG_BIAS` on the
 synthetic example at threshold 75, HARAM/UNKNOWN hard gates, unchanged upstream
-IDs, and prefix/batch/stream equivalence through the installed wheel.
+IDs, and prefix/batch/stream equivalence through the installed wheel. For
+Phase 17 verify default-threshold `NO_SIGNAL` on that same example, threshold-10
+`BUY_SIGNAL` then duplicate collapse, HARAM/UNKNOWN hard gates, unchanged
+upstream IDs, and prefix/batch/stream equivalence through the installed wheel.
 Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
@@ -338,5 +358,5 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 16. Do not implement Phase 17
-Signal Engine without explicit approval.
+the designated working branch. Stop after Phase 17. Do not implement Phase 18
+without explicit approval.

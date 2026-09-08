@@ -1,16 +1,16 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 16 — deterministic signal eligibility.**
+**Status: Phase 17 — deterministic spot signal engine.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
 per-candle structure, liquidity, displacement, FVG, OB, PD, MSS, Breaker,
 Mitigation, OTE, multi-timeframe confluence, registry-based classification,
-integer setup-quality snapshots, and eligibility decisions. It does **not**
-generate BUY/SELL signals, execute orders, or issue religious rulings. UNKNOWN
-assets are never silently treated as HALAL. HARAM and UNKNOWN receive quality
-score 0 and are never eligible.
+integer setup-quality snapshots, eligibility decisions, and spot publication
+records. It does **not** generate SELL or SHORT trades, execute orders, or issue
+religious rulings. UNKNOWN assets are never silently treated as HALAL. HARAM and
+UNKNOWN receive quality score 0 and are never eligible.
 
 ## Install and verify
 
@@ -26,7 +26,124 @@ python -m pytest
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-## Phase 16 offline signal eligibility example
+## Phase 17 offline spot signal example
+
+The signal engine only reads already-published Phase 16 eligibility facts. It
+does not rerun earlier analyzers, invent a second bias, or emit orders.
+`config/signal-engine.example.toml` reuses the **synthetic** Phase 13
+15m/1h/4h history:
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    analyze_liquidity,
+    analyze_displacement,
+    analyze_fvg,
+    analyze_order_blocks,
+    analyze_pd,
+    analyze_ote,
+    analyze_mtf,
+    analyze_halal,
+    analyze_setup_quality,
+    analyze_signal_eligibility,
+    analyze_signal_engine,
+    load_analysis_config,
+    load_liquidity_config,
+    load_displacement_config,
+    load_fvg_config,
+    load_order_block_config,
+    load_pd_config,
+    load_ote_config,
+    load_mtf_config,
+    load_halal_filter_config,
+    load_setup_quality_config,
+    load_signal_eligibility_config,
+    load_signal_engine_config,
+)
+from smcsignal.data import CsvDataProvider, MarketDataConfig, load_data_config
+
+path = "config/signal-engine.example.toml"
+data = load_data_config(path)
+liquidity = load_liquidity_config(path)
+mtf = load_mtf_config(path)
+halal = load_halal_filter_config(path)
+quality = load_setup_quality_config(path)
+eligibility = load_signal_eligibility_config(path)
+engine = load_signal_engine_config(path)
+
+
+def frames(candles, timeframe):
+    series = SeriesProvenance(
+        data.symbol,
+        timeframe,
+        "synthetic_spot",
+        "csv",
+        f"signal-demo:{timeframe}:v1:from-first-row:missing=error",
+    )
+    a = analyze_liquidity(
+        candles, series=series, config=liquidity, analysis_config=load_analysis_config(path)
+    )
+    b = analyze_displacement(a, load_displacement_config(path), price_unit=liquidity.price_unit)
+    c = analyze_order_blocks(analyze_fvg(b, load_fvg_config(path)), load_order_block_config(path))
+    return analyze_ote(analyze_pd(c, load_pd_config(path)), load_ote_config(path))
+
+
+primary = frames(CsvDataProvider(data).fetch_ohlcv().candles, "15m")
+hourly = frames(
+    CsvDataProvider(
+        MarketDataConfig(
+            symbol="BTCUSDT",
+            timeframe="1h",
+            data_source="csv",
+            history_limit=500,
+            csv_path="tests/fixtures/mtf-1h.csv",
+        )
+    )
+    .fetch_ohlcv()
+    .candles,
+    "1h",
+)
+four = frames(
+    CsvDataProvider(
+        MarketDataConfig(
+            symbol="BTCUSDT",
+            timeframe="4h",
+            data_source="csv",
+            history_limit=500,
+            csv_path="tests/fixtures/mtf-4h.csv",
+        )
+    )
+    .fetch_ohlcv()
+    .candles,
+    "4h",
+)
+filtered = analyze_halal(analyze_mtf(primary, {"1h": hourly, "4h": four}, mtf), halal)
+scored = analyze_setup_quality(filtered, quality)
+eligible = analyze_signal_eligibility(scored, eligibility)
+results = analyze_signal_engine(eligible, engine)
+print(results[0].status.value, results[0].direction.value)
+print(results[4].status.value, results[4].direction.value)
+```
+
+```text
+NO_SIGNAL NONE
+NO_SIGNAL NONE
+```
+
+`SignalEngineAnalyzer(config).update(eligibility_frame)` is the streaming
+equivalent. Index 0 is HALAL-only below threshold (`NEUTRAL`). Index 4 adds
+directional MTF (`LONG_BIAS`) but still fails default `publish_threshold = 75`.
+HARAM and UNKNOWN force `NO_SIGNAL`. Eligible `SHORT_BIAS` is `BEARISH_AVOID`,
+never a short. Lowering only the SQS threshold to 10, with a matching engine
+threshold, makes index 4 `BUY_SIGNAL`; later same-identity candles are
+`duplicate_setup`. Upstream eligibility objects and IDs are unchanged.
+
+This is a spot publication record only: no SELL, SHORT, entries, Telegram,
+ranking, or trading. See
+[signal engine methodology](docs/signal-engine-methodology.md) for mapping,
+gates, identity, and limits.
+
+## Existing Phase 16 offline signal eligibility example
 
 The eligibility engine only reads already-published nested Halal/SQS facts. It
 does not rerun earlier analyzers, force a direction, or emit trades.
@@ -1218,6 +1335,8 @@ Live Binance availability is not asserted by the offline tests.
 - `[halal_filter]`: allow-list or deny-list registry; default allow list BTCUSDT/ETHUSDT/BNBUSDT/SOLUSDT.
 - `[setup_quality]`: integer `publish_threshold` (default 75); component weights are not configurable.
 - `[signal_eligibility]`: `enabled = true` and `conflict_policy = "neutral"` only.
+- `[signal_engine]`: `enabled = true`, matching `publish_threshold`, `spot_only = true`, `duplicate_policy = "one_per_setup"`.
+- `config/signal-engine.example.toml`: hand-audited Phase 17 spot publication example on synthetic MTF history.
 - `config/signal-eligibility.example.toml`: hand-audited Phase 16 eligibility example on synthetic MTF history.
 - `config/setup-quality.example.toml`: hand-audited Phase 15 integer score example on synthetic MTF history.
 - `config/halal-filter.example.toml`: hand-audited Phase 14 registry example on synthetic MTF history.
@@ -1249,6 +1368,7 @@ src/smcsignal/
 │   ├── __init__.py            # Public API
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
+│   ├── signal_engine/        # Phase 17 spot BUY_SIGNAL / BEARISH_AVOID; not SELL, SHORT, or orders
 │   ├── signal_eligibility/   # Phase 16 HALAL+threshold gate and nested bias; not BUY/SELL
 │   ├── setup_quality/        # Phase 15 integer 0–100 score from nested facts; not a signal
 │   ├── halal_filter/         # Phase 14 config-driven registry; no autonomous rulings
@@ -1279,6 +1399,7 @@ tests/premium_discount/       # Range/band boundaries, sidecars, provenance, and
 tests/mss/                    # MSS definitions, relationships, immutable evidence, causal replay
 tests/breaker_blocks/         # Strict conversions, rejection facts, exact timing, causal replay
 tests/ote/                    # Retracement geometry, close classification, timing, causal replay
+tests/signal_engine/          # spot mapping, gates, one-per-setup, provenance, causal replay
 tests/signal_eligibility/     # HALAL+threshold gate, long/short/neutral, conflict, causal replay
 tests/setup_quality/          # integer awards, HARAM/UNKNOWN gate, threshold flag, causal replay
 tests/halal_filter/           # allow/deny, unknown, case, provenance, and causal replay
@@ -1309,6 +1430,7 @@ python -m pytest tests/mtf
 python -m pytest tests/halal_filter
 python -m pytest tests/setup_quality
 python -m pytest tests/signal_eligibility
+python -m pytest tests/signal_engine
 python -m pip check
 python -m build
 ```
@@ -1322,7 +1444,7 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 16
+## Evidence provenance through Phase 17
 
 `LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
@@ -1342,10 +1464,15 @@ upstream threshold flag. Nested votes produce `LONG_BIAS`, `SHORT_BIAS`, or
 `NEUTRAL`. Conflicting evidence stays `NEUTRAL`. Historical decisions never
 change. `ELIGIBLE` is not a BUY/SELL signal.
 
+Phase 17 adds `Signal`, `SignalCandidate`, and `SignalSnapshot` on the same
+contract. Eligible `LONG_BIAS` maps to `BUY_SIGNAL`. Eligible `SHORT_BIAS` maps
+to `BEARISH_AVOID`. HARAM, UNKNOWN, failed threshold, `NEUTRAL`, missing
+evidence, and already-published setups map to `NO_SIGNAL`. Historical
+publications never change. `BUY_SIGNAL` is not an order.
+
 ## Phase boundary
 
-No session strategy, signal engine, BUY/SELL signals, charts, or Telegram is
-implemented.
+No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
 There is no authentication, order execution, leverage/margin/shorting, backtesting,
 or trading-performance claim.
 
@@ -1355,4 +1482,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 16. Phase 17 — Signal Engine requires explicit approval.**
+**Stop after Phase 17. Phase 18 requires explicit approval.**

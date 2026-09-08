@@ -1,7 +1,8 @@
-# Phase 16: eligibility over existing nested Halal/SQS evidence.
+# Phase 17: spot signal facts over existing nested eligibility evidence.
 # Primary 15m CSV; HTF frames are generated separately from tests/fixtures/mtf-1h.csv
 # and tests/fixtures/mtf-4h.csv. Missing directional evidence abstains.
-# HARAM/UNKNOWN force NOT_ELIGIBLE and NEUTRAL. This is not a BUY/SELL signal.
+# HARAM/UNKNOWN and failed SQS map to NO_SIGNAL. Eligible SHORT_BIAS is BEARISH_AVOID.
+# This mapping is not execution, sizing, or a short trade.
 [market_data]
 symbol = "BTCUSDT"
 timeframe = "15m"
