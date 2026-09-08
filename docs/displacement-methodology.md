@@ -301,4 +301,6 @@ signal, Telegram, chart, halal filter, backtesting, live trading, credentials,
 or order execution.
 Phase 6 now consumes these unchanged frames in a separate
 [FVG creation engine](fvg-methodology.md); no displacement rule above is changed.
-**Stop after Phase 6. Phase 7 — Order Blocks requires explicit approval.**
+Phase 7 adds [Order Block formation](order-block-methodology.md), consuming the
+exact displacement event without changing its definition.
+**Stop after Phase 7. Phase 8 — Premium/Discount / PD Arrays requires explicit approval.**

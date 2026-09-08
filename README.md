@@ -1,11 +1,11 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 6 — deterministic, provenance-backed Fair Value Gap creation analysis.**
+**Status: Phase 7 — deterministic, provenance-backed Order Block formation analysis.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
-per-candle structure, liquidity, displacement, and FVG creation snapshots. It does **not** generate trading signals,
+per-candle structure, liquidity, displacement, FVG, and Order Block formation snapshots. It does **not** generate trading signals,
 execute orders, or make asset-eligibility decisions.
 
 ## Install and verify
@@ -22,7 +22,81 @@ python -m pytest
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-## Phase 6 offline FVG example
+## Phase 7 offline Order Block example
+
+This example uses 24 **synthetic** candles, not live exchange observations:
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    analyze_order_blocks,
+    analyze_fvg,
+    analyze_displacement,
+    analyze_liquidity,
+    load_order_block_config,
+    load_fvg_config,
+    load_displacement_config,
+    load_liquidity_config,
+    load_analysis_config,
+)
+from smcsignal.data import create_data_provider, load_data_config
+
+path = "config/order-block.example.toml"
+data, liquidity = load_data_config(path), load_liquidity_config(path)
+series = SeriesProvenance(
+    data.symbol,
+    data.timeframe,
+    "synthetic_spot",
+    data.data_source,
+    "order-block-demo:v1:from-first-row:missing=error",
+)
+liquidity_frames = analyze_liquidity(
+    create_data_provider(data).fetch_ohlcv().candles,
+    series=series,
+    config=liquidity,
+    analysis_config=load_analysis_config(path),
+)
+displacement_frames = analyze_displacement(
+    liquidity_frames,
+    load_displacement_config(path),
+    price_unit=liquidity.price_unit,
+)
+fvg_frames = analyze_fvg(displacement_frames, load_fvg_config(path))
+frames = analyze_order_blocks(fvg_frames, load_order_block_config(path))
+for frame in frames:
+    for block in frame.events:
+        print(
+            block.candidate_index,
+            block.confirmation_index,
+            block.direction.value,
+            block.zone_lower_boundary,
+            block.zone_upper_boundary,
+            block.structure_event.kind.value,
+        )
+```
+
+```text
+18 20 bullish 13 15 BOS
+21 22 bearish 19 23 CHoCH
+```
+
+`OrderBlockAnalyzer().update(fvg_frame)` is the streaming equivalent; it consumes
+the actual existing Phase 6 frame without rerunning any upstream engine. The
+default chooses the nearest previously known opposite candle within 10 prior
+observations, uses its full range, rejects dojis, and requires matching displacement
+plus same-candle BOS/CHoCH. The displacement must close strictly beyond the zone.
+
+Explicit alternatives include earliest selection, body zones, neutral-doji
+eligibility, BOS-only/CHoCH-only/displacement-only structure, and required next-bar
+FVG confirmation. Requiring FVG delays the example's publications to 21/23, while
+candidate indices remain 18/21. No future confirmation edits an already observable
+block. Sweep context is inherited from the original displacement.
+
+These are formation facts only: **no lifecycle, entries, signals, scores, or trading**.
+See [Order Block methodology](docs/order-block-methodology.md) for exact rules,
+causal timing, provenance, configuration, and limitations.
+
+## Existing Phase 6 FVG example
 
 The twenty-candle fixture is **synthetic**, not live market data:
 
@@ -348,6 +422,8 @@ Live Binance availability is not asserted by the offline tests.
 - `[liquidity]`: explicit `price_unit` and quoted `equal_tolerance_bps` (default zero).
 - `[displacement]`: explicit ATR/body/range/close/context settings; no scoring settings.
 - `[fvg]`: quoted `min_gap_size` (default zero) and boolean `require_displacement` (default false).
+- `[order_blocks]`: explicit selection/zone/lookback, structure, doji, and FVG-confirmation rules.
+- `config/order-block.example.toml`: hand-audited Phase 7 formation example.
 - `config/fvg.example.toml`: complete default Phase 6 geometry/evidence example.
 - `config/displacement.example.toml`: default Phase 5 warm-up and displacement example.
 - `config/liquidity.example.toml`: hand-audited Phase 4 pool/sweep example.
@@ -369,6 +445,7 @@ src/smcsignal/
 │   ├── __init__.py            # Public API
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
+│   ├── order_blocks/         # Phase 7 confirmed formation, never lifecycle or entries
 │   ├── fvg/                  # Phase 6 strict three-candle creation evidence
 │   ├── displacement/         # Phase 5 metrics, ATR evidence, and frame-native producer
 │   ├── liquidity/            # Phase 4 models, producer, artifacts, config, time
@@ -384,6 +461,7 @@ tests/analysis/               # Existing structure and shared-provenance tests
 tests/liquidity/              # Pools, sweeps, lifecycle, artifacts, and causal replay
 tests/displacement/           # ATR, displacement, context, boundaries, and causal replay
 tests/fvg/                    # FVG geometry, relationships, provenance, and causal replay
+tests/order_blocks/           # Selection, confirmations, timing, provenance, and causal replay
 tests/fixtures/               # Tiny, explicitly synthetic CSV fixtures
 docs/                         # Architecture and methodologies
 ```
@@ -399,6 +477,7 @@ python -m pytest tests/analysis
 python -m pytest tests/liquidity
 python -m pytest tests/displacement
 python -m pytest tests/fvg
+python -m pytest tests/order_blocks
 python -m pip check
 python -m build
 ```
@@ -412,9 +491,9 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 6
+## Evidence provenance through Phase 7
 
-`LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, and `FVGEvent` compose the approved immutable provenance
+`LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
 hashes, raw candle/swing evidence, historical context, true availability instants,
 and exact snapshot dependencies. Older pool versions are never edited in place.
@@ -423,11 +502,11 @@ and exact snapshot dependencies. Older pool versions are never edited in place.
 The [evidence contract](docs/evidence-provenance-contract.md) also preserves the
 **deferred** scoring policy: future configurable threshold default 75, quality over
 quantity, valid zero-signal outcomes, and no signal-count targets. No scoring or
-active publication-threshold configuration is implemented in Phase 6.
+active publication-threshold configuration is implemented in Phase 7.
 
 ## Phase boundary
 
-No order/ breaker/ mitigation blocks, premium/discount, OTE,
+No breaker/ mitigation blocks, premium/discount, OTE,
 session strategy, signal engine, BUY/SELL signals, charts, Telegram, halal filter,
 or scoring is implemented.
 There is no authentication, order execution, leverage/margin/shorting, backtesting,
@@ -439,4 +518,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 6. Phase 7 — Order Blocks requires explicit approval.**
+**Stop after Phase 7. Phase 8 — Premium/Discount / PD Arrays requires explicit approval.**

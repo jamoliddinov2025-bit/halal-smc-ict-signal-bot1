@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 6
+# No-look-ahead guarantees — Phases 3 through 7
 
 ## Contract
 
@@ -146,6 +146,26 @@ and provider integration. The [FVG methodology](fvg-methodology.md) specifies
 source/availability assumptions, equality/minimum boundaries, and creation-only
 scope. Local state changes only after a complete successful update.
 
+## Phase 7 Order Block formation
+
+`OrderBlockAnalyzer` consumes existing Phase 6 frames. Candidate classification and
+zone facts come only from that candle's original Phase 5 observation. Selection
+uses a bounded window before the matching displacement, with pre-open candidate
+availability. The OB label is **not** assigned at the earlier candidate time.
+
+Default publication follows matching displacement, strict zone departure, and
+same-displacement-candle BOS/CHoCH. Required FVG mode freezes the d-time candidate
+history and waits only for the exact matching C2=d FVG at d+1. If it is missing,
+there is no OB. Future structure cannot rescue absent structure on d, and future
+sweeps/FVGs never enrich an already observable default-mode record.
+
+Tests explicitly distinguish the older candidate coordinate from the later
+publication cutoff, and compare every prefix, changed/appended future suffixes,
+batch/stream/chunk replay, immutable evidence, configuration identity, and source
+hashes. All state changes occur after a successful update; failed input does not
+advance a private pending confirmation. See
+[Order Block methodology](order-block-methodology.md) for exact causal rules.
+
 ## What this guarantee does not mean
 
 - Candle opening timestamps are identifiers, **not** claims that a close-based
@@ -163,6 +183,6 @@ scope. Local state changes only after a complete successful update.
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 6 adds FVG creation only. No order/ breaker/ mitigation
-block, premium/discount, OTE, session strategy, signal engine, chart, Telegram,
-halal filter, backtesting, execution, or scoring is implemented.
+All tests are offline. Phase 7 adds Order Block formation only. No breaker/mitigation
+block, zone lifecycle, premium/discount, OTE, session strategy, signals, charts,
+Telegram, halal filter, backtesting, execution, or scoring is implemented.

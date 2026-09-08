@@ -180,8 +180,8 @@ current input frame. `latest` and `processed_count` expose read-only stream stat
 
 No probability, score, trade direction, stop, target, or order data is invented.
 Later consumers can use these typed facts and `provenance.as_reference()` without
-changing the existing producer contracts. Order Blocks and all strategies remain
-deferred until separately approved.
+changing the existing producer contracts. Phase 7 now consumes these unchanged FVG records for
+[Order Block formation](order-block-methodology.md); strategies remain deferred.
 
 ## 7. Precision, identity, and provenance
 
@@ -267,4 +267,6 @@ credentials, live trading, futures, leverage, backtesting, blocks, premium/disco
 OTE, session strategy, or multi-timeframe signal engine. The future quality policy
 remains documentation only: scale 0–100, default threshold 75, zero signals valid,
 and no signal quotas.
-**Stop after Phase 6. Phase 7 — Order Blocks requires explicit approval.**
+Phase 7 adds [Order Block formation](order-block-methodology.md) without changing
+any FVG definition above.
+**Stop after Phase 7. Phase 8 — Premium/Discount / PD Arrays requires explicit approval.**

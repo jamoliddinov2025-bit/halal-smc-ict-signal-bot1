@@ -154,5 +154,6 @@ contract and its limits. Phase 4 adds a separate [liquidity/sweep layer](liquidi
 without changing these structure definitions. Phase 5 adds a separate
 [displacement consumer](displacement-methodology.md), followed by Phase 6
 [FVG creation](fvg-methodology.md).
-Order blocks, premium/discount, signals, charts, Telegram, halal filtering, and
-scoring remain unimplemented. Phase 7 / Order Blocks requires explicit approval.
+Phase 7 consumes this unchanged context for [Order Block formation](order-block-methodology.md).
+Premium/discount, signals, charts, Telegram, halal filtering, and scoring remain
+unimplemented. Phase 8 / Premium-Discount / PD Arrays requires explicit approval.

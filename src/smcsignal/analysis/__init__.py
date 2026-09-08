@@ -1,4 +1,4 @@
-"""Public analysis API through Phase 6: structure, liquidity, displacement, and FVGs."""
+"""Public analysis API through Phase 7: existing evidence and Order Block formation."""
 
 from smcsignal.analysis.config import AnalysisConfig, load_analysis_config
 from smcsignal.analysis.displacement import (
@@ -48,6 +48,18 @@ from smcsignal.analysis.models import (
     TrendDirection,
     TrendState,
 )
+from smcsignal.analysis.order_blocks import (
+    CandidateSelection,
+    CandleClassification,
+    OrderBlockAnalyzer,
+    OrderBlockConfig,
+    OrderBlockEvent,
+    OrderBlockSnapshot,
+    StructureRequirement,
+    ZoneBasis,
+    analyze_order_blocks,
+    load_order_block_config,
+)
 from smcsignal.analysis.provenance import (
     CandleReference,
     EvidenceProvenance,
@@ -60,6 +72,16 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "CandleClassification",
+    "CandidateSelection",
+    "OrderBlockAnalyzer",
+    "OrderBlockConfig",
+    "OrderBlockEvent",
+    "OrderBlockSnapshot",
+    "StructureRequirement",
+    "ZoneBasis",
+    "analyze_order_blocks",
+    "load_order_block_config",
     "FVGAnalyzer",
     "FVGConfig",
     "FVGEvent",

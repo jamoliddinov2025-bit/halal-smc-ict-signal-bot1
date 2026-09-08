@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 6 — strict three-candle FVG creation, retaining all prior analysis layers**.
+Current scope: **Phase 7 — confirmed Order Block formation, retaining all prior analysis layers**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -15,11 +15,13 @@ Current scope: **Phase 6 — strict three-candle FVG creation, retaining all pri
   boundaries, optional sweep context, availability, deterministic evidence, and limits.
 - [FVG methodology](fvg-methodology.md): strict geometry/minimums, C2 displacement/sweep
   context, creation timing, immutable evidence, and no lifecycle/strategy assumptions.
+- [Order Block methodology](order-block-methodology.md): candidate selection, exact zones,
+  mandatory displacement, structure/FVG choices, immutable timing, and provenance.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
-  now used by actual liquidity/sweep producers; scoring remains deferred beyond Phase 6.
+  now used by actual liquidity/sweep producers; scoring remains deferred to Phase 11.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
-No order/ breaker/ mitigation blocks,
+No breaker/ mitigation blocks,
 premium/discount, OTE, session strategy, signals, charts, Telegram, halal filter, or scoring is implemented.
-Phase 7 — Order Blocks requires explicit approval.
+Phase 8 — Premium/Discount / PD Arrays requires explicit approval.

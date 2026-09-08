@@ -1,4 +1,4 @@
-# Architecture — Phase 6
+# Architecture — Phase 7
 
 ## Layers and explicit I/O
 
@@ -195,16 +195,36 @@ active-zone registry, mitigation, entry, or other trading behavior is introduced
 All distinct qualifying windows are retained, including nested/opposing zones.
 See [FVG methodology](fvg-methodology.md) for complete definitions and limits.
 
+## Phase 7 Order Block formation consumer
+
+`analysis/order_blocks/` consumes existing `FVGSnapshot` frames, preserving the
+original Phase 5 displacement and Phase 3 structure objects rather than rerunning
+any detector. Its modules separate configuration, factual selection/calculation,
+immutable models, evidence/identity integration, stream orchestration, and exports.
+
+The default chain is: own-candle candidate facts → matching displacement with a
+strict close beyond the selected zone → matching BOS/CHoCH on that displacement
+candle → published OB. Optional `require_fvg` freezes the d-time search history and
+waits only for the exact same-direction C2=d FVG at d+1 before publishing. A failed
+wait creates no OB; it never starts lifecycle tracking or changes an old record.
+
+An event retains the full bounded candidate window, selected raw candle, exact
+zone, displacement, original structure event/context reference, inherited sweep
+group, optional FVG, and separate candidate/confirmation/availability timestamps.
+The current upstream prefix and approved canonical/provenance machinery are reused.
+No standalone structure IDs, score values, entries, or mutable latest-zone references
+are fabricated. See [Order Block methodology](order-block-methodology.md).
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 6 implements none of:
-order/ breaker/ mitigation blocks, premium/discount, OTE, session strategy, a signal
+Phase 7 implements none of:
+breaker/ mitigation blocks, premium/discount, OTE, session strategy, a signal
 engine, BUY/SELL signals, charts, Telegram, a halal filter, or scoring.
 There are also no orders, authenticated account access, or trading-performance
 claims. “Halal” remains a design goal, not certification.
 
-Stop after Phase 6. Phase 7 — Order Blocks requires explicit approval.
+Stop after Phase 7. Phase 8 — Premium/Discount / PD Arrays requires explicit approval.

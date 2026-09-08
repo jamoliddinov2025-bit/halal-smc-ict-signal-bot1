@@ -1,12 +1,13 @@
-# Configuration — market data and analysis through Phase 6
+# Configuration — market data and analysis through Phase 7
 
-Five explicit loaders consume separate tables:
+Six explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
 - `smcsignal.analysis.load_liquidity_config(path)` reads only `[liquidity]`.
 - `smcsignal.analysis.load_displacement_config(path)` reads only `[displacement]`.
 - `smcsignal.analysis.load_fvg_config(path)` reads only `[fvg]`.
+- `smcsignal.analysis.load_order_block_config(path)` reads only `[order_blocks]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -28,6 +29,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 
 - `fvg.example.toml`: twenty synthetic candles with hand-computed bullish/bearish
   FVG creation and actual middle-candle displacement references.
+
+- `order-block.example.toml`: 24 synthetic candles, compact three-candle fractals,
+  default displacement ATR(14), and default confirmed OB formation.
 
 ## Market data settings (unchanged)
 
@@ -142,6 +146,32 @@ actual C2 displacement even if opposing. True requires an already-produced
 Sweep context is inherited from C2's existing frame and configuration, not selected
 again using C3. No lifecycle, scores, signal threshold, quotas, or strategies are
 configurable. See [FVG methodology](../docs/fvg-methodology.md).
+
+## Order Block settings (Phase 7)
+
+```toml
+[order_blocks]
+max_candidate_lookback = 10
+candidate_selection = "nearest"
+zone_basis = "full_range"
+allow_doji = false
+structure_requirement = "bos_or_choch"
+require_fvg = false
+```
+
+Exactly six keys are required. Lookback is 1–1000 observed bars. Selection is
+`nearest` or `earliest`; one candidate is selected, never an implicit cluster/all
+mode. Zone is `full_range` or `body`. Doji override and FVG requirement are strict
+booleans. Structure is `bos_or_choch`, `bos`, `choch`, or `displacement_only`.
+Direct construction uses the exported typed enums and frozen `OrderBlockConfig`.
+
+Displacement is always mandatory and must match direction and close strictly
+beyond the chosen zone. Structure, when required, must be on the displacement's
+own candle. Requiring FVG delays publication only to the next observed candle with
+an exact matching C2 displacement reference; it never backfills or changes the
+candidate selection at C3. No mitigation, lifecycle, score, quantity target, entry,
+or execution switch exists. Price units are inherited from upstream frames.
+See [Order Block methodology](../docs/order-block-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

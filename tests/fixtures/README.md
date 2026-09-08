@@ -29,3 +29,10 @@ bullish FVG at index 16 with boundaries [101, 104] and a bearish FVG at index 19
 with boundaries [98, 106]. Their actual C2 displacement events are at indices 15
 and 18. This demonstrates formation evidence only, not fills, trade entries,
 resting orders, market returns, eligibility, or live exchange availability.
+
+`order_blocks.csv` contains twenty-four **synthetic** candles. With the example's
+three-candle fractals, unchanged default displacement thresholds/ATR(14), and
+default OB settings, candidate 18 is confirmed bullish by displacement/BOS at 20;
+candidate 21 is confirmed bearish by displacement/CHoCH at 22. Requiring the exact
+next-candle FVG delays publication to 21 and 23 respectively. This is formation
+verification only, not exchange observations, entries, fills, or performance data.

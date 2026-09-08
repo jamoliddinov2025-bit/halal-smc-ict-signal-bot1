@@ -1,18 +1,16 @@
-# Explicit, read-only public Spot data. No API key or account access is required.
-# Loading/constructing a provider does not make a request; fetch_ohlcv() does.
-# Do not add csv_path or credentials to this source configuration.
-
+# Phase 7: synthetic formation evidence only. No signals, scores, or execution.
 [market_data]
 symbol = "BTCUSDT"
 timeframe = "15m"
-data_source = "binance_public"
+data_source = "csv"
 history_limit = 500
+csv_path = "../tests/fixtures/order_blocks.csv"
 missing_value_policy = "error"
 timeout_seconds = 10.0
 
 [analysis]
-# Total window of five candles: two left + pivot + two right.
-fractal_length = 5
+# Compact delayed fractals for the hand-audited structure example.
+fractal_length = 3
 
 [liquidity]
 price_unit = "USDT"

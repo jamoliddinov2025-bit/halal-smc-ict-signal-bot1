@@ -78,7 +78,7 @@ transport responses and clocks; no live requests, exchange credentials, or exter
 service availability are part of the test results. Fixtures are labeled synthetic.
 
 They do **not** validate a trading strategy, financial performance, or religious
-compliance; those features and assessments do not exist in Phase 6.
+compliance; those features and assessments do not exist in Phase 7.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -143,6 +143,21 @@ context, precision, source continuity, immutable JSON evidence, causal identity,
 full-prefix/future-price invariance, and CSV/mocked-Binance replay. There is no fill,
 entry, lifecycle, strategy, performance test, or scoring implementation.
 
+## Phase 7 tests and example
+
+```bash
+python -m pytest tests/order_blocks
+python -m pytest --collect-only -q tests/order_blocks
+```
+
+The synthetic `config/order-block.example.toml` example must create candidate 18's
+bullish block at displacement/BOS 20 and candidate 21's bearish block at
+displacement/CHoCH 22. Required-FVG mode publishes those candidates at 21/23,
+respectively, with no earlier OB output. Tests cover selection/lookback, exact
+zone and doji behavior, all confirmation modes, future-evidence exclusion,
+immutable provenance, every-prefix equality, chunking, and provider integration.
+This is not a strategy, performance test, or lifecycle/entry implementation.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -156,6 +171,8 @@ identity, and public liquidity/provenance imports. Then feed the default Phase 5
 fixture through the installed pipeline and verify displacement at 15/16, raw
 serialization, and every-prefix equivalence. Also verify Phase 6 creation at 16/19
 from the installed wheel, matching stream/batch records and prefix identities.
+Then verify Phase 7 default and required-FVG publications, full pipeline reuse,
+raw serialization, and prefix identity in the installed wheel.
 Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
@@ -167,4 +184,4 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 6. Do not implement Phase 7 / Order Blocks without explicit approval.
+the designated working branch. Stop after Phase 7. Do not implement Phase 8 / Premium-Discount / PD Arrays without explicit approval.
