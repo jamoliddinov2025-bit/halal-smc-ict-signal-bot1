@@ -1,4 +1,4 @@
-# Architecture — Phase 11
+# Architecture — Phase 12
 
 ## Layers and explicit I/O
 
@@ -307,16 +307,32 @@ construction succeed. The source-prefix hash and canonical factory are reused. S
 [Mitigation methodology](mitigation-block-methodology.md) for the precise
 strict-v1 contract, configuration, causal rules, and limitations.
 
+## Phase 12 Optimal Trade Entry consumer
+
+`analysis/ote/` consumes existing `PDSnapshot` frames and the current Phase 8
+`DealingRange`. It does not rerun or modify earlier detectors. The zone is exact
+Decimal 0.62–0.79 retracement geometry of that range. A completed close is
+classified only when the range was known before the bar opened. Missing or
+not-yet-known ranges yield `INSUFFICIENT_CONTEXT` without falling back to an older
+pair.
+
+`OTEZone`, `OTEObservation`, and `OTESnapshot` retain the original range object and
+ID, ordered bounds, close classification, and separate zone-creation versus
+observation times. State commits only after all checks and construction succeed.
+The source-prefix hash and canonical factory are reused. See
+[OTE methodology](ote-methodology.md) for geometry, timing, multiple-range policy,
+and limitations.
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 10 implements none of:
-Mitigation Blocks, OTE, session strategy, a signal
+Phase 12 implements none of:
+session strategy, a signal
 engine, BUY/SELL signals, charts, Telegram, a halal filter, or scoring.
 There are also no orders, authenticated account access, or trading-performance
 claims. “Halal” remains a design goal, not certification.
 
-Stop after Phase 10. Phase 11 — Mitigation Blocks requires explicit approval.
+Stop after Phase 12. Phase 13 — Multi-Timeframe Confluence requires explicit approval.

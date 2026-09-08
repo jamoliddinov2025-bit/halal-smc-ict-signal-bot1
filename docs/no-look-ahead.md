@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 11
+# No-look-ahead guarantees — Phases 3 through 12
 
 ## Contract
 
@@ -231,6 +231,20 @@ immutability tests cover first interactions and post-Breaker rejections.
 See [Mitigation methodology](mitigation-block-methodology.md) for exact rules
 and limits.
 
+## Phase 12 Optimal Trade Entry
+
+The OTE consumer reads the current Phase 8 dealing range from existing PD frames.
+A zone is created when that range is published. A close is classified against it
+only if the range was known before the classified candle opened. The confirmation
+candle of a new range cannot use that future zone. Missing or not-yet-known ranges
+yield insufficient context rather than an older-range fallback.
+
+Exact Decimal 0.62/0.79 geometry uses existing helpers. Later ranges create new
+zone IDs and never rewrite earlier observations. Prefix, future-suffix,
+batch/stream/chunk, identity, and original object immutability tests cover all
+four classification labels. See [OTE methodology](ote-methodology.md) for exact
+rules and limits.
+
 ## What this guarantee does not mean
 
 - Candle opening timestamps are identifiers, **not** claims that a close-based
@@ -248,6 +262,6 @@ and limits.
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 11 adds Mitigation first-interaction evidence only. No
-OB/FVG lifecycle, OTE, session strategy, signals, risk management,
+All tests are offline. Phase 12 adds OTE location context only. No
+OB/FVG lifecycle, session strategy, signals, risk management,
 position sizing, Telegram, halal filter, backtesting, execution, or scoring is implemented.

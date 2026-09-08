@@ -78,7 +78,7 @@ transport responses and clocks; no live requests, exchange credentials, or exter
 service availability are part of the test results. Fixtures are labeled synthetic.
 
 They do **not** validate a trading strategy, financial performance, or religious
-compliance; those features and assessments do not exist in Phase 11.
+compliance; those features and assessments do not exist in Phase 12.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -216,6 +216,21 @@ immutability, post-Breaker rejection, future-data invariance, frozen evidence,
 identity, and provider integration. No entry, retest, trade-management, performance,
 or backtesting engine is introduced.
 
+## Phase 12 OTE tests and example
+
+```bash
+python -m pytest tests/ote
+python -m pytest --collect-only -q tests/ote
+```
+
+`config/ote.example.toml` produces insufficient context through the range-creating
+candle at 4, then inside / below / above / exact-boundary closes against bullish
+[15.72, 21.16]. Tests include bullish/bearish formulas, 0.62 versus 0.618,
+inclusive boundaries, wick-versus-close basis, before-open timing, delayed
+availability, no older-range fallback, independent successive zones, unchanged
+upstream IDs, every-prefix identity, future invariance, and provider integration.
+No entry, stop, target, score, or backtesting engine is introduced.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -239,6 +254,9 @@ source-OB identity, prior/publication timestamps, serialization, both directions
 and prefix/batch/stream equivalence through the installed wheel. For Phase 11 verify
 original-zone Mitigations, source-OB identity, interaction geometry, both directions,
 Breaker policy, and prefix/batch/stream equivalence through the installed wheel.
+For Phase 12 verify OTE classifications, exact 0.62/0.79 bounds, before-open
+timing, source-range identity, serialization, both directions, and
+prefix/batch/stream equivalence through the installed wheel.
 Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
@@ -250,4 +268,4 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 11. Do not implement Phase 12 / OTE without explicit approval.
+the designated working branch. Stop after Phase 12. Do not implement Phase 13 / Multi-Timeframe Confluence without explicit approval.

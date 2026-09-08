@@ -1,11 +1,12 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 11 — deterministic, provenance-backed Mitigation Block first-interaction evidence.**
+**Status: Phase 12 — deterministic, provenance-backed Optimal Trade Entry location context.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
-per-candle structure, liquidity, displacement, FVG, OB, PD, MSS, Breaker, and Mitigation evidence snapshots. It does **not** generate trading signals,
+per-candle structure, liquidity, displacement, FVG, OB, PD, MSS, Breaker,
+Mitigation, and OTE evidence snapshots. It does **not** generate trading signals,
 execute orders, or make asset-eligibility decisions.
 
 ## Install and verify
@@ -22,7 +23,82 @@ python -m pytest
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-## Phase 11 offline Mitigation example
+## Phase 12 offline OTE example
+
+The included 10-candle dataset is **synthetic**, not exchange observations or returns:
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    analyze_liquidity,
+    analyze_displacement,
+    analyze_fvg,
+    analyze_order_blocks,
+    analyze_pd,
+    analyze_ote,
+    load_analysis_config,
+    load_liquidity_config,
+    load_displacement_config,
+    load_fvg_config,
+    load_order_block_config,
+    load_pd_config,
+    load_ote_config,
+)
+from smcsignal.data import create_data_provider, load_data_config
+
+path = "config/ote.example.toml"
+data, liquidity = load_data_config(path), load_liquidity_config(path)
+series = SeriesProvenance(
+    data.symbol,
+    data.timeframe,
+    "synthetic_spot",
+    data.data_source,
+    "ote-demo:v1:from-first-row:missing=error",
+)
+a = analyze_liquidity(
+    create_data_provider(data).fetch_ohlcv().candles,
+    series=series,
+    config=liquidity,
+    analysis_config=load_analysis_config(path),
+)
+b = analyze_displacement(a, load_displacement_config(path), price_unit=liquidity.price_unit)
+c = analyze_order_blocks(analyze_fvg(b, load_fvg_config(path)), load_order_block_config(path))
+frames = analyze_ote(analyze_pd(c, load_pd_config(path)), load_ote_config(path))
+for frame in frames:
+    print(frame.upstream.observation.reference.candle_index, frame.classification.value)
+```
+
+```text
+0 INSUFFICIENT_CONTEXT
+1 INSUFFICIENT_CONTEXT
+2 INSUFFICIENT_CONTEXT
+3 INSUFFICIENT_CONTEXT
+4 INSUFFICIENT_CONTEXT
+5 INSIDE_OTE
+6 BELOW_OTE
+7 ABOVE_OTE
+8 INSIDE_OTE
+9 INSIDE_OTE
+```
+
+`OTEAnalyzer().update(pd_frame)` is the streaming equivalent. It consumes the
+actual existing Phase 8 output without rerunning prior engines. Strict v1 maps the
+current Phase 8 dealing range to an inclusive 0.62–0.79 retracement interval using
+exact Decimal arithmetic. Bullish ranges measure down from the high; bearish ranges
+measure up from the low. The stored interval is ordered so the lower bound is not
+above the upper bound.
+
+A close is classified only against a range that was already known before that bar
+opened. The candle that confirms a new range cannot use that future information.
+If Phase 8 has no valid current range, the label is `INSUFFICIENT_CONTEXT`; there
+is no silent older-range fallback. Exact 62% and 79% closes are inside. Wicks and
+opens are not the evaluation basis.
+
+This is location context only: no entries, stops, targets, scores, or trading. See
+[OTE methodology](docs/ote-methodology.md) for exact geometry, timing, multiple-range
+policy, and limits.
+
+## Existing Phase 11 offline Mitigation example
 
 The included 25-candle dataset is **synthetic**, not exchange observations or returns:
 
@@ -714,6 +790,8 @@ Live Binance availability is not asserted by the offline tests.
 - `[mss]`: explicit structure/displacement requirement flags, both mandatory true.
 - `[breaker_blocks]`: strict displacement/MSS requirements, close-through invalidation, original OB zone.
 - `[mitigation_blocks]`: range-intersection geometry, first interaction only, ignore-after-breaker.
+- `[ote]`: quoted 0.62/0.79 retracements, inclusive boundaries, close evaluation.
+- `config/ote.example.toml`: hand-audited Phase 12 OTE location example.
 - `config/mitigation-block.example.toml`: hand-audited Phase 11 first-interaction evidence.
 - `config/breaker-block.example.toml`: hand-audited Phase 10 opposite-zone formations.
 - `config/mss.example.toml`: default-threshold synthetic MSS and relationship example.
@@ -740,6 +818,7 @@ src/smcsignal/
 │   ├── __init__.py            # Public API
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
+│   ├── ote/                  # Phase 12 OTE location context from existing dealing ranges
 │   ├── mitigation_blocks/    # Phase 11 first-interaction mitigation evidence only
 │   ├── breaker_blocks/       # Phase 10 first-violation formation evidence only
 │   ├── mss/                  # Phase 9 strict opposing-break/displacement evidence
@@ -764,6 +843,7 @@ tests/order_blocks/           # Selection, confirmations, timing, provenance, an
 tests/premium_discount/       # Range/band boundaries, sidecars, provenance, and causal replay
 tests/mss/                    # MSS definitions, relationships, immutable evidence, causal replay
 tests/breaker_blocks/         # Strict conversions, rejection facts, exact timing, causal replay
+tests/ote/                    # Retracement geometry, close classification, timing, causal replay
 tests/mitigation_blocks/      # First-interaction geometry, Breaker policy, exact timing, causal replay
 tests/fixtures/               # Tiny, explicitly synthetic CSV fixtures
 docs/                         # Architecture and methodologies
@@ -785,6 +865,7 @@ python -m pytest tests/premium_discount
 python -m pytest tests/mss
 python -m pytest tests/breaker_blocks
 python -m pytest tests/mitigation_blocks
+python -m pytest tests/ote
 python -m pip check
 python -m build
 ```
@@ -798,7 +879,7 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 11
+## Evidence provenance through Phase 12
 
 `LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
@@ -809,7 +890,7 @@ and exact snapshot dependencies. Older pool versions are never edited in place.
 The [evidence contract](docs/evidence-provenance-contract.md) also preserves the
 **deferred** scoring policy: future configurable threshold default 75, quality over
 quantity, valid zero-signal outcomes, and no signal-count targets. No scoring or
-active publication-threshold configuration is implemented in Phase 11.
+active publication-threshold configuration is implemented in Phase 12.
 
 ## Phase boundary
 

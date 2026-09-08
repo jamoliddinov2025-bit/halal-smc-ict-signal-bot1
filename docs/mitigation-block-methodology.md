@@ -282,7 +282,8 @@ revisions, availability annotations and shifted-history limitations remain in fo
 No entries, stops, targets, risk, position sizing, trade management, performance
 tracking, signals, scoring, probabilities, Telegram, halal filtering, scraping,
 credentials, live trading, futures, leverage, backtesting, monthly statistics,
-OTE, new multi-timeframe processing, AI optimization, or strategy ranking is
+new multi-timeframe processing, AI optimization, or strategy ranking is
 introduced. Future quality policy remains documentation only: scale 0–100, default
 publication threshold 75, zero signals valid, and no quotas.
-**Stop after Phase 11. Phase 12 — OTE requires explicit approval.**
+Phase 12 now consumes unchanged Phase 8 dealing ranges in a separate
+[OTE evidence engine](ote-methodology.md).

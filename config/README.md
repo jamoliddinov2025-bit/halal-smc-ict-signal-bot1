@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 11
+# Configuration — market data and analysis through Phase 12
 
-Ten explicit loaders consume separate tables:
+Eleven explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -12,6 +12,7 @@ Ten explicit loaders consume separate tables:
 - `smcsignal.analysis.load_mss_config(path)` reads only `[mss]`.
 - `smcsignal.analysis.load_breaker_block_config(path)` reads only `[breaker_blocks]`.
 - `smcsignal.analysis.load_mitigation_block_config(path)` reads only `[mitigation_blocks]`.
+- `smcsignal.analysis.load_ote_config(path)` reads only `[ote]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -49,6 +50,10 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 - `mitigation-block.example.toml`: 25 synthetic observations with first interior
   overlaps of actual earlier OBs, including a later Breaker that does not rewrite
   an already-published mitigation.
+
+- `ote.example.toml`: ten synthetic candles illustrating a confirmed bullish
+  dealing range and all four OTE close classifications, including exact 0.62/0.79
+  boundaries.
 
 ## Market data settings (unchanged)
 
@@ -273,6 +278,28 @@ are retained; there is no nearest-only ranking or silent history expiry/cap. A
 confirmed Breaker retires remaining first-mitigation eligibility; already-published
 mitigations stay immutable. See
 [Mitigation methodology](../docs/mitigation-block-methodology.md).
+
+## Optimal Trade Entry settings (Phase 12)
+
+```toml
+[ote]
+lower_retracement = "0.62"
+upper_retracement = "0.79"
+boundary_policy = "inclusive"
+price_basis = "close"
+```
+
+Exactly four keys are required. Retracements are quoted finite Decimals satisfying
+`0 < lower_retracement < upper_retracement < 1`. Direct Python construction uses
+finite `Decimal` values; unquoted TOML numbers are rejected. The engine uses those
+exact ratios and does not substitute 0.618/0.786. `boundary_policy` accepts only
+`inclusive`. `price_basis` accepts only `close`.
+
+`OTEAnalyzer` consumes existing Phase 8 frames and inherits series/units. A close
+is classified only against the current dealing range if that range was known before
+the bar opened. Missing or not-yet-known ranges yield `INSUFFICIENT_CONTEXT` with
+no older-range fallback. No score, entry, stop, target, or multi-timeframe setting
+is exposed. See [OTE methodology](../docs/ote-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

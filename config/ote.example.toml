@@ -1,10 +1,10 @@
-# Phase 8: seven synthetic observations; no signals, scores, or execution.
+# Phase 12: synthetic OTE location context, never entries, scores, or execution.
 [market_data]
 symbol = "BTCUSDT"
 timeframe = "15m"
 data_source = "csv"
 history_limit = 500
-csv_path = "../tests/fixtures/premium_discount.csv"
+csv_path = "../tests/fixtures/ote.csv"
 missing_value_policy = "error"
 timeout_seconds = 10.0
 
@@ -37,7 +37,6 @@ structure_requirement = "bos_or_choch"
 require_fvg = false
 
 [premium_discount]
-# Half-width as a fraction of the confirmed range; zero is the exact midpoint.
 equilibrium_half_width_fraction = "0"
 
 [ote]

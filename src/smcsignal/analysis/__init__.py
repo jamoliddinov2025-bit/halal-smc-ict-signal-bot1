@@ -1,4 +1,4 @@
-"""Public analysis API through Phase 11: existing evidence and first-interaction mitigation."""
+"""Public analysis API through Phase 12: existing evidence and OTE location context."""
 
 from smcsignal.analysis.breaker_blocks import (
     BreakerBlock,
@@ -94,6 +94,19 @@ from smcsignal.analysis.order_blocks import (
     analyze_order_blocks,
     load_order_block_config,
 )
+from smcsignal.analysis.ote import (
+    BoundaryPolicy,
+    OTEAnalyzer,
+    OTEClassification,
+    OTEConfig,
+    OTEDirection,
+    OTEObservation,
+    OTESnapshot,
+    OTEZone,
+    PriceBasis,
+    analyze_ote,
+    load_ote_config,
+)
 from smcsignal.analysis.premium_discount import (
     DealingRange,
     Equilibrium,
@@ -120,6 +133,17 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "BoundaryPolicy",
+    "OTEAnalyzer",
+    "OTEClassification",
+    "OTEConfig",
+    "OTEDirection",
+    "OTEObservation",
+    "OTESnapshot",
+    "OTEZone",
+    "PriceBasis",
+    "analyze_ote",
+    "load_ote_config",
     "InteractionBasis",
     "MitigationBlock",
     "MitigationBlockAnalyzer",

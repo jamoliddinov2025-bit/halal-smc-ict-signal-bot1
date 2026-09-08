@@ -56,3 +56,9 @@ zone_basis = "original_order_block"
 interaction_basis = "range_intersection"
 first_interaction_only = true
 ignore_after_breaker = true
+
+[ote]
+lower_retracement = "0.62"
+upper_retracement = "0.79"
+boundary_policy = "inclusive"
+price_basis = "close"
