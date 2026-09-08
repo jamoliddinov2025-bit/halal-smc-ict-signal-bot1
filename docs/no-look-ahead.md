@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 7
+# No-look-ahead guarantees — Phases 3 through 8
 
 ## Contract
 
@@ -166,6 +166,22 @@ hashes. All state changes occur after a successful update; failed input does not
 advance a private pending confirmation. See
 [Order Block methodology](order-block-methodology.md) for exact causal rules.
 
+## Phase 8 Premium/Discount
+
+PD consumes already-confirmed swing evidence in the existing Phase 7 stream. A
+range can first be used at its latest endpoint's actual confirmation cutoff. At
+closed candle t, only endpoints and context known by t participate; a same-pivot
+or nonpositive newest pair yields insufficient context rather than a fitted older
+range. Exact midpoint/band arithmetic uses existing Decimal helpers.
+
+Every close is classified, and newly published upstream arrays receive immutable
+publication-time sidecars. Original objects and IDs are preserved. A later range
+may change later classifications, but never an earlier range, frame, or sidecar.
+Tests compare all prefixes, future-price replacement/appending, batch/stream/chunk
+replay, stable IDs/hashes, complete provenance graphs, and original serialized
+objects. HTF references are data-only hooks; no cross-timeframe joining occurs.
+See [PD methodology](premium-discount-methodology.md) for exact rules and limits.
+
 ## What this guarantee does not mean
 
 - Candle opening timestamps are identifiers, **not** claims that a close-based
@@ -183,6 +199,6 @@ advance a private pending confirmation. See
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 7 adds Order Block formation only. No breaker/mitigation
-block, zone lifecycle, premium/discount, OTE, session strategy, signals, charts,
-Telegram, halal filter, backtesting, execution, or scoring is implemented.
+All tests are offline. Phase 8 adds Premium/Discount context only. No breaker/
+mitigation block, OB/FVG lifecycle, OTE, session strategy, signals, risk management,
+position sizing, Telegram, halal filter, backtesting, execution, or scoring is implemented.

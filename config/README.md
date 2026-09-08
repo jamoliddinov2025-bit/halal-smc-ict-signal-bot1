@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 7
+# Configuration — market data and analysis through Phase 8
 
-Six explicit loaders consume separate tables:
+Seven explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -8,6 +8,7 @@ Six explicit loaders consume separate tables:
 - `smcsignal.analysis.load_displacement_config(path)` reads only `[displacement]`.
 - `smcsignal.analysis.load_fvg_config(path)` reads only `[fvg]`.
 - `smcsignal.analysis.load_order_block_config(path)` reads only `[order_blocks]`.
+- `smcsignal.analysis.load_pd_config(path)` reads only `[premium_discount]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -32,6 +33,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 
 - `order-block.example.toml`: 24 synthetic candles, compact three-candle fractals,
   default displacement ATR(14), and default confirmed OB formation.
+
+- `premium-discount.example.toml`: seven synthetic candles illustrating confirmed
+  bullish/bearish ranges and all five PD classifications.
 
 ## Market data settings (unchanged)
 
@@ -172,6 +176,25 @@ an exact matching C2 displacement reference; it never backfills or changes the
 candidate selection at C3. No mitigation, lifecycle, score, quantity target, entry,
 or execution switch exists. Price units are inherited from upstream frames.
 See [Order Block methodology](../docs/order-block-methodology.md).
+
+## Premium/Discount settings (Phase 8)
+
+```toml
+[premium_discount]
+equilibrium_half_width_fraction = "0"
+```
+
+The table requires exactly this one key. It is a quoted finite Decimal in [0,0.5],
+representing the half-width of the equilibrium band as a fraction of the range
+span. Zero means only the exact midpoint; 0.05 means 45%–55% of the range.
+Range and equilibrium boundaries are inclusive. Prices outside the selected range
+are classified separately, never as a clipped premium/discount value.
+
+`PDAnalyzer` consumes the existing Phase 7 stream and inherits its series/units.
+There is no independent swing detector, older-range fallback, price-point fitting,
+HTF execution flag, score threshold, or strategy setting. Sidecars preserve the
+exact original evidence IDs. See
+[Premium/Discount methodology](../docs/premium-discount-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

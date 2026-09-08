@@ -173,4 +173,5 @@ Phase 4 adds [liquidity pools and sweeps](liquidity-sweep-methodology.md) on the
 same canonical observations. Phase 5 adds [displacement](displacement-methodology.md)
 without duplicating these providers. Phase 6 adds [FVG creation](fvg-methodology.md).
 Phase 7 consumes the same observations for [Order Block formation](order-block-methodology.md).
-No OB/FVG lifecycle, premium/discount, signals, charts, Telegram, halal filter, or scoring is added.
+Phase 8 adds [PD context](premium-discount-methodology.md) without changing these providers.
+No OB/FVG lifecycle, signals, charts, Telegram, halal filter, or scoring is added.

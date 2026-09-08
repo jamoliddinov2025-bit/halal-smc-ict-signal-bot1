@@ -331,4 +331,6 @@ No scores, probabilities, BUY/SELL signals, Telegram, halal filtering, CryptoIsl
 scraping, orders, credentials, live trading, futures, leverage, backtesting,
 performance analytics, Breaker/Mitigation Blocks, Premium/Discount, OTE, session
 strategy, or multi-timeframe signal engine is introduced.
-**Stop after Phase 7. Phase 8 — Premium/Discount / PD Arrays requires explicit approval.**
+Phase 8 now adds separate [PD context sidecars](premium-discount-methodology.md)
+without changing these earlier formation rules or evidence IDs.
+**Stop after Phase 8. Phase 9 requires explicit approval.**

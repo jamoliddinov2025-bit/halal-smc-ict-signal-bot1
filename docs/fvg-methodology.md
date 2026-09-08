@@ -269,4 +269,6 @@ remains documentation only: scale 0–100, default threshold 75, zero signals va
 and no signal quotas.
 Phase 7 adds [Order Block formation](order-block-methodology.md) without changing
 any FVG definition above.
-**Stop after Phase 7. Phase 8 — Premium/Discount / PD Arrays requires explicit approval.**
+Phase 8 now adds separate [PD context sidecars](premium-discount-methodology.md)
+without changing these earlier formation rules or evidence IDs.
+**Stop after Phase 8. Phase 9 requires explicit approval.**

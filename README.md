@@ -1,11 +1,11 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 7 — deterministic, provenance-backed Order Block formation analysis.**
+**Status: Phase 8 — deterministic Premium/Discount context and immutable PD array annotations.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
-per-candle structure, liquidity, displacement, FVG, and Order Block formation snapshots. It does **not** generate trading signals,
+per-candle structure, liquidity, displacement, FVG, Order Block, and Premium/Discount snapshots. It does **not** generate trading signals,
 execute orders, or make asset-eligibility decisions.
 
 ## Install and verify
@@ -22,7 +22,77 @@ python -m pytest
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-## Phase 7 offline Order Block example
+## Phase 8 offline Premium/Discount example
+
+The new seven-candle fixture is **synthetic**, not live market data:
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    analyze_liquidity,
+    analyze_displacement,
+    analyze_fvg,
+    analyze_order_blocks,
+    analyze_pd,
+    load_analysis_config,
+    load_liquidity_config,
+    load_displacement_config,
+    load_fvg_config,
+    load_order_block_config,
+    load_pd_config,
+)
+from smcsignal.data import create_data_provider, load_data_config
+
+path = "config/premium-discount.example.toml"
+data, liquidity = load_data_config(path), load_liquidity_config(path)
+series = SeriesProvenance(
+    data.symbol,
+    data.timeframe,
+    "synthetic_spot",
+    data.data_source,
+    "pd-demo:v1:from-first-row:missing=error",
+)
+a = analyze_liquidity(
+    create_data_provider(data).fetch_ohlcv().candles,
+    series=series,
+    config=liquidity,
+    analysis_config=load_analysis_config(path),
+)
+b = analyze_displacement(a, load_displacement_config(path), price_unit=liquidity.price_unit)
+c = analyze_fvg(b, load_fvg_config(path))
+d = analyze_order_blocks(c, load_order_block_config(path))
+frames = analyze_pd(d, load_pd_config(path))
+for frame in frames:
+    print(frame.observation.reference.candle_index, frame.classification.value)
+```
+
+```text
+0 INSUFFICIENT_CONTEXT
+1 INSUFFICIENT_CONTEXT
+2 INSUFFICIENT_CONTEXT
+3 PREMIUM
+4 DISCOUNT
+5 EQUILIBRIUM
+6 OUTSIDE_RANGE
+```
+
+`PDAnalyzer().update(order_block_frame)` is the equivalent streaming API. It
+consumes the original upstream frames once. The latest confirmed high/low pair
+sets a fixed range; pivot order gives bullish/bearish orientation. Same-pivot or
+nonpositive pairs give insufficient context, never an older-range fallback.
+
+Equilibrium is the exact Decimal midpoint. Its default band has zero half-width;
+a configurable range fraction can widen it. Closes outside the range are explicitly
+`OUTSIDE_RANGE`. New liquidity/sweep/displacement/FVG/OB records receive separate
+immutable PD annotations, preserving their original objects and IDs. Zone midpoint
+labels include endpoint labels so they cannot be mistaken for whole-zone placement.
+
+See [Premium/Discount methodology](docs/premium-discount-methodology.md) for exact
+selection, boundaries, publication-time context, provenance, and limitations.
+HTF references are architecture only: no multi-timeframe processing, scoring,
+entries, risk management, or ranking is implemented.
+
+## Existing Phase 7 Order Block example
 
 This example uses 24 **synthetic** candles, not live exchange observations:
 
@@ -423,6 +493,8 @@ Live Binance availability is not asserted by the offline tests.
 - `[displacement]`: explicit ATR/body/range/close/context settings; no scoring settings.
 - `[fvg]`: quoted `min_gap_size` (default zero) and boolean `require_displacement` (default false).
 - `[order_blocks]`: explicit selection/zone/lookback, structure, doji, and FVG-confirmation rules.
+- `[premium_discount]`: quoted `equilibrium_half_width_fraction`, default zero.
+- `config/premium-discount.example.toml`: exact range/equilibrium and all five PD labels.
 - `config/order-block.example.toml`: hand-audited Phase 7 formation example.
 - `config/fvg.example.toml`: complete default Phase 6 geometry/evidence example.
 - `config/displacement.example.toml`: default Phase 5 warm-up and displacement example.
@@ -445,6 +517,7 @@ src/smcsignal/
 │   ├── __init__.py            # Public API
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
+│   ├── premium_discount/     # Phase 8 ranges, exact equilibrium, and immutable sidecars
 │   ├── order_blocks/         # Phase 7 confirmed formation, never lifecycle or entries
 │   ├── fvg/                  # Phase 6 strict three-candle creation evidence
 │   ├── displacement/         # Phase 5 metrics, ATR evidence, and frame-native producer
@@ -462,6 +535,7 @@ tests/liquidity/              # Pools, sweeps, lifecycle, artifacts, and causal 
 tests/displacement/           # ATR, displacement, context, boundaries, and causal replay
 tests/fvg/                    # FVG geometry, relationships, provenance, and causal replay
 tests/order_blocks/           # Selection, confirmations, timing, provenance, and causal replay
+tests/premium_discount/       # Range/band boundaries, sidecars, provenance, and causal replay
 tests/fixtures/               # Tiny, explicitly synthetic CSV fixtures
 docs/                         # Architecture and methodologies
 ```
@@ -478,6 +552,7 @@ python -m pytest tests/liquidity
 python -m pytest tests/displacement
 python -m pytest tests/fvg
 python -m pytest tests/order_blocks
+python -m pytest tests/premium_discount
 python -m pip check
 python -m build
 ```
@@ -491,7 +566,7 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 7
+## Evidence provenance through Phase 8
 
 `LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
@@ -502,11 +577,11 @@ and exact snapshot dependencies. Older pool versions are never edited in place.
 The [evidence contract](docs/evidence-provenance-contract.md) also preserves the
 **deferred** scoring policy: future configurable threshold default 75, quality over
 quantity, valid zero-signal outcomes, and no signal-count targets. No scoring or
-active publication-threshold configuration is implemented in Phase 7.
+active publication-threshold configuration is implemented in Phase 8.
 
 ## Phase boundary
 
-No breaker/ mitigation blocks, premium/discount, OTE,
+No breaker/ mitigation blocks, OTE,
 session strategy, signal engine, BUY/SELL signals, charts, Telegram, halal filter,
 or scoring is implemented.
 There is no authentication, order execution, leverage/margin/shorting, backtesting,
@@ -518,4 +593,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 7. Phase 8 — Premium/Discount / PD Arrays requires explicit approval.**
+**Stop after Phase 8. Phase 9 requires explicit approval.**

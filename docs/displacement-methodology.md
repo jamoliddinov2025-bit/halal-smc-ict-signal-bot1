@@ -303,4 +303,6 @@ Phase 6 now consumes these unchanged frames in a separate
 [FVG creation engine](fvg-methodology.md); no displacement rule above is changed.
 Phase 7 adds [Order Block formation](order-block-methodology.md), consuming the
 exact displacement event without changing its definition.
-**Stop after Phase 7. Phase 8 — Premium/Discount / PD Arrays requires explicit approval.**
+Phase 8 now adds separate [PD context sidecars](premium-discount-methodology.md)
+without changing these earlier formation rules or evidence IDs.
+**Stop after Phase 8. Phase 9 requires explicit approval.**

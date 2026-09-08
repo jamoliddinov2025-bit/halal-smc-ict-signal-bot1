@@ -36,3 +36,9 @@ default OB settings, candidate 18 is confirmed bullish by displacement/BOS at 20
 candidate 21 is confirmed bearish by displacement/CHoCH at 22. Requiring the exact
 next-candle FVG delays publication to 21 and 23 respectively. This is formation
 verification only, not exchange observations, entries, fills, or performance data.
+
+`premium_discount.csv` contains seven **synthetic** observations. With three-candle
+confirmed fractals, the last four snapshots classify closes as PREMIUM, DISCOUNT,
+EQUILIBRIUM, and OUTSIDE_RANGE; the first three lack a confirmed opposing pair.
+Ranges are [11,16] at indices 3–5 and [11,14.5] at 6. These are mathematical software
+checks, not real prices, entries, scores, profitability, or asset eligibility.

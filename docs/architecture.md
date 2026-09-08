@@ -1,4 +1,4 @@
-# Architecture — Phase 7
+# Architecture — Phase 8
 
 ## Layers and explicit I/O
 
@@ -215,16 +215,39 @@ The current upstream prefix and approved canonical/provenance machinery are reus
 No standalone structure IDs, score values, entries, or mutable latest-zone references
 are fabricated. See [Order Block methodology](order-block-methodology.md).
 
+## Phase 8 Premium/Discount consumer
+
+`analysis/premium_discount/` consumes existing `OrderBlockSnapshot` frames without
+rerunning or modifying the Phase 1–7 engines. It selects the latest already-confirmed
+low/high evidence, derives chronological range orientation, and classifies each
+closed candle's close using exact Decimal midpoint/band geometry.
+
+Its modules separate configuration, geometric calculations/classification enums,
+immutable models, provenance/sidecar construction, frame orchestration, and public
+exports. The required `DealingRange`, `Equilibrium`, `PDClassification`, and
+`PDSnapshot` models preserve actual endpoint evidence and causal availability.
+
+`PDArrayContext` annotates newly published pool versions, sweeps, displacement,
+FVGs, and OBs at their publication cutoff without changing their original objects
+or IDs. It retains representative and endpoint classifications. Later ranges never
+rewrite older annotations. Current same-candle confirmations can participate only
+after they are actually available at the close.
+
+`PDContextReference` carries exact range/equilibrium IDs, timeframe/source identity,
+and availability for future HTF consumers. The current evaluator is local-only:
+no range resampling, HTF join, or multi-timeframe execution is implemented.
+See [Premium/Discount methodology](premium-discount-methodology.md) for full rules.
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 7 implements none of:
-breaker/ mitigation blocks, premium/discount, OTE, session strategy, a signal
+Phase 8 implements none of:
+breaker/ mitigation blocks, OTE, session strategy, a signal
 engine, BUY/SELL signals, charts, Telegram, a halal filter, or scoring.
 There are also no orders, authenticated account access, or trading-performance
 claims. “Halal” remains a design goal, not certification.
 
-Stop after Phase 7. Phase 8 — Premium/Discount / PD Arrays requires explicit approval.
+Stop after Phase 8. Phase 9 requires explicit approval.

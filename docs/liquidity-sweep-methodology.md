@@ -224,9 +224,10 @@ No live source availability or actual resting liquidity is asserted by the tests
 Phase 5 adds a separate [displacement consumer](displacement-methodology.md)
 without changing these liquidity/sweep rules. Phase 6 adds a separate
 [FVG consumer](fvg-methodology.md), followed by Phase 7
-[Order Block formation](order-block-methodology.md). OB/FVG lifecycle, premium/discount,
+[Order Block formation](order-block-methodology.md), then Phase 8
+[PD context sidecars](premium-discount-methodology.md). OB/FVG lifecycle,
 signal engines, charts, Telegram, halal filtering, and scoring remain absent.
 The deferred Setup Quality Score policy remains unchanged in the
 [evidence contract](evidence-provenance-contract.md): future threshold default 75,
 quality over quantity, valid zero-signal outcomes, and no signal-count targets.
-**Stop after Phase 7; Phase 8 — Premium/Discount / PD Arrays requires explicit approval.**
+**Stop after Phase 8; Phase 9 requires explicit approval.**

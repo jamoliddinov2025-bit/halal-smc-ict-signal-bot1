@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 7 — confirmed Order Block formation, retaining all prior analysis layers**.
+Current scope: **Phase 8 — confirmed local Premium/Discount ranges and PD array context**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -17,11 +17,12 @@ Current scope: **Phase 7 — confirmed Order Block formation, retaining all prio
   context, creation timing, immutable evidence, and no lifecycle/strategy assumptions.
 - [Order Block methodology](order-block-methodology.md): candidate selection, exact zones,
   mandatory displacement, structure/FVG choices, immutable timing, and provenance.
+- [Premium/Discount methodology](premium-discount-methodology.md): latest confirmed opposing
+  pairs, exact midpoint/bands, categorical close/array context, and immutable sidecars.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; scoring remains deferred to Phase 11.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
-No breaker/ mitigation blocks,
-premium/discount, OTE, session strategy, signals, charts, Telegram, halal filter, or scoring is implemented.
-Phase 8 — Premium/Discount / PD Arrays requires explicit approval.
+No breaker/ mitigation blocks, OTE, session strategy, signals, charts, Telegram, halal filter, or scoring is implemented.
+Phase 9 requires explicit approval.

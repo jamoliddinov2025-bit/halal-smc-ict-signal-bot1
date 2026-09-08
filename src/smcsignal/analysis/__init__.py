@@ -1,4 +1,4 @@
-"""Public analysis API through Phase 7: existing evidence and Order Block formation."""
+"""Public analysis API through Phase 8: existing evidence and immutable PD context."""
 
 from smcsignal.analysis.config import AnalysisConfig, load_analysis_config
 from smcsignal.analysis.displacement import (
@@ -60,6 +60,20 @@ from smcsignal.analysis.order_blocks import (
     analyze_order_blocks,
     load_order_block_config,
 )
+from smcsignal.analysis.premium_discount import (
+    DealingRange,
+    Equilibrium,
+    PDAnalyzer,
+    PDArrayContext,
+    PDArrayKind,
+    PDClassification,
+    PDConfig,
+    PDContextReference,
+    PDSnapshot,
+    RangeStatus,
+    analyze_pd,
+    load_pd_config,
+)
 from smcsignal.analysis.provenance import (
     CandleReference,
     EvidenceProvenance,
@@ -72,6 +86,18 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "DealingRange",
+    "Equilibrium",
+    "PDAnalyzer",
+    "PDArrayContext",
+    "PDArrayKind",
+    "PDClassification",
+    "PDConfig",
+    "PDContextReference",
+    "PDSnapshot",
+    "RangeStatus",
+    "analyze_pd",
+    "load_pd_config",
     "CandleClassification",
     "CandidateSelection",
     "OrderBlockAnalyzer",
