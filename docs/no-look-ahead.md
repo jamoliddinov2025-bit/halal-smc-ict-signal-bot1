@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phase 3
+# No-look-ahead guarantees — Phases 3 and 4
 
 ## Contract
 
@@ -88,15 +88,30 @@ single-pass iterables, independent analyzer instances, CSV replay, and mocked
 Binance normalization. `test_bos.py` checks that same-candle new confirmations or
 trend labels do not retroactively change event classification.
 
-## Future evidence metadata
+## Phase 4 evidence and producer guarantees
 
 The shared [evidence provenance contract](evidence-provenance-contract.md) adds
 explicit closed-bar boundaries and real `available_at` instants. Unlike the
 Phase 3 candle-opening identifiers, those availability instants are appropriate
-for cross-timeframe dependency checks. A future producer must not substitute a
+for cross-timeframe dependency checks. A producer must not substitute a
 Swing's confirming-candle opening timestamp for the instant it became knowable.
 Source/configuration fingerprints and immutable snapshot IDs must be derived
-from the known prefix only. These metadata types add no new detection or scoring.
+from the known prefix only. Phase 4 producers now populate these records; no scoring is added.
+
+For `analyze_liquidity`, every fixed-prefix replay must equal the corresponding
+full-series prefix, including provenance IDs/hashes, pool-member revisions,
+retirements, contexts, and sweep payloads. The same state-transition argument
+applies: each update reads only prior state and the current available observation.
+Newly confirmed pools are not activated before prior-pool breach checks, and a
+sweep target must have been known by the bar open. Pending pivots and failed
+breaches are never later relabeled as historical sweeps.
+
+`tests/liquidity/` verifies every prefix of seeded and hand-computed series, future
+replacement/appending, immutable retained objects, independent prefix hashing,
+resolvable dependency graphs, delayed arrivals, and batch/stream/chunk/CSV/mocked
+Binance equivalence. The [Phase 4 methodology](liquidity-sweep-methodology.md)
+defines the exact rules and historical-availability assumptions. Use identical
+explicit availability annotations when comparing delayed-arrival stream replays.
 
 ## What this guarantee does not mean
 
@@ -115,5 +130,6 @@ from the known prefix only. These metadata types add no new detection or scoring
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 3 stops at confirmed swings, historical trend, BOS,
-and CHoCH. It does not implement any of the excluded Phase 4 features.
+All tests are offline. Phase 4 stops at liquidity pools and sweeps on top of the
+existing structure analysis. It adds no displacement, fair value gaps, order
+blocks, premium/discount, signals, charts, Telegram, halal filter, or scoring.

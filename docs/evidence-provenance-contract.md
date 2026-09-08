@@ -2,11 +2,12 @@
 
 ## Status and scope
 
-This is a **model-only architectural extension**, not approval to start Phase 4.
-The shared provenance records and structural protocol exist in
-`src/smcsignal/analysis/provenance.py`. Liquidity and sweep feature objects and
-engines do not exist yet; the field contracts below are mandatory requirements
-for their implementation when that phase is approved.
+This contract was approved in commit `edda6c0`. The shared records and structural
+protocol in `src/smcsignal/analysis/provenance.py` remain unchanged. After explicit
+Phase 4 approval, actual `LiquidityPool` and `SweepEvent` producers now compose
+this contract. Their implemented payload mapping, lifecycle choices, canonical
+artifacts, and tests are documented in the
+[Phase 4 methodology](liquidity-sweep-methodology.md).
 
 No scoring, weights, normalized quality values, confidence ratings, ranking,
 signal publishing, or active threshold configuration is implemented. Phase 4
@@ -15,7 +16,7 @@ BOS/CHoCH definitions, results, and data-provider behavior remain unchanged.
 
 ## 1. Composition, not feature/scoring coupling
 
-Every future liquidity/sweep record must expose an immutable
+Every liquidity/sweep record must expose an immutable
 `provenance: EvidenceProvenance` property, satisfying `ProvenancedEvidence`, and
 carry a separate typed payload of **raw observed facts**. Other future factor
 records can use the same contract without changing detector APIs into evaluators.
@@ -75,7 +76,7 @@ These are metadata validation rules, not a claim that hand-authored references
 prove unseen source data. Future producer tests must verify causal derivation and
 prefix-stable identities as well as the existing analytical prefix invariance.
 
-## 3. Required future liquidity payload
+## 3. Required liquidity payload
 
 The Phase 4 liquidity object must retain at least:
 
@@ -90,11 +91,12 @@ The Phase 4 liquidity object must retain at least:
 | Lifecycle | Detector-defined candidate/active/consumed/invalidated state, transition evidence, and previous snapshot references when revised. Unknown transitions stay absent. |
 | Context | References to already available trend/structure evidence when used; do not recompute those facts from a later market state. |
 
-No minimum-touch rule, price tolerance, pool detection, expiration rule, or quality
-classification is chosen/implemented by this addendum. Such detector settings
-must later be recorded as raw configuration provenance, not encoded as points.
+Phase 4 now implements singleton pools, equal-level membership from two confirmed
+swings, fixed-anchor geometric tolerance, and first-breach retirement without
+expiry. Settings are retained as raw configuration provenance, not points or
+quality classifications; see the implemented methodology for exact definitions.
 
-## 4. Required future sweep payload
+## 4. Required sweep payload
 
 The Phase 4 sweep object must retain at least:
 
@@ -109,8 +111,9 @@ The Phase 4 sweep object must retain at least:
 | Lifecycle | Pending/confirmed/invalidated states only as defined by the future detector; later transitions create new evidence snapshots, never rewrite historical ones. |
 | Structural context | References to the applicable historical `TrendState`, BOS/CHoCH events, and other available evidence, using shared dependency references. |
 
-The exact sweep rules remain a separate Phase 4 implementation decision. This
-addendum implements no breach/reclaim detection and no sweep-quality assessment.
+Phase 4 implements strict same-candle full-band breach/reclaim rules and confirmed
+SweepEvent objects only; pending/multi-candle sweep states are not produced.
+No sweep-quality assessment is implemented.
 A pool formed/enlarged after a breach must not retrospectively justify that past
 breach as though the later pool had already been known.
 
@@ -155,9 +158,9 @@ No component weights, score values, placeholder totals, normalization rules,
 missing-factor substitutions, thresholds in executable configuration, or publish
 logic are created by this architectural change.
 
-## 7. Acceptance requirements for later producers
+## 7. Producer acceptance requirements
 
-When liquidity/sweeps are approved, tests must establish that:
+Liquidity/sweep producer tests must establish that:
 
 1. Both record types compose `EvidenceProvenance` and expose their typed raw facts.
 2. Dependencies and source candles were available at each record's cutoff,
@@ -171,7 +174,8 @@ When liquidity/sweeps are approved, tests must establish that:
 7. There is still no scoring or signal publishing in Phase 4 and no count-target
    mechanism influencing analytical outputs.
 
-Current tests cover the shared contracts, immutability, source identity, explicit
-candle closure, cross-timeframe availability, future-reference rejection, and
-absence of evaluation/publishing fields. They do not claim that the future
-liquidity/sweep producers or an evidence artifact registry already exist.
+Shared-contract tests retain their original coverage. `tests/liquidity/` now also
+verifies actual producers, immutable membership/lifecycle versions, raw JSON
+payloads, configuration artifacts, independently framed prefix digests, complete
+resolvable dependency graphs, and prefix/future/replay invariance. A persistent
+evidence artifact registry, scoring, and signal publishing are not implemented.

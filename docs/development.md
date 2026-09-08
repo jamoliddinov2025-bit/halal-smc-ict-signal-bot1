@@ -78,7 +78,7 @@ transport responses and clocks; no live requests, exchange credentials, or exter
 service availability are part of the test results. Fixtures are labeled synthetic.
 
 They do **not** validate a trading strategy, financial performance, or religious
-compliance; those features and assessments do not exist in Phase 3.
+compliance; those features and assessments do not exist in Phase 4.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -99,6 +99,21 @@ Use the same starting history, configuration, and canonical candles for prefix
 comparisons. Never compare a shifted latest-N batch to a long-lived stream as if
 they had identical warm-up state. See [no-look-ahead guarantees](no-look-ahead.md).
 
+## Phase 4 tests and example
+
+```bash
+python -m pytest tests/liquidity
+python -m pytest --collect-only -q tests/liquidity
+```
+
+The twelve-candle `config/liquidity.example.toml` demonstration must emit a buy-side
+EQH sweep at index 9 and a sell-side EQL sweep at 10. Tests additionally verify
+prefix-stable identities, independently reconstructed input hashes, dependency
+graphs, raw serialization, immutable lifecycle versions, strict rejection/gap
+boundaries, delayed availability, and data-provider replay consistency.
+
+No scoring is implemented or tested as a feature. No signal-count target is used.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -106,7 +121,9 @@ environment with `pip install --no-deps <path-to-wheel>`, then run that environm
 `python -m smcsignal --version` from outside this checkout. This checks that the
 package does not rely on an editable installation or the current directory. Also
 import `smcsignal.data` and `smcsignal.analysis`, replay the explicit Phase 3 CSV
-fixture through the installed wheel, and verify its known structure event indices. Repository configuration and
+fixture through the installed wheel, and verify its known structure event indices.
+Also replay the Phase 4 liquidity fixture and verify sweeps at 9 and 10, prefix
+identity, and public liquidity/provenance imports. Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
 ## Before committing
@@ -117,4 +134,4 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 3. Do not implement Phase 4 without approval.
+the designated working branch. Stop after Phase 4. Do not implement Phase 5 without approval.

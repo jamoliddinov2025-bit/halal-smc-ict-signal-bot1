@@ -13,3 +13,7 @@ timeout_seconds = 10.0
 [analysis]
 # Total window of five candles: two left + pivot + two right.
 fractal_length = 5
+
+[liquidity]
+price_unit = "USDT"
+equal_tolerance_bps = "0"

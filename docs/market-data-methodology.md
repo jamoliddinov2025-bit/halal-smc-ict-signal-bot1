@@ -169,5 +169,6 @@ market accuracy, strategy performance, or religious compliance.
 This page describes the unchanged data foundation introduced in Phase 2.
 Phase 3 adds a separate [confirmed market structure layer](market-structure-methodology.md)
 with [historical trend](trend-methodology.md) and [no-look-ahead guarantees](no-look-ahead.md).
-It does not add liquidity pools, sweeps, displacement, fair value gaps, order blocks,
-premium/discount, a signal engine, charts, Telegram, or a halal filter.
+Phase 4 adds [liquidity pools and sweeps](liquidity-sweep-methodology.md) on these
+same canonical observations. No displacement, fair value gaps, order blocks,
+premium/discount, signals, charts, Telegram, halal filter, or scoring is added.

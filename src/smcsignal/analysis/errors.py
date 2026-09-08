@@ -2,7 +2,7 @@
 
 
 class AnalysisError(Exception):
-    """Base exception for Phase 3 analysis."""
+    """Base exception for historical market analysis."""
 
 
 class AnalysisConfigurationError(AnalysisError, ValueError):

@@ -150,6 +150,7 @@ outputs. There are no provisional updates, automatic resets, source polling,
 multiple-series mixing, persistence, or rolling-window equivalence guarantees.
 
 [No-look-ahead guarantees and tests](no-look-ahead.md) explain the fixed-prefix
-contract and its limits. Phase 3 implements no liquidity pools, sweeps,
-displacement, fair value gaps, order blocks, premium/discount, signal engine,
-charts, Telegram, or halal filter. Phase 4 requires explicit approval.
+contract and its limits. Phase 4 adds a separate [liquidity/sweep layer](liquidity-sweep-methodology.md)
+without changing these structure definitions. Displacement, fair value gaps,
+order blocks, premium/discount, signals, charts, Telegram, halal filtering, and
+scoring remain unimplemented. Phase 5 requires explicit approval.

@@ -1,4 +1,4 @@
-# Architecture — Phase 3
+# Architecture — Phase 4
 
 ## Layers and explicit I/O
 
@@ -89,25 +89,41 @@ and tiny labeled CSV fixtures. The wheel includes both runtime subpackages and
 the typing marker, not repository-local configuration/tests. Build outputs and
 large/downloaded datasets remain Git-ignored.
 
-## Evidence-ready architecture addendum (no Phase 4 detection)
+## Phase 4 liquidity and sweep layer
 
-`analysis/provenance.py` supplies immutable `SeriesProvenance`, `CandleReference`,
-`EvidenceReference`, and `EvidenceProvenance` records plus the `ProvenancedEvidence`
-protocol. Existing Phase 3 feature models and analysis results are unchanged.
-Future liquidity/sweep records must compose that provenance and retain typed raw
-facts, versioned dependencies, source/configuration fingerprints, and actual
-knowable times, rather than embedding an evaluation result.
+`analysis/liquidity/` implements the actual producers on top of the unchanged
+Phase 3 `MarketStructureAnalyzer` and the approved `analysis/provenance.py` contract:
 
-The [evidence provenance contract](evidence-provenance-contract.md) specifies the
-required future liquidity/sweep payload fields and all deferred factor inputs.
-It also records the eventual 0–100 Setup Quality Score, configurable publication
-threshold with default 75, quality-over-quantity rule, valid zero-signal outcomes,
-and absolute prohibition on signal-count targets. These are future policy only:
-no scoring values, evaluator, active threshold, or signal engine is implemented,
-and scoring must not be implemented in Phase 4.
+| Module | Responsibility |
+| --- | --- |
+| `config.py` | Exact fixed-anchor tolerance and explicit price units; strict TOML loader |
+| `time.py` | Exclusive UTC bar closure without reading the next row |
+| `evidence.py` | Canonical artifacts and deterministic prefix-only evidence IDs |
+| `models.py` | Frozen LiquidityPool, SweepEvent, raw observations, swing evidence, context, and frame deltas |
+| `analyzer.py` | Existing-pool breach checks, one-time retirement, grouping, and batch/stream replay |
+| `__init__.py` | Phase 4 public exports |
 
-This addendum prepares data contracts only. Liquidity/sweep object implementations
-and detectors remain gated on explicit Phase 4 approval.
+The update pipeline is: validate input/availability and fingerprint the consumed
+observation; obtain the existing structure result and wrap confirmations/context;
+check **prior** active pools for breaches; emit sweeps/terminal pool versions;
+then activate this candle's newly confirmed pool members. Calculated new swings
+cannot be used early to justify a sweep of a not-yet-known pool.
+
+`LiquiditySnapshot` publishes pool-state deltas, not a mutable latest-state map.
+`active_pools` is a read-only current view. Sweeps reference the exact old ACTIVE
+pool; a terminal pool version can reference that sweep without a circular link.
+Source/configuration artifacts and evidence output archives remain caller-owned;
+there is no database or network I/O in this layer.
+
+Phase 4 does not share the Phase 3 detector's fixed memory bound: active pools and
+members persist until breach, and repeated full-member versions/serialization can
+grow quadratically. No silent expiry, eviction cap, or signal-count quota is used.
+
+See [liquidity/sweep methodology](liquidity-sweep-methodology.md) for complete
+rules and limits, and [evidence provenance](evidence-provenance-contract.md) for the
+composition contract. The future Setup Quality Score policy (0–100, configurable
+threshold default 75, quality over quantity, valid zero-signal outcomes, no count
+targets) remains documentation only. Scoring is not implemented in Phase 4.
 
 ## Methodology and phase boundary
 
@@ -115,9 +131,9 @@ and detectors remain gated on explicit Phase 4 approval.
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 3 implements none of: liquidity pools, sweeps, displacement, fair value gaps,
-order blocks, premium/discount, a signal engine, charts, Telegram, or a halal filter.
+Phase 4 implements none of: displacement, fair value gaps,
+order blocks, premium/discount, a signal engine, charts, Telegram, a halal filter, or scoring.
 There are also no orders, authenticated account access, or trading-performance
 claims. “Halal” remains a design goal, not certification.
 
-Stop after Phase 3. Phase 4 requires explicit approval.
+Stop after Phase 4. Phase 5 requires explicit approval.

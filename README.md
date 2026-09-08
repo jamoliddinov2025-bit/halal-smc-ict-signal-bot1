@@ -1,11 +1,11 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 3 — confirmed swings, historical trend, BOS, and CHoCH only.**
+**Status: Phase 4 — liquidity pools and sweep detection, with immutable provenance.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
-per-candle trend/structure snapshots. It does **not** generate trading signals,
+per-candle trend/structure, liquidity-pool, and sweep snapshots. It does **not** generate trading signals,
 execute orders, or make asset-eligibility decisions.
 
 ## Install and verify
@@ -22,7 +22,69 @@ python -m pytest
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-## Offline analysis example
+## Phase 4 offline liquidity and sweep example
+
+The new example uses twelve **synthetic** candles, not real exchange observations:
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    analyze_liquidity,
+    load_analysis_config,
+    load_liquidity_config,
+)
+from smcsignal.data import create_data_provider, load_data_config
+
+path = "config/liquidity.example.toml"
+data_config = load_data_config(path)
+series = SeriesProvenance(
+    data_config.symbol,
+    data_config.timeframe,
+    "synthetic_spot",
+    data_config.data_source,
+    "liquidity-demo:v1:from-first-row:missing=error",
+)
+frames = analyze_liquidity(
+    create_data_provider(data_config).fetch_ohlcv().candles,
+    series=series,
+    config=load_liquidity_config(path),
+    analysis_config=load_analysis_config(path),
+)
+for frame in frames:
+    for event in frame.sweeps:
+        print(
+            event.breach.reference.candle_index,
+            event.side.value,
+            event.pool.kind.value,
+            event.extreme_price,
+            event.reclaim_close,
+        )
+```
+
+Expected raw analysis events:
+
+```text
+9 buy_side equal_highs 17 12
+10 sell_side equal_lows 8 12
+```
+
+Use `LiquidityAnalyzer(...).update(candle, available_at=...)` for streaming or
+explicit arrival-time replay. The default assumes availability at the declared
+bar close. `active_pools` is a read-only current view; frame `pool_updates` are
+immutable lifecycle **deltas**. Neither pools nor sweeps are trading signals.
+
+**Conventions:** confirmed high/low swings seed buy-side/sell-side pools. Separate
+confirmed members inside a fixed first-member tolerance band form equal highs/lows
+(default: exact equality). Only a pool known before the bar opens can be swept.
+A strict breach and same-candle close fully through the band confirms a sweep;
+gap starts and failed returns invalidate instead. Each entity retires at its first
+breach. No pending sweep, multi-bar reclaim, or retrospective relabeling occurs.
+
+See [Phase 4 methodology](docs/liquidity-sweep-methodology.md) for equality rules,
+multiple-target events, exact provenance/identity formats, delay assumptions,
+source-archive responsibilities, and memory/replay limits.
+
+## Existing Phase 3 structure example
 
 The included example uses fourteen **synthetic** candles, not Binance observations:
 
@@ -74,7 +136,7 @@ updates are rejected before state mutation. The analyzer never fetches data or
 revises past snapshots. Use one instance per series/configuration; do not feed a
 previously processed batch into that instance again.
 
-## Analysis contract
+## Existing Phase 3 structure contract
 
 - **Swing:** a strict high/low within an odd `fractal_length` window. For length 5,
   the pivot is confirmed two candles later, only after the right flank closes.
@@ -128,7 +190,9 @@ Live Binance availability is not asserted by the offline tests.
 - `[market_data]`: symbol, timeframe, source, history limit, plus source-specific options.
 - `[analysis]`: exactly `fractal_length`, an odd **total window size** from 3 to 1001.
   Direct `AnalysisConfig()` defaults to 5; the TOML loader requires an explicit key.
-- `config/analysis.example.toml`: useful hand-audited offline structure example.
+- `[liquidity]`: explicit `price_unit` and quoted `equal_tolerance_bps` (default zero).
+- `config/liquidity.example.toml`: hand-audited Phase 4 pool/sweep example.
+- `config/analysis.example.toml`: retained Phase 3 structure example.
 - `config/example.toml`: retains the tiny five-candle data fixture; expect
   insufficient confirmed-swing evidence, not fabricated trend/BOS results.
 
@@ -146,6 +210,8 @@ src/smcsignal/
 │   ├── __init__.py            # Public API
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
+│   ├── liquidity/            # Phase 4 models, producer, artifacts, config, time
+│   ├── provenance.py         # Approved shared evidence contracts
 │   ├── models.py             # Immutable swings, trend, events, snapshots
 │   ├── swings.py             # Delayed strict fractal confirmation
 │   ├── trend.py              # Confirmed high/low-pair classification
@@ -153,7 +219,8 @@ src/smcsignal/
 ├── cli.py                    # Informational only
 └── py.typed
 tests/data/                   # Existing offline data-provider/validation tests
-tests/analysis/               # Swing, trend, BOS, CHoCH, replay, and causality tests
+tests/analysis/               # Existing structure and shared-provenance tests
+tests/liquidity/              # Pools, sweeps, lifecycle, artifacts, and causal replay
 tests/fixtures/               # Tiny, explicitly synthetic CSV fixtures
 docs/                         # Architecture and methodologies
 ```
@@ -166,6 +233,7 @@ python -m ruff format --check .
 python -m mypy --strict src/smcsignal
 python -m pytest
 python -m pytest tests/analysis
+python -m pytest tests/liquidity
 python -m pip check
 python -m build
 ```
@@ -179,20 +247,23 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Architecture addendum: evidence provenance only
+## Evidence provenance in actual Phase 4 outputs
 
-Shared immutable provenance records now provide source/producer identity,
-configuration and input-prefix fingerprints, exact candle references, and true
-availability times for future components. The
-[evidence provenance contract](docs/evidence-provenance-contract.md) defines the
-metadata that future liquidity/sweep objects must carry. Their implementations
-remain deferred; no score values, scoring logic, active threshold, or signal-count
-targets are introduced. The eventual signal policy is documented, not implemented.
+`LiquidityPool` and `SweepEvent` now compose the approved immutable provenance
+contract. They retain source/producer identity, configuration and consumed-prefix
+hashes, raw candle/swing evidence, historical context, true availability instants,
+and exact snapshot dependencies. Older pool versions are never edited in place.
+`evidence_json` serializes complete raw records without floating-point price loss.
+
+The [evidence contract](docs/evidence-provenance-contract.md) also preserves the
+**deferred** scoring policy: future configurable threshold default 75, quality over
+quantity, valid zero-signal outcomes, and no signal-count targets. No scoring or
+active threshold configuration is implemented in Phase 4.
 
 ## Phase boundary
 
-No liquidity pools, sweeps, displacement, fair value gaps, order blocks,
-premium/discount, signal engine, charts, Telegram, or halal filter is implemented.
+No displacement, fair value gaps, order blocks,
+premium/discount, signal engine, charts, Telegram, halal filter, or scoring is implemented.
 There is no authentication, order execution, leverage/margin/shorting, backtesting,
 or trading-performance claim.
 
@@ -202,4 +273,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 3. Phase 4 requires explicit approval.**
+**Stop after Phase 4. Phase 5 requires explicit approval.**

@@ -1,9 +1,10 @@
-# Configuration — market data and Phase 3 analysis
+# Configuration — market data and analysis through Phase 4
 
-Two explicit loaders consume separate tables:
+Three explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
+- `smcsignal.analysis.load_liquidity_config(path)` reads only `[liquidity]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -16,6 +17,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
   analysis settings; network access requires an explicit provider fetch.
 - `analysis.example.toml`: fourteen **synthetic** candles and a three-candle fractal
   for the hand-computed BOS/CHoCH demonstration.
+
+- `liquidity.example.toml`: twelve synthetic candles with hand-computed Phase 4
+  equal-high and equal-low sweeps.
 
 ## Market data settings (unchanged)
 
@@ -33,7 +37,7 @@ Unknown market-data settings, including credentials, are rejected. Direct
 `MarketDataConfig` construction resolves relative CSV paths against the current
 working directory at construction. Files are not opened by provider construction.
 
-## Analysis settings
+## Fractal settings (Phase 3, unchanged)
 
 ```toml
 [analysis]
@@ -53,6 +57,29 @@ than a single window; `TrendState.ready` distinguishes insufficient evidence.
 Settings are frozen during a stream. Use a new analyzer for a different length,
 symbol/timeframe, or replay starting point. There is no wick-break toggle, event
 lookback fitting, future-data setting, or excluded-feature configuration in Phase 3.
+
+## Liquidity settings (Phase 4)
+
+```toml
+[liquidity]
+price_unit = "USDT"
+equal_tolerance_bps = "0"
+```
+
+The table requires exactly these two keys. `price_unit` is an explicit nonempty
+label, not inferred asset eligibility. Tolerance is a quoted decimal string from
+0 through 1000 basis points with at most eight meaningful fractional places.
+Direct `LiquidityConfig("USDT")` defaults to exact equality (zero tolerance).
+This is geometric price tolerance, not a quality value or a publication threshold.
+
+The first confirmed swing anchors the band permanently; matching members do not
+recenter it. Fractal settings still come from `[analysis]`, unchanged. Source
+series identity and fixed dataset/replay origin are supplied explicitly through
+`SeriesProvenance`; they are not inferred by opening/hashing a whole future CSV.
+
+No scoring table, active quality threshold, signal-count target, multi-bar reclaim
+window, pool expiry, or unapproved feature setting is available. Unknown keys are
+errors. See [Phase 4 methodology](../docs/liquidity-sweep-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

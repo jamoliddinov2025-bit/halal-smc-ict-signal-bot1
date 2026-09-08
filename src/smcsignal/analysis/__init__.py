@@ -1,7 +1,25 @@
-"""Phase 3 public API: confirmed swings, historical trend, and BOS/CHoCH only."""
+"""Public analysis API through Phase 4: structure, liquidity pools, and sweeps."""
 
 from smcsignal.analysis.config import AnalysisConfig, load_analysis_config
 from smcsignal.analysis.errors import AnalysisConfigurationError, AnalysisError, AnalysisInputError
+from smcsignal.analysis.liquidity import (
+    InvalidationReason,
+    LiquidityAnalyzer,
+    LiquidityConfig,
+    LiquidityKind,
+    LiquidityPool,
+    LiquiditySide,
+    LiquiditySnapshot,
+    ObservedCandle,
+    PoolStatus,
+    StructureContext,
+    SweepEvent,
+    SwingEvidence,
+    analyze_liquidity,
+    candle_close_time,
+    evidence_json,
+    load_liquidity_config,
+)
 from smcsignal.analysis.models import (
     AnalysisSnapshot,
     StructureEvent,
@@ -23,6 +41,22 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "InvalidationReason",
+    "LiquidityAnalyzer",
+    "LiquidityConfig",
+    "LiquidityKind",
+    "LiquidityPool",
+    "LiquiditySide",
+    "LiquiditySnapshot",
+    "ObservedCandle",
+    "PoolStatus",
+    "StructureContext",
+    "SweepEvent",
+    "SwingEvidence",
+    "analyze_liquidity",
+    "candle_close_time",
+    "evidence_json",
+    "load_liquidity_config",
     "AnalysisConfig",
     "AnalysisConfigurationError",
     "AnalysisError",
