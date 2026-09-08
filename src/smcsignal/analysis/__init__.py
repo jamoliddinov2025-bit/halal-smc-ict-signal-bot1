@@ -1,4 +1,4 @@
-"""Public analysis API through Phase 10: existing evidence and strict Breaker formation."""
+"""Public analysis API through Phase 11: existing evidence and first-interaction mitigation."""
 
 from smcsignal.analysis.breaker_blocks import (
     BreakerBlock,
@@ -51,6 +51,17 @@ from smcsignal.analysis.liquidity import (
     candle_close_time,
     evidence_json,
     load_liquidity_config,
+)
+from smcsignal.analysis.mitigation_blocks import (
+    InteractionBasis,
+    MitigationBlock,
+    MitigationBlockAnalyzer,
+    MitigationBlockConfig,
+    MitigationDirection,
+    MitigationEvidence,
+    MitigationSnapshot,
+    analyze_mitigation_blocks,
+    load_mitigation_block_config,
 )
 from smcsignal.analysis.models import (
     AnalysisSnapshot,
@@ -109,6 +120,15 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "InteractionBasis",
+    "MitigationBlock",
+    "MitigationBlockAnalyzer",
+    "MitigationBlockConfig",
+    "MitigationDirection",
+    "MitigationEvidence",
+    "MitigationSnapshot",
+    "analyze_mitigation_blocks",
+    "load_mitigation_block_config",
     "BreakerBlock",
     "BreakerBlockAnalyzer",
     "BreakerBlockConfig",

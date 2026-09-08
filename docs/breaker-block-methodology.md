@@ -302,4 +302,6 @@ halal filtering, scraping, credentials, live trading, futures, leverage, backtes
 monthly statistics, OTE, new multi-timeframe processing, AI optimization, or strategy
 ranking is introduced. Future quality policy remains documentation only: scale
 0–100, default publication threshold 75, zero signals valid, and no quotas.
-**Stop after Phase 10. Phase 11 — Mitigation Blocks requires explicit approval.**
+Phase 11 now consumes these unchanged outputs for
+[Mitigation first interaction](mitigation-block-methodology.md).
+**Stop after Phase 11. Phase 12 — OTE requires explicit approval.**

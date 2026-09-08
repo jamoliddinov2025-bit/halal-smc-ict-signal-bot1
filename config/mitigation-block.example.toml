@@ -1,37 +1,15 @@
-# Phase 11 offline configuration. Separate loaders consume each runtime table.
-# Project/scope/safety tables document intent, not a runtime trading policy engine.
-# This CSV is explicitly synthetic test data, not historical Binance observations.
-# Never add credentials or account data.
-
-[project]
-name = "Professional Halal SMC/ICT Spot Signal Bot"
-phase = 11
-
-[scope]
-market = "spot"
-direction = "long_only"
-signal_only = true
-
-[safety]
-authenticated_exchange_access = false
-order_execution = false
-leverage = false
-margin = false
-short_selling = false
-
+# Phase 11: synthetic first-interaction evidence, never trade entries or performance data.
 [market_data]
 symbol = "BTCUSDT"
 timeframe = "15m"
 data_source = "csv"
 history_limit = 500
-# Resolved relative to this TOML file, not the process working directory.
-csv_path = "../tests/fixtures/ohlcv.csv"
+csv_path = "../tests/fixtures/mitigation_blocks.csv"
 missing_value_policy = "error"
 timeout_seconds = 10.0
 
 [analysis]
-# Total window of five candles: two left + pivot + two right.
-fractal_length = 5
+fractal_length = 3
 
 [liquidity]
 price_unit = "USDT"

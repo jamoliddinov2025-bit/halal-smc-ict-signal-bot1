@@ -1,4 +1,4 @@
-# Architecture — Phase 10
+# Architecture — Phase 11
 
 ## Layers and explicit I/O
 
@@ -283,6 +283,29 @@ references, and separate origin/invalidation/publication times. State commits on
 after all checks and construction succeed. The source-prefix hash and canonical
 factory are reused. See [Breaker methodology](breaker-block-methodology.md) for the
 precise strict-v1 contract, configuration, causal rules, and limitations.
+
+## Phase 11 Mitigation Block first-interaction consumer
+
+`analysis/mitigation_blocks/` consumes existing `BreakerSnapshot` frames and exact
+published OB objects. It keeps private first-interaction eligibility/seen-ID/Breaker
+bookkeeping, not a live zone manager. No earlier detector, price model, or provenance
+implementation is changed or rerun.
+
+The original OB must be known before the interaction bar opens. Only the first
+strict interior range overlap with the original OB zone creates a `MitigationBlock`.
+Completely outside candles and exact endpoint touches do not qualify. All qualifying
+source IDs are processed in original publication order; identical, nested and
+overlapping zones are not merged. Original zone boundaries and IDs remain equal.
+
+If a confirmed Breaker already exists for that OB, later overlaps cannot create a
+first mitigation. Any mitigation already published remains immutable.
+
+`MitigationEvidence`, `MitigationBlock`, and `MitigationSnapshot` retain the original
+OB, actual observations, interaction geometry, exact references, and separate
+origin/interaction/publication times. State commits only after all checks and
+construction succeed. The source-prefix hash and canonical factory are reused. See
+[Mitigation methodology](mitigation-block-methodology.md) for the precise
+strict-v1 contract, configuration, causal rules, and limitations.
 
 ## Methodology and phase boundary
 

@@ -51,3 +51,8 @@ require_displacement = true
 require_mss = true
 invalidation_basis = "close_through_far_boundary"
 zone_basis = "original_order_block"
+
+[mitigation_blocks]
+interaction_basis = "range_intersection"
+first_interaction_only = true
+ignore_after_breaker = true

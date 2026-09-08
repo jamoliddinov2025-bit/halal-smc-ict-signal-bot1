@@ -1,11 +1,11 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 10 — deterministic, provenance-backed Breaker Block formation evidence.**
+**Status: Phase 11 — deterministic, provenance-backed Mitigation Block first-interaction evidence.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
-per-candle structure, liquidity, displacement, FVG, OB, PD, MSS, and Breaker evidence snapshots. It does **not** generate trading signals,
+per-candle structure, liquidity, displacement, FVG, OB, PD, MSS, Breaker, and Mitigation evidence snapshots. It does **not** generate trading signals,
 execute orders, or make asset-eligibility decisions.
 
 ## Install and verify
@@ -22,7 +22,84 @@ python -m pytest
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-## Phase 10 offline Breaker example
+## Phase 11 offline Mitigation example
+
+The included 25-candle dataset is **synthetic**, not exchange observations or returns:
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    analyze_liquidity,
+    analyze_displacement,
+    analyze_fvg,
+    analyze_order_blocks,
+    analyze_pd,
+    analyze_mss,
+    analyze_breaker_blocks,
+    analyze_mitigation_blocks,
+    load_analysis_config,
+    load_liquidity_config,
+    load_displacement_config,
+    load_fvg_config,
+    load_order_block_config,
+    load_pd_config,
+    load_mss_config,
+    load_breaker_block_config,
+    load_mitigation_block_config,
+)
+from smcsignal.data import create_data_provider, load_data_config
+
+path = "config/mitigation-block.example.toml"
+data, liquidity = load_data_config(path), load_liquidity_config(path)
+series = SeriesProvenance(
+    data.symbol,
+    data.timeframe,
+    "synthetic_spot",
+    data.data_source,
+    "mitigation-demo:v1:from-first-row:missing=error",
+)
+a = analyze_liquidity(
+    create_data_provider(data).fetch_ohlcv().candles,
+    series=series,
+    config=liquidity,
+    analysis_config=load_analysis_config(path),
+)
+b = analyze_displacement(a, load_displacement_config(path), price_unit=liquidity.price_unit)
+c = analyze_order_blocks(analyze_fvg(b, load_fvg_config(path)), load_order_block_config(path))
+d = analyze_mss(analyze_pd(c, load_pd_config(path)), load_mss_config(path))
+e = analyze_breaker_blocks(d, load_breaker_block_config(path))
+frames = analyze_mitigation_blocks(e, load_mitigation_block_config(path))
+for frame in frames:
+    for block in frame.events:
+        print(
+            block.original_ob_confirmation_index,
+            block.confirmation_index,
+            block.direction.value,
+            block.original_lower_boundary,
+            block.original_upper_boundary,
+        )
+```
+
+```text
+20 21 bullish 13 15
+23 24 bearish 16 23
+```
+
+`MitigationBlockAnalyzer().update(breaker_frame)` is the streaming equivalent. It
+consumes the actual existing Phase 10 output without rerunning prior engines.
+Strict v1 uses a previously known OB's first interior **range overlap** with the
+original zone. Completely outside candles and exact endpoint touches do not
+qualify. Only the first valid post-publication interaction is emitted. All
+independent qualifying sources are retained in original publication order; zones
+and source IDs are never changed. If the OB later becomes a Breaker, later overlaps
+do not create a first mitigation; any already-published mitigation stays immutable.
+
+This is interaction evidence only: no entries, retests, remaining-size tracking,
+live zone manager, or trading. See
+[Mitigation methodology](docs/mitigation-block-methodology.md) for exact geometry,
+source eligibility, Breaker policy, timing, and limits.
+
+## Existing Phase 10 offline Breaker example
 
 The included 28-candle dataset is **synthetic**, not exchange observations or returns:
 
@@ -636,6 +713,8 @@ Live Binance availability is not asserted by the offline tests.
 - `[premium_discount]`: quoted `equilibrium_half_width_fraction`, default zero.
 - `[mss]`: explicit structure/displacement requirement flags, both mandatory true.
 - `[breaker_blocks]`: strict displacement/MSS requirements, close-through invalidation, original OB zone.
+- `[mitigation_blocks]`: range-intersection geometry, first interaction only, ignore-after-breaker.
+- `config/mitigation-block.example.toml`: hand-audited Phase 11 first-interaction evidence.
 - `config/breaker-block.example.toml`: hand-audited Phase 10 opposite-zone formations.
 - `config/mss.example.toml`: default-threshold synthetic MSS and relationship example.
 - `config/premium-discount.example.toml`: exact range/equilibrium and all five PD labels.
@@ -661,6 +740,7 @@ src/smcsignal/
 │   ├── __init__.py            # Public API
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
+│   ├── mitigation_blocks/    # Phase 11 first-interaction mitigation evidence only
 │   ├── breaker_blocks/       # Phase 10 first-violation formation evidence only
 │   ├── mss/                  # Phase 9 strict opposing-break/displacement evidence
 │   ├── premium_discount/     # Phase 8 ranges, exact equilibrium, and immutable sidecars
@@ -684,6 +764,7 @@ tests/order_blocks/           # Selection, confirmations, timing, provenance, an
 tests/premium_discount/       # Range/band boundaries, sidecars, provenance, and causal replay
 tests/mss/                    # MSS definitions, relationships, immutable evidence, causal replay
 tests/breaker_blocks/         # Strict conversions, rejection facts, exact timing, causal replay
+tests/mitigation_blocks/      # First-interaction geometry, Breaker policy, exact timing, causal replay
 tests/fixtures/               # Tiny, explicitly synthetic CSV fixtures
 docs/                         # Architecture and methodologies
 ```
@@ -703,6 +784,7 @@ python -m pytest tests/order_blocks
 python -m pytest tests/premium_discount
 python -m pytest tests/mss
 python -m pytest tests/breaker_blocks
+python -m pytest tests/mitigation_blocks
 python -m pip check
 python -m build
 ```
@@ -716,7 +798,7 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 10
+## Evidence provenance through Phase 11
 
 `LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
@@ -727,11 +809,11 @@ and exact snapshot dependencies. Older pool versions are never edited in place.
 The [evidence contract](docs/evidence-provenance-contract.md) also preserves the
 **deferred** scoring policy: future configurable threshold default 75, quality over
 quantity, valid zero-signal outcomes, and no signal-count targets. No scoring or
-active publication-threshold configuration is implemented in Phase 10.
+active publication-threshold configuration is implemented in Phase 11.
 
 ## Phase boundary
 
-No Mitigation Blocks, OTE,
+No OTE,
 session strategy, signal engine, BUY/SELL signals, charts, Telegram, halal filter,
 or scoring is implemented.
 There is no authentication, order execution, leverage/margin/shorting, backtesting,
@@ -743,4 +825,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 10. Phase 11 — Mitigation Blocks requires explicit approval.**
+**Stop after Phase 11. Phase 12 — OTE requires explicit approval.**

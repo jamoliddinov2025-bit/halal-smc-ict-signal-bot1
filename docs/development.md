@@ -78,7 +78,7 @@ transport responses and clocks; no live requests, exchange credentials, or exter
 service availability are part of the test results. Fixtures are labeled synthetic.
 
 They do **not** validate a trading strategy, financial performance, or religious
-compliance; those features and assessments do not exist in Phase 10.
+compliance; those features and assessments do not exist in Phase 11.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -200,6 +200,22 @@ wick/equality/gap cases, all-source multiple conversions, rejected first violati
 future-data invariance, frozen evidence, identity, and provider integration. No
 entry, retest, trade-management, performance, or backtesting engine is introduced.
 
+## Phase 11 Mitigation tests and example
+
+```bash
+python -m pytest tests/mitigation_blocks
+python -m pytest --collect-only -q tests/mitigation_blocks
+```
+
+`config/mitigation-block.example.toml` produces a bullish Mitigation at 21 from
+original bullish OB 20 and a bearish Mitigation at 24 from original bearish OB 23.
+The original zones/IDs and candidate times remain unchanged. Tests include strict
+boundary, wick/body/traversal/inside geometry, first vs repeated interactions,
+pre-publication exclusion, multiple/identical/nested sources, mitigation-before-Breaker
+immutability, post-Breaker rejection, future-data invariance, frozen evidence,
+identity, and provider integration. No entry, retest, trade-management, performance,
+or backtesting engine is introduced.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -220,7 +236,9 @@ and full-pipeline streaming through the installed wheel. For Phase 9 verify the
 MSS default example, both directions/levels, every prefix, original evidence links,
 and isolated package imports as well. For Phase 10 verify original-zone Breakers,
 source-OB identity, prior/publication timestamps, serialization, both directions,
-and prefix/batch/stream equivalence through the installed wheel.
+and prefix/batch/stream equivalence through the installed wheel. For Phase 11 verify
+original-zone Mitigations, source-OB identity, interaction geometry, both directions,
+Breaker policy, and prefix/batch/stream equivalence through the installed wheel.
 Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
@@ -232,4 +250,4 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 10. Do not implement Phase 11 / Mitigation Blocks without explicit approval.
+the designated working branch. Stop after Phase 11. Do not implement Phase 12 / OTE without explicit approval.

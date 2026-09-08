@@ -54,3 +54,10 @@ OB published at 20 (candidate 18, zone [13,15]) forms a bearish Breaker at 22; t
 bearish OB published at 22 (candidate 21, zone [16,18]) forms a bullish Breaker at
 27. These are first-close-violation plus actual displacement/MSS formation checks,
 not entries, retests, lifecycle management, exchange observations, or performance.
+
+`mitigation_blocks.csv` contains 25 **synthetic** Phase 11 observations. The bullish
+OB published at 20 (candidate 18, zone [13,15]) is first overlapped at 21; the
+bearish OB published at 23 (zone [16,23]) is first overlapped at 24. The bullish
+source later confirms a bearish Breaker at 23 without rewriting the mitigation at
+21. These are first-interaction geometry checks, not entries, retests, fills,
+exchange observations, or performance.

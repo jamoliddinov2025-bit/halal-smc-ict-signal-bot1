@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 10 — strict original-OB Breaker formation evidence**.
+Current scope: **Phase 11 — strict first-interaction Mitigation Block evidence**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -23,10 +23,12 @@ Current scope: **Phase 10 — strict original-OB Breaker formation evidence**.
   opposing level breaks, displacement, exact relationships, publication, and causality.
 - [Breaker Block methodology](breaker-block-methodology.md): original OB eligibility,
   strict first closing violation, displacement/MSS confirmation, exact zones, and timing.
+- [Mitigation Block methodology](mitigation-block-methodology.md): original OB
+  eligibility, interior range overlap, first interaction only, Breaker policy, and timing.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; scoring remains deferred to a separately approved later phase.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
-No Mitigation Blocks, OTE, session strategy, signals, charts, Telegram, halal filter, or scoring is implemented.
-Phase 11 — Mitigation Blocks requires explicit approval.
+No OTE, session strategy, signals, charts, Telegram, halal filter, or scoring is implemented.
+Phase 12 — OTE requires explicit approval.

@@ -297,4 +297,4 @@ policy remains documentation only: scale 0–100, future default publication
 threshold 75, valid zero-signal outcomes, no quotas; scoring is deferred to a separately approved later phase.
 Phase 10 now consumes these unchanged outputs for
 [Breaker formation](breaker-block-methodology.md).
-**Stop after Phase 10. Phase 11 — Mitigation Blocks requires explicit approval.**
+**Stop after Phase 11. Phase 12 — OTE requires explicit approval.**

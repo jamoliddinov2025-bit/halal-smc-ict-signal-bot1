@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 10
+# Configuration — market data and analysis through Phase 11
 
-Nine explicit loaders consume separate tables:
+Ten explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -11,6 +11,7 @@ Nine explicit loaders consume separate tables:
 - `smcsignal.analysis.load_pd_config(path)` reads only `[premium_discount]`.
 - `smcsignal.analysis.load_mss_config(path)` reads only `[mss]`.
 - `smcsignal.analysis.load_breaker_block_config(path)` reads only `[breaker_blocks]`.
+- `smcsignal.analysis.load_mitigation_block_config(path)` reads only `[mitigation_blocks]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -44,6 +45,10 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 
 - `breaker-block.example.toml`: 28 synthetic observations with strict first-close
   conversions of actual earlier OBs using existing displacement/MSS evidence.
+
+- `mitigation-block.example.toml`: 25 synthetic observations with first interior
+  overlaps of actual earlier OBs, including a later Breaker that does not rewrite
+  an already-published mitigation.
 
 ## Market data settings (unchanged)
 
@@ -245,6 +250,29 @@ upgraded. All independently qualifying source IDs are retained; there is no
 nearest-only ranking or silent history expiry/cap. FVG and PD are existing context,
 not new requirements or recomputed outputs. See
 [Breaker methodology](../docs/breaker-block-methodology.md).
+
+## Mitigation first-interaction settings (Phase 11)
+
+```toml
+[mitigation_blocks]
+interaction_basis = "range_intersection"
+first_interaction_only = true
+ignore_after_breaker = true
+```
+
+Exactly three keys are required. Both booleans must remain true in strict
+`mitigation-v1`. The interaction value accepts only `range_intersection`; direct
+Python construction uses the typed `InteractionBasis` enum. No wick-only-as-invalid,
+repeated-event, post-Breaker-first-mitigation, score, probability, signal, or
+retest mode is provided.
+
+An original OB must already be known by the interaction candle's open. The completed
+candle range must intersect the open interval of the original zone. Exact endpoint
+touches and total misses do not qualify. All independently qualifying source IDs
+are retained; there is no nearest-only ranking or silent history expiry/cap. A
+confirmed Breaker retires remaining first-mitigation eligibility; already-published
+mitigations stay immutable. See
+[Mitigation methodology](../docs/mitigation-block-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 10
+# No-look-ahead guarantees — Phases 3 through 11
 
 ## Contract
 
@@ -214,6 +214,23 @@ eligible source. Prefix, future-suffix, batch/stream/chunk, identity, and origin
 object immutability tests cover both confirmed and rejected first violations.
 See [Breaker methodology](breaker-block-methodology.md) for exact rules and limits.
 
+## Phase 11 Mitigation first interaction
+
+The Mitigation consumer registers original published OB IDs after processing older
+sources for the current closed candle. A source is assessed once on its first
+interior range overlap. It must have been known before the bar opens. Confirmed
+Breakers retire remaining first-mitigation eligibility before overlap checks.
+Outside candles and exact endpoint touches do not consume the first opportunity.
+
+All independent qualifying sources are retained, with original zone boundaries
+and IDs. Future prices, later FVG/sweep/PD/OB/MSS/Breaker evidence cannot enrich
+an already-published mitigation. All interaction bookkeeping is committed only
+after successful validation; failed frames cannot consume an eligible source.
+Prefix, future-suffix, batch/stream/chunk, identity, and original object
+immutability tests cover first interactions and post-Breaker rejections.
+See [Mitigation methodology](mitigation-block-methodology.md) for exact rules
+and limits.
+
 ## What this guarantee does not mean
 
 - Candle opening timestamps are identifiers, **not** claims that a close-based
@@ -231,6 +248,6 @@ See [Breaker methodology](breaker-block-methodology.md) for exact rules and limi
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 10 adds Breaker formation evidence only. No
-mitigation block, OB/FVG lifecycle, OTE, session strategy, signals, risk management,
+All tests are offline. Phase 11 adds Mitigation first-interaction evidence only. No
+OB/FVG lifecycle, OTE, session strategy, signals, risk management,
 position sizing, Telegram, halal filter, backtesting, execution, or scoring is implemented.
