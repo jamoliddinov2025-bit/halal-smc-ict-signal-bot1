@@ -1,4 +1,4 @@
-# Architecture — Phase 5
+# Architecture — Phase 6
 
 ## Layers and explicit I/O
 
@@ -164,9 +164,36 @@ body/close/context threshold changes.
 
 Future FVG, raid/displacement, Order Block, location, multi-timeframe, and quality
 components can consume typed raw records and `provenance.as_reference()` without
-turning this detector into a strategy/scoring API. None of those components is
-implemented now. See [Phase 5 methodology](displacement-methodology.md) for exact
+turning this detector into a strategy/scoring API. FVG is now a separate Phase 6 consumer; the other components remain deferred.
+See [Phase 5 methodology](displacement-methodology.md) for exact
 conditions, defaults, input/availability assumptions, and memory/numeric limits.
+
+## Phase 6 FVG consumer
+
+`analysis/fvg/` consumes existing `DisplacementSnapshot` frames exactly once,
+retaining only the trailing one/two/three input frames for FVG creation. It does
+not duplicate the existing pipeline, exact Decimal arithmetic, canonical codec,
+source-prefix hashing, or provenance contracts.
+
+| Module | Responsibility |
+| --- | --- |
+| `config.py` | Frozen absolute minimum gap and optional matching-displacement requirement |
+| `calculation.py` | Strict outer-wick geometry and coherent three-frame validation |
+| `models.py` | Immutable FVGEvent/FVGSnapshot with original source frames and explicit C1/C2/C3 observations |
+| `evidence.py` | FVG configuration/identity artifacts through the existing provenance factory |
+| `analyzer.py` | Fixed-origin streaming/batch creation; state committed only after successful validation |
+| `__init__.py` | Public Phase 6 API |
+
+The C2 displacement event and its prior-sweep group are linked as originally
+published, never recomputed or selected from C3/future data. Creation occurs after
+C3 closes; equality is not a gap. A configured minimum is an inclusive absolute
+price distance, default zero with strictly positive geometry still required.
+Optional displacement filtering requires an existing same-direction C2 event.
+
+FVG records represent formations only: no OPEN/fill/invalidation lifecycle,
+active-zone registry, mitigation, entry, or other trading behavior is introduced.
+All distinct qualifying windows are retained, including nested/opposing zones.
+See [FVG methodology](fvg-methodology.md) for complete definitions and limits.
 
 ## Methodology and phase boundary
 
@@ -174,10 +201,10 @@ conditions, defaults, input/availability assumptions, and memory/numeric limits.
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 5 implements none of: fair value gaps,
+Phase 6 implements none of:
 order/ breaker/ mitigation blocks, premium/discount, OTE, session strategy, a signal
 engine, BUY/SELL signals, charts, Telegram, a halal filter, or scoring.
 There are also no orders, authenticated account access, or trading-performance
 claims. “Halal” remains a design goal, not certification.
 
-Stop after Phase 5. Phase 6 / Fair Value Gaps require explicit approval.
+Stop after Phase 6. Phase 7 — Order Blocks requires explicit approval.

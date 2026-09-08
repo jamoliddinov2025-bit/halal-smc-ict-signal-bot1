@@ -222,9 +222,10 @@ changed settings, falsified source/arrival metadata, or real execution fills.
 No live source availability or actual resting liquidity is asserted by the tests.
 
 Phase 5 adds a separate [displacement consumer](displacement-methodology.md)
-without changing these liquidity/sweep rules. FVGs, blocks, premium/discount,
+without changing these liquidity/sweep rules. Phase 6 adds a separate
+[FVG consumer](fvg-methodology.md). Blocks, premium/discount,
 signal engines, charts, Telegram, halal filtering, and scoring remain absent.
 The deferred Setup Quality Score policy remains unchanged in the
 [evidence contract](evidence-provenance-contract.md): future threshold default 75,
 quality over quantity, valid zero-signal outcomes, and no signal-count targets.
-**Stop after Phase 5; Phase 6 / Fair Value Gaps require explicit approval.**
+**Stop after Phase 6; Phase 7 — Order Blocks requires explicit approval.**

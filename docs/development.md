@@ -78,7 +78,7 @@ transport responses and clocks; no live requests, exchange credentials, or exter
 service availability are part of the test results. Fixtures are labeled synthetic.
 
 They do **not** validate a trading strategy, financial performance, or religious
-compliance; those features and assessments do not exist in Phase 5.
+compliance; those features and assessments do not exist in Phase 6.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -129,6 +129,20 @@ ATR, doji/long-wick cases, optional sweep cohorts, raw artifacts, immutable mode
 independent graph/ATR reconstruction, every-prefix equality, and future invariance.
 These tests do not evaluate returns or implement a backtesting/strategy engine.
 
+## Phase 6 tests and example
+
+```bash
+python -m pytest tests/fvg
+python -m pytest --collect-only -q tests/fvg
+```
+
+`config/fvg.example.toml` must emit bullish [101,104] at index 16 and bearish
+[98,106] at index 19, linked to actual C2 displacement at 15/18. Tests cover strict
+geometry, one-tick/minimum equality, overlaps/nesting/opposition, inherited sweep
+context, precision, source continuity, immutable JSON evidence, causal identity,
+full-prefix/future-price invariance, and CSV/mocked-Binance replay. There is no fill,
+entry, lifecycle, strategy, performance test, or scoring implementation.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -140,7 +154,9 @@ fixture through the installed wheel, and verify its known structure event indice
 Also replay the Phase 4 liquidity fixture and verify sweeps at 9 and 10, prefix
 identity, and public liquidity/provenance imports. Then feed the default Phase 5
 fixture through the installed pipeline and verify displacement at 15/16, raw
-serialization, and every-prefix equivalence. Repository configuration and
+serialization, and every-prefix equivalence. Also verify Phase 6 creation at 16/19
+from the installed wheel, matching stream/batch records and prefix identities.
+Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
 ## Before committing
@@ -151,4 +167,4 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 5. Do not implement Phase 6 / Fair Value Gaps without explicit approval.
+the designated working branch. Stop after Phase 6. Do not implement Phase 7 / Order Blocks without explicit approval.

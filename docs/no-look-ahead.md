@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 5
+# No-look-ahead guarantees — Phases 3 through 6
 
 ## Contract
 
@@ -129,6 +129,23 @@ Only a successful update commits local state. See
 [displacement methodology](displacement-methodology.md) for the exact warm-up,
 arrival-time, numeric-boundary, source-trust, and fixed-history assumptions.
 
+## Phase 6 FVG creation
+
+`FVGAnalyzer` reads only existing Phase 5 frames. It evaluates C1=t−2, C2=t−1,
+C3=t after C3's observation is available. Strict positive outer-wick geometry and
+an exact configured absolute minimum determine formation. No candidate is emitted
+on C1/C2, and no future fill can alter a created record.
+
+Associations refer to C2's already-published displacement and preceding-sweep
+group. C3 displacement, C2/C3 same-candle sweeps, and future evidence are not
+substituted or backfilled. C3's already-known input-prefix hash is reused.
+
+Phase 6 tests compare every prefix, changed/appended future suffixes, batch/stream/
+chunk replay, immutable records, deterministic IDs/hashes, full dependency graphs,
+and provider integration. The [FVG methodology](fvg-methodology.md) specifies
+source/availability assumptions, equality/minimum boundaries, and creation-only
+scope. Local state changes only after a complete successful update.
+
 ## What this guarantee does not mean
 
 - Candle opening timestamps are identifiers, **not** claims that a close-based
@@ -146,6 +163,6 @@ arrival-time, numeric-boundary, source-trust, and fixed-history assumptions.
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 5 adds displacement only. No FVG, order/ breaker/
-mitigation block, premium/discount, OTE, session strategy, signal engine, chart,
-Telegram, halal filter, backtesting, execution, or scoring is implemented.
+All tests are offline. Phase 6 adds FVG creation only. No order/ breaker/ mitigation
+block, premium/discount, OTE, session strategy, signal engine, chart, Telegram,
+halal filter, backtesting, execution, or scoring is implemented.

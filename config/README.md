@@ -1,11 +1,12 @@
-# Configuration — market data and analysis through Phase 5
+# Configuration — market data and analysis through Phase 6
 
-Four explicit loaders consume separate tables:
+Five explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
 - `smcsignal.analysis.load_liquidity_config(path)` reads only `[liquidity]`.
 - `smcsignal.analysis.load_displacement_config(path)` reads only `[displacement]`.
+- `smcsignal.analysis.load_fvg_config(path)` reads only `[fvg]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -24,6 +25,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 
 - `displacement.example.toml`: twenty synthetic candles demonstrating default
   prior ATR(14) and bullish/bearish displacement.
+
+- `fvg.example.toml`: twenty synthetic candles with hand-computed bullish/bearish
+  FVG creation and actual middle-candle displacement references.
 
 ## Market data settings (unchanged)
 
@@ -117,6 +121,27 @@ infer asset eligibility from the unit label. See the complete
 
 No score, publication-threshold, quota, strategy, order, or credential settings are
 added. Configuration is fixed per replay, with its exact canonical artifact hashed.
+
+## FVG settings (Phase 6)
+
+```toml
+[fvg]
+min_gap_size = "0"
+require_displacement = false
+```
+
+Exactly both keys are required. The absolute minimum is a quoted finite nonnegative
+Decimal in the Phase 5 frame's existing `price_unit`; units bind on the first valid
+input. No duplicate unit declaration or universal asset tick size is inferred.
+A gap must be **strictly positive** and at least the configured minimum. There is
+no rounding before qualification and no ATR-relative gap filter.
+
+`require_displacement=false` permits geometry without displacement and retains
+actual C2 displacement even if opposing. True requires an already-produced
+**matching-direction** C2 displacement event. It never reruns Phase 5 detection.
+Sweep context is inherited from C2's existing frame and configuration, not selected
+again using C3. No lifecycle, scores, signal threshold, quotas, or strategies are
+configurable. See [FVG methodology](../docs/fvg-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

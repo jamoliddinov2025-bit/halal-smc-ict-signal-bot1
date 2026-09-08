@@ -23,3 +23,9 @@ index 15 (bullish, body 3, range 5, prior ATR 2) and 16 (bearish, body 5, range 
 prior ATR 31/14). There is no preceding sweep required. Later doji, small-body/long-wick,
 and gap-only examples do not qualify. These are software checks, not historical
 exchange observations, trading signals, eligibility evidence, or performance data.
+
+`fvg.csv` contains twenty **synthetic** Phase 6 candles. Default settings create a
+bullish FVG at index 16 with boundaries [101, 104] and a bearish FVG at index 19
+with boundaries [98, 106]. Their actual C2 displacement events are at indices 15
+and 18. This demonstrates formation evidence only, not fills, trade entries,
+resting orders, market returns, eligibility, or live exchange availability.

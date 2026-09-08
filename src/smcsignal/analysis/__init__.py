@@ -1,4 +1,4 @@
-"""Public analysis API through Phase 5: structure, liquidity, sweeps, and displacement."""
+"""Public analysis API through Phase 6: structure, liquidity, displacement, and FVGs."""
 
 from smcsignal.analysis.config import AnalysisConfig, load_analysis_config
 from smcsignal.analysis.displacement import (
@@ -13,6 +13,14 @@ from smcsignal.analysis.displacement import (
     load_displacement_config,
 )
 from smcsignal.analysis.errors import AnalysisConfigurationError, AnalysisError, AnalysisInputError
+from smcsignal.analysis.fvg import (
+    FVGAnalyzer,
+    FVGConfig,
+    FVGEvent,
+    FVGSnapshot,
+    analyze_fvg,
+    load_fvg_config,
+)
 from smcsignal.analysis.liquidity import (
     InvalidationReason,
     LiquidityAnalyzer,
@@ -52,6 +60,12 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "FVGAnalyzer",
+    "FVGConfig",
+    "FVGEvent",
+    "FVGSnapshot",
+    "analyze_fvg",
+    "load_fvg_config",
     "ATRReference",
     "DisplacementAnalyzer",
     "DisplacementConfig",

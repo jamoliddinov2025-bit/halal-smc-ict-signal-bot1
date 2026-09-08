@@ -13,7 +13,7 @@ see [displacement methodology](displacement-methodology.md).
 
 No scoring, weights, normalized quality values, confidence ratings, ranking,
 signal publishing, or active publication-threshold configuration is implemented.
-Scoring remains excluded from both Phase 4 and Phase 5. Existing Phase 3 swings, trend,
+Scoring remains excluded through Phase 6. Existing Phase 3 swings, trend,
 BOS/CHoCH definitions, results, and data-provider behavior remain unchanged.
 
 ## 1. Composition, not feature/scoring coupling
@@ -146,7 +146,7 @@ prerequisites, once defined, cannot be overridden by a favorable aggregate resul
 The eventual signal engine must:
 
 - Calculate a **Setup Quality Score on a 0–100 scale** in a later approved phase,
-  **not in Phase 4 or Phase 5**.
+  **not through Phase 6**.
 - Publish only valid setups **above** a configurable threshold; the required
   future default is **75**. No active setting or comparison is added now.
 - Prioritize quality over quantity. **Zero signals is a valid result** when no
@@ -173,7 +173,7 @@ Liquidity/sweep producer tests must establish that:
 5. Later touches, invalidations, reclaims, or added future data do not mutate or
    rename historical evidence. New states use new immutable snapshot identities.
 6. The required liquidity/sweep fields above survive any future serialization.
-7. There is still no scoring or signal publishing through Phase 5 and no count-target
+7. There is still no scoring or signal publishing through Phase 6 and no count-target
    mechanism influencing analytical outputs.
 
 Shared-contract tests retain their original coverage. `tests/liquidity/` now also
@@ -194,3 +194,13 @@ availability are retained; no raw facts are replaced by quality/probability valu
 Producer tests now also cover independent ATR reconstruction, full dependency
 graph resolution, exact boundary comparisons, deterministic identity, arrival-time
 association, and all-prefix/future/replay invariance for actual displacement events.
+
+## Phase 6 FVG creation producers
+
+`FVGEvent` and `FVGSnapshot` now compose the same unchanged provenance contract.
+They retain all three original Phase 5 frames and exact source-candle references,
+strict gap boundaries/size, C2's actual displacement and inherited prior-sweep
+group, source/configuration identity, and C3's consumed-input-prefix hash.
+Creation becomes knowable only after C3 closes. No mutable lifecycle, future
+interaction, scoring value, signal, or trade is attached. See
+[FVG methodology](fvg-methodology.md) for the implemented causal relationship rules.

@@ -1,11 +1,11 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 5 — objective, provenance-backed bullish/bearish displacement analysis.**
+**Status: Phase 6 — deterministic, provenance-backed Fair Value Gap creation analysis.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
-per-candle trend/structure, liquidity, sweep, ATR, and displacement snapshots. It does **not** generate trading signals,
+per-candle structure, liquidity, displacement, and FVG creation snapshots. It does **not** generate trading signals,
 execute orders, or make asset-eligibility decisions.
 
 ## Install and verify
@@ -22,7 +22,75 @@ python -m pytest
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-## Phase 5 offline displacement example
+## Phase 6 offline FVG example
+
+The twenty-candle fixture is **synthetic**, not live market data:
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    analyze_displacement,
+    analyze_fvg,
+    analyze_liquidity,
+    load_analysis_config,
+    load_displacement_config,
+    load_fvg_config,
+    load_liquidity_config,
+)
+from smcsignal.data import create_data_provider, load_data_config
+
+path = "config/fvg.example.toml"
+data = load_data_config(path)
+liquidity = load_liquidity_config(path)
+series = SeriesProvenance(
+    data.symbol,
+    data.timeframe,
+    "synthetic_spot",
+    data.data_source,
+    "fvg-demo:v1:from-first-row:missing=error",
+)
+liquidity_frames = analyze_liquidity(
+    create_data_provider(data).fetch_ohlcv().candles,
+    series=series,
+    config=liquidity,
+    analysis_config=load_analysis_config(path),
+)
+displacement_frames = analyze_displacement(
+    liquidity_frames,
+    load_displacement_config(path),
+    price_unit=liquidity.price_unit,
+)
+frames = analyze_fvg(displacement_frames, load_fvg_config(path))
+for frame in frames:
+    for gap in frame.events:
+        print(
+            gap.detection_index,
+            gap.direction.value,
+            gap.lower_boundary,
+            gap.upper_boundary,
+            gap.gap_size,
+        )
+```
+
+```text
+16 bullish 101 104 3
+19 bearish 98 106 8
+```
+
+`FVGAnalyzer().update(displacement_frame)` is the streaming equivalent. It consumes
+the original Phase 5 frames without rerunning earlier engines. C1/C2/C3 are the
+last three **observed** candles; a strict outer-wick gap becomes knowable only
+when C3 closes. Equality is never a gap. Minimum size is an inclusive absolute
+price distance; default zero still requires a positive gap. Displacement is
+optional unless `require_displacement=true`, which requires matching C2 evidence.
+
+Sweep context is copied from C2's published context, never reselected at C3.
+Creation records never mutate on later touches/fills: **lifecycle tracking is not
+implemented**. These records are analysis facts, not signals or tradeable-zone claims.
+Read [FVG methodology](docs/fvg-methodology.md) for exact geometry, availability,
+configuration, causal relationships, provenance, and limitations.
+
+## Existing Phase 5 displacement example
 
 The included twenty-candle dataset is **synthetic**, not live exchange data:
 
@@ -279,6 +347,8 @@ Live Binance availability is not asserted by the offline tests.
   Direct `AnalysisConfig()` defaults to 5; the TOML loader requires an explicit key.
 - `[liquidity]`: explicit `price_unit` and quoted `equal_tolerance_bps` (default zero).
 - `[displacement]`: explicit ATR/body/range/close/context settings; no scoring settings.
+- `[fvg]`: quoted `min_gap_size` (default zero) and boolean `require_displacement` (default false).
+- `config/fvg.example.toml`: complete default Phase 6 geometry/evidence example.
 - `config/displacement.example.toml`: default Phase 5 warm-up and displacement example.
 - `config/liquidity.example.toml`: hand-audited Phase 4 pool/sweep example.
 - `config/analysis.example.toml`: retained Phase 3 structure example.
@@ -299,6 +369,7 @@ src/smcsignal/
 │   ├── __init__.py            # Public API
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
+│   ├── fvg/                  # Phase 6 strict three-candle creation evidence
 │   ├── displacement/         # Phase 5 metrics, ATR evidence, and frame-native producer
 │   ├── liquidity/            # Phase 4 models, producer, artifacts, config, time
 │   ├── provenance.py         # Approved shared evidence contracts
@@ -312,6 +383,7 @@ tests/data/                   # Existing offline data-provider/validation tests
 tests/analysis/               # Existing structure and shared-provenance tests
 tests/liquidity/              # Pools, sweeps, lifecycle, artifacts, and causal replay
 tests/displacement/           # ATR, displacement, context, boundaries, and causal replay
+tests/fvg/                    # FVG geometry, relationships, provenance, and causal replay
 tests/fixtures/               # Tiny, explicitly synthetic CSV fixtures
 docs/                         # Architecture and methodologies
 ```
@@ -326,6 +398,7 @@ python -m pytest
 python -m pytest tests/analysis
 python -m pytest tests/liquidity
 python -m pytest tests/displacement
+python -m pytest tests/fvg
 python -m pip check
 python -m build
 ```
@@ -339,9 +412,9 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 5
+## Evidence provenance through Phase 6
 
-`LiquidityPool`, `SweepEvent`, `ATRReference`, and `DisplacementEvent` compose the approved immutable provenance
+`LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, and `FVGEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
 hashes, raw candle/swing evidence, historical context, true availability instants,
 and exact snapshot dependencies. Older pool versions are never edited in place.
@@ -350,11 +423,11 @@ and exact snapshot dependencies. Older pool versions are never edited in place.
 The [evidence contract](docs/evidence-provenance-contract.md) also preserves the
 **deferred** scoring policy: future configurable threshold default 75, quality over
 quantity, valid zero-signal outcomes, and no signal-count targets. No scoring or
-active publication-threshold configuration is implemented in Phase 5.
+active publication-threshold configuration is implemented in Phase 6.
 
 ## Phase boundary
 
-No fair value gaps, order/ breaker/ mitigation blocks, premium/discount, OTE,
+No order/ breaker/ mitigation blocks, premium/discount, OTE,
 session strategy, signal engine, BUY/SELL signals, charts, Telegram, halal filter,
 or scoring is implemented.
 There is no authentication, order execution, leverage/margin/shorting, backtesting,
@@ -366,4 +439,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 5. Phase 6 / Fair Value Gaps require explicit approval.**
+**Stop after Phase 6. Phase 7 — Order Blocks requires explicit approval.**

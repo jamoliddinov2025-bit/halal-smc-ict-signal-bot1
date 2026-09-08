@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 5 — objective displacement, retaining all prior analysis layers**.
+Current scope: **Phase 6 — strict three-candle FVG creation, retaining all prior analysis layers**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -13,11 +13,13 @@ Current scope: **Phase 5 — objective displacement, retaining all prior analysi
   equality bands, sweep rules, lifecycle, causal artifacts, and replay limits.
 - [Displacement methodology](displacement-methodology.md): prior ATR, objective inclusive
   boundaries, optional sweep context, availability, deterministic evidence, and limits.
+- [FVG methodology](fvg-methodology.md): strict geometry/minimums, C2 displacement/sweep
+  context, creation timing, immutable evidence, and no lifecycle/strategy assumptions.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
-  now used by actual liquidity/sweep producers; scoring remains deferred beyond Phase 5.
+  now used by actual liquidity/sweep producers; scoring remains deferred beyond Phase 6.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
-No fair value gaps, order/ breaker/ mitigation blocks,
+No order/ breaker/ mitigation blocks,
 premium/discount, OTE, session strategy, signals, charts, Telegram, halal filter, or scoring is implemented.
-Phase 6 / Fair Value Gaps require explicit approval.
+Phase 7 — Order Blocks requires explicit approval.

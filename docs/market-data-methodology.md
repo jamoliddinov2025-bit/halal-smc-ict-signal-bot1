@@ -171,5 +171,6 @@ Phase 3 adds a separate [confirmed market structure layer](market-structure-meth
 with [historical trend](trend-methodology.md) and [no-look-ahead guarantees](no-look-ahead.md).
 Phase 4 adds [liquidity pools and sweeps](liquidity-sweep-methodology.md) on these
 same canonical observations. Phase 5 adds [displacement](displacement-methodology.md)
-without duplicating these providers. No fair value gaps, order blocks,
+without duplicating these providers. Phase 6 adds [FVG creation](fvg-methodology.md).
+No order blocks,
 premium/discount, signals, charts, Telegram, halal filter, or scoring is added.

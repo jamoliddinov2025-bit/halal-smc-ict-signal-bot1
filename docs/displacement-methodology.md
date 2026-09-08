@@ -295,7 +295,10 @@ The future Setup Quality Score policy remains documentation only: scale 0–100,
 future configurable publication threshold default 75, quality over quantity,
 zero signals valid, and no signal quotas. **No scoring is implemented in Phase 5.**
 
-No FVG, Order Block, Breaker Block, Mitigation Block, Premium/Discount, OTE, session
-strategy, multi-timeframe signal engine, BUY/SELL signal, Telegram, chart, halal
-filter, backtesting, live trading, credentials, or order execution is added.
-**Stop after Phase 5. Phase 6 / Fair Value Gaps require explicit approval.**
+Phase 5 itself added no FVG, Order Block, Breaker Block, Mitigation Block,
+Premium/Discount, OTE, session strategy, multi-timeframe signal engine, BUY/SELL
+signal, Telegram, chart, halal filter, backtesting, live trading, credentials,
+or order execution.
+Phase 6 now consumes these unchanged frames in a separate
+[FVG creation engine](fvg-methodology.md); no displacement rule above is changed.
+**Stop after Phase 6. Phase 7 — Order Blocks requires explicit approval.**
