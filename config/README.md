@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 14
+# Configuration — market data and analysis through Phase 15
 
-Thirteen explicit loaders consume separate tables:
+Fourteen explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -15,6 +15,7 @@ Thirteen explicit loaders consume separate tables:
 - `smcsignal.analysis.load_ote_config(path)` reads only `[ote]`.
 - `smcsignal.analysis.load_mtf_config(path)` reads only `[mtf]`.
 - `smcsignal.analysis.load_halal_filter_config(path)` reads only `[halal_filter]`.
+- `smcsignal.analysis.load_setup_quality_config(path)` reads only `[setup_quality]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -62,6 +63,8 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 
 - `halal-filter.example.toml`: the Phase 13 synthetic MTF history plus the
   default allow-list registry (`BTCUSDT`, `ETHUSDT`, `BNBUSDT`, `SOLUSDT`).
+- `setup-quality.example.toml`: the same synthetic MTF/halal history plus
+  integer `publish_threshold = 75`.
 
 ## Market data settings (unchanged)
 
@@ -354,6 +357,23 @@ or scraping settings, are rejected.
 fetch the internet or make autonomous religious decisions. UNKNOWN is never
 silently treated as HALAL. See
 [halal filter methodology](../docs/halal-filter-methodology.md).
+
+## Setup quality settings (Phase 15)
+
+```toml
+[setup_quality]
+publish_threshold = 75
+```
+
+The table requires exactly this one integer key in 0–100. Direct
+`SetupQualityConfig()` defaults to 75. Component weights are frozen
+methodology constants and are not TOML-tunable. Unknown keys, including
+weights, scores, signals, probabilities, and ranks, are rejected.
+
+`SetupQualityAnalyzer` consumes existing Phase 14 frames. HARAM and UNKNOWN
+force total 0. Missing nested evidence contributes 0 points. `threshold_passed`
+is a quality flag, not a BUY/SELL signal. See
+[setup quality methodology](../docs/setup-quality-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

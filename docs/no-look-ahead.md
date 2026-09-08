@@ -1,4 +1,4 @@
-# No-look-ahead guarantees — Phases 3 through 14
+# No-look-ahead guarantees — Phases 3 through 15
 
 ## Contract
 
@@ -271,6 +271,19 @@ immutability tests cover allow-list HALAL, unlisted UNKNOWN, deny-list HARAM,
 and case normalization. See
 [halal filter methodology](halal-filter-methodology.md).
 
+## Phase 15 setup quality score
+
+The scorer reads only already-published nested facts on the current
+`HalalSnapshot`. It does not inspect future candles or prices to raise an old
+total, and it does not treat UNKNOWN as HALAL. Snapshot identities reuse the
+current Halal consumed-prefix hash, so appending later frames cannot rename
+earlier scores.
+
+Prefix, future-suffix, batch/stream/chunk, identity, and original-object
+immutability tests cover HALAL totals 10 then 25 on the synthetic example,
+unlisted UNKNOWN zeros, and deny-list HARAM zeros. See
+[setup quality methodology](setup-quality-methodology.md).
+
 ## What this guarantee does not mean
 
 - Candle opening timestamps are identifiers, **not** claims that a close-based
@@ -288,6 +301,6 @@ and case normalization. See
   backtest profitability, trading recommendations, or asset eligibility follows
   from these guarantees.
 
-All tests are offline. Phase 14 adds registry enforcement only. No
+All tests are offline. Phase 15 adds integer setup quality only. No
 OB/FVG lifecycle, session strategy, signals, risk management,
-position sizing, Telegram, backtesting, execution, or scoring is implemented.
+position sizing, Telegram, backtesting, or execution is implemented.

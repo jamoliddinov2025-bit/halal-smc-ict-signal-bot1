@@ -176,5 +176,5 @@ No Setup Quality Score, 75+ threshold, signal generation, BUY/SELL, probability,
 profitability claims, entries, stops, targets, risk/reward, position sizing,
 trade management, Telegram, scraping, live trading, credentials, futures,
 leverage, backtesting, monthly statistics, AI optimization, portfolio
-management, or strategy ranking is implemented.
-**Stop after Phase 14. Phase 15 — Setup Quality Scoring requires explicit approval.**
+management, or strategy ranking is implemented in this phase.
+Phase 15 implements the integer setup quality score separately.

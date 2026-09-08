@@ -11,9 +11,9 @@ artifacts, and tests are documented in the
 `ATRReference`, `DisplacementEvent`, and frame records using these same contracts;
 see [displacement methodology](displacement-methodology.md).
 
-No scoring, weights, normalized quality values, confidence ratings, ranking,
-signal publishing, or active publication-threshold configuration is implemented.
-Scoring remains excluded through Phase 14 and deferred to separate future approval. Existing Phase 3 swings, trend,
+Phase 15 implements the integer Setup Quality Score (0–100, frozen weights,
+`publish_threshold` default 75). Ranking, signal publishing, probabilities, and
+confidence ratings remain unimplemented. Existing Phase 3 swings, trend,
 BOS/CHoCH definitions, results, and data-provider behavior remain unchanged.
 
 ## 1. Composition, not feature/scoring coupling
@@ -145,10 +145,10 @@ prerequisites, once defined, cannot be overridden by a favorable aggregate resul
 
 The eventual signal engine must:
 
-- Calculate a **Setup Quality Score on a 0–100 scale** in a later approved phase,
-  **not through Phase 14; deferred to separate future approval**.
-- Publish only valid setups **above** a configurable threshold; the required
-  future default is **75**. No active setting or comparison is added now.
+- Consume the Phase 15 **Setup Quality Score on a 0–100 scale**; it must not
+  recalculate a second score or treat `threshold_passed` as a trade.
+- Publish only valid setups meeting a configurable threshold; the implemented
+  default is **75**.
 - Prioritize quality over quantity. **Zero signals is a valid result** when no
   qualifying setup exists, not an error to be repaired with fallback signals.
 - Never use minimum/desired signal counts, daily quotas, activity targets, or
@@ -156,9 +156,9 @@ The eventual signal engine must:
   thresholds, filters, weights, or parameter tuning. Do not relax standards to
   manufacture activity. Future observability counts must not become generator inputs.
 
-No component weights, score values, placeholder totals, normalization rules,
-missing-factor substitutions, thresholds in executable configuration, or publish
-logic are created by this architectural change.
+Phase 15 now stores frozen component weights, integer totals, missing-factor
+zeros, and the executable `publish_threshold`. Signal publish logic is still
+not implemented.
 
 ## 7. Producer acceptance requirements
 
@@ -173,8 +173,9 @@ Liquidity/sweep producer tests must establish that:
 5. Later touches, invalidations, reclaims, or added future data do not mutate or
    rename historical evidence. New states use new immutable snapshot identities.
 6. The required liquidity/sweep fields above survive any future serialization.
-7. There is still no scoring or signal publishing through Phase 14 and no count-target
-   mechanism influencing analytical outputs.
+7. There is still no signal publishing and no count-target
+   mechanism influencing analytical outputs. Phase 15 scoring is integer quality
+   only.
 
 Shared-contract tests retain their original coverage. `tests/liquidity/` now also
 verifies actual producers, immutable membership/lifecycle versions, raw JSON

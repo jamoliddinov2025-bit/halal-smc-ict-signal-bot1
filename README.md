@@ -1,14 +1,15 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 14 — deterministic, configuration-driven halal asset filter.**
+**Status: Phase 15 — deterministic setup quality score.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
 per-candle structure, liquidity, displacement, FVG, OB, PD, MSS, Breaker,
-Mitigation, OTE, multi-timeframe confluence, and registry-based eligibility
-snapshots. It does **not** generate trading signals, execute orders, or issue
-religious rulings. UNKNOWN assets are never silently treated as HALAL.
+Mitigation, OTE, multi-timeframe confluence, registry-based eligibility, and
+integer setup-quality snapshots. It does **not** generate trading signals,
+execute orders, or issue religious rulings. UNKNOWN assets are never silently
+treated as HALAL. HARAM and UNKNOWN receive quality score 0.
 
 ## Install and verify
 
@@ -24,7 +25,113 @@ python -m pytest
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
 
-## Phase 14 offline halal asset filter example
+## Phase 15 offline setup quality example
+
+The scorer only reads already-published nested Halal/MTF facts. It does not
+rerun earlier analyzers, fit weights, or emit trades.
+`config/setup-quality.example.toml` reuses the **synthetic** Phase 13 15m/1h/4h
+history:
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    analyze_liquidity,
+    analyze_displacement,
+    analyze_fvg,
+    analyze_order_blocks,
+    analyze_pd,
+    analyze_ote,
+    analyze_mtf,
+    analyze_halal,
+    analyze_setup_quality,
+    load_analysis_config,
+    load_liquidity_config,
+    load_displacement_config,
+    load_fvg_config,
+    load_order_block_config,
+    load_pd_config,
+    load_ote_config,
+    load_mtf_config,
+    load_halal_filter_config,
+    load_setup_quality_config,
+)
+from smcsignal.data import CsvDataProvider, MarketDataConfig, load_data_config
+
+path = "config/setup-quality.example.toml"
+data = load_data_config(path)
+liquidity = load_liquidity_config(path)
+mtf = load_mtf_config(path)
+halal = load_halal_filter_config(path)
+quality = load_setup_quality_config(path)
+
+
+def frames(candles, timeframe):
+    series = SeriesProvenance(
+        data.symbol,
+        timeframe,
+        "synthetic_spot",
+        "csv",
+        f"sqs-demo:{timeframe}:v1:from-first-row:missing=error",
+    )
+    a = analyze_liquidity(
+        candles, series=series, config=liquidity, analysis_config=load_analysis_config(path)
+    )
+    b = analyze_displacement(a, load_displacement_config(path), price_unit=liquidity.price_unit)
+    c = analyze_order_blocks(analyze_fvg(b, load_fvg_config(path)), load_order_block_config(path))
+    return analyze_ote(analyze_pd(c, load_pd_config(path)), load_ote_config(path))
+
+
+primary = frames(CsvDataProvider(data).fetch_ohlcv().candles, "15m")
+hourly = frames(
+    CsvDataProvider(
+        MarketDataConfig(
+            symbol="BTCUSDT",
+            timeframe="1h",
+            data_source="csv",
+            history_limit=500,
+            csv_path="tests/fixtures/mtf-1h.csv",
+        )
+    )
+    .fetch_ohlcv()
+    .candles,
+    "1h",
+)
+four = frames(
+    CsvDataProvider(
+        MarketDataConfig(
+            symbol="BTCUSDT",
+            timeframe="4h",
+            data_source="csv",
+            history_limit=500,
+            csv_path="tests/fixtures/mtf-4h.csv",
+        )
+    )
+    .fetch_ohlcv()
+    .candles,
+    "4h",
+)
+filtered = analyze_halal(analyze_mtf(primary, {"1h": hourly, "4h": four}, mtf), halal)
+results = analyze_setup_quality(filtered, quality)
+print(results[0].total, results[0].threshold_passed)
+print(results[4].total, results[4].threshold_passed)
+```
+
+```text
+10 False
+25 False
+```
+
+`SetupQualityAnalyzer(config).update(halal_frame)` is the streaming equivalent.
+Index 0 is HALAL-only (10). Index 4 adds directional MTF (25). Missing nested
+events contribute 0, not failure. Default `publish_threshold = 75` therefore
+does not pass. HARAM and UNKNOWN force total 0. Upstream Halal objects and IDs
+are unchanged.
+
+This is integer quality only: no entries, Telegram, ranking, or trading. See
+[setup quality methodology](docs/setup-quality-methodology.md) for weights,
+gates, and limits.
+
+## Existing Phase 14 offline halal asset filter example
 
 The filter only enforces a caller-supplied registry. It does not fetch the
 internet, scrape screening sites, or make autonomous religious decisions.
@@ -998,6 +1105,8 @@ Live Binance availability is not asserted by the offline tests.
 - `[ote]`: quoted 0.62/0.79 retracements, inclusive boundaries, close evaluation.
 - `[mtf]`: enabled completed-candle join of configured higher timeframes onto a primary series.
 - `[halal_filter]`: allow-list or deny-list registry; default allow list BTCUSDT/ETHUSDT/BNBUSDT/SOLUSDT.
+- `[setup_quality]`: integer `publish_threshold` (default 75); component weights are not configurable.
+- `config/setup-quality.example.toml`: hand-audited Phase 15 integer score example on synthetic MTF history.
 - `config/halal-filter.example.toml`: hand-audited Phase 14 registry example on synthetic MTF history.
 - `config/mtf.example.toml`: hand-audited Phase 13 15m/1h/4h causal confluence example.
 - `config/ote.example.toml`: hand-audited Phase 12 OTE location example.
@@ -1027,6 +1136,7 @@ src/smcsignal/
 │   ├── __init__.py            # Public API
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
+│   ├── setup_quality/        # Phase 15 integer 0–100 score from nested facts; not a signal
 │   ├── halal_filter/         # Phase 14 config-driven registry; no autonomous rulings
 │   ├── mtf/                  # Phase 13 causal HTF confluence from existing OTE frames
 │   ├── ote/                  # Phase 12 OTE location context from existing dealing ranges
@@ -1055,6 +1165,7 @@ tests/premium_discount/       # Range/band boundaries, sidecars, provenance, and
 tests/mss/                    # MSS definitions, relationships, immutable evidence, causal replay
 tests/breaker_blocks/         # Strict conversions, rejection facts, exact timing, causal replay
 tests/ote/                    # Retracement geometry, close classification, timing, causal replay
+tests/setup_quality/          # integer awards, HARAM/UNKNOWN gate, threshold flag, causal replay
 tests/halal_filter/           # allow/deny, unknown, case, provenance, and causal replay
 tests/mtf/                    # HTF eligibility, independent labels, MIXED confluence, causal replay
 tests/mitigation_blocks/      # First-interaction geometry, Breaker policy, exact timing, causal replay
@@ -1094,7 +1205,7 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 14
+## Evidence provenance through Phase 15
 
 `LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
@@ -1102,16 +1213,16 @@ hashes, raw candle/swing evidence, historical context, true availability instant
 and exact snapshot dependencies. Older pool versions are never edited in place.
 `evidence_json` serializes complete raw records without floating-point price loss.
 
-The [evidence contract](docs/evidence-provenance-contract.md) also preserves the
-**deferred** scoring policy: future configurable threshold default 75, quality over
-quantity, valid zero-signal outcomes, and no signal-count targets. No scoring or
-active publication-threshold configuration is implemented in Phase 13.
+Phase 15 adds `ScoreBreakdown`, `SetupQualityScore`, and `ScoreSnapshot` on the
+same contract. The integer 0–100 total uses frozen weights, a HARAM/UNKNOWN hard
+gate, missing-evidence zeros, and `publish_threshold` default 75. Quality over
+quantity remains: zero passing scores is valid, and there are no signal-count
+targets. `threshold_passed` is not a BUY/SELL signal.
 
 ## Phase boundary
 
-No OTE,
-session strategy, signal engine, BUY/SELL signals, charts, Telegram, halal filter,
-or scoring is implemented.
+No session strategy, signal engine, BUY/SELL signals, charts, or Telegram is
+implemented.
 There is no authentication, order execution, leverage/margin/shorting, backtesting,
 or trading-performance claim.
 
@@ -1121,4 +1232,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 11. Phase 12 — OTE requires explicit approval.**
+**Stop after Phase 15. Phase 16 — Signal Engine requires explicit approval.**

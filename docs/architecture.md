@@ -1,4 +1,4 @@
-# Architecture — Phase 14
+# Architecture — Phase 15
 
 ## Layers and explicit I/O
 
@@ -352,16 +352,31 @@ MTF object and ID. Only `HALAL` is eligible for future signal phases.
 consumed-prefix hash is reused. See
 [halal filter methodology](halal-filter-methodology.md).
 
+## Phase 15 setup quality score
+
+`analysis/setup_quality/` consumes existing `HalalSnapshot` frames. It does not
+rerun or modify Phases 1–14. The integer 0–100 total uses frozen component
+weights. HARAM and UNKNOWN force total 0. Missing nested evidence contributes
+0 points rather than failing the score. MSS, Breaker, and Mitigation are not
+on the nested Halal→MTF graph, so those weights stay at 0 in sqs-v1.
+
+`ScoreBreakdown`, `SetupQualityScore`, and `ScoreSnapshot` retain the original
+Halal object and ID. `threshold_passed` compares the total to
+`publish_threshold` (default 75) only when the asset is HALAL. It is a quality
+flag, not a BUY/SELL signal. State commits only after validation and provenance
+succeed. The current consumed-prefix hash is reused. See
+[setup quality methodology](setup-quality-methodology.md).
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 14 implements none of:
+Phase 15 implements none of:
 session strategy, a signal
-engine, BUY/SELL signals, charts, Telegram, or scoring.
+engine, BUY/SELL signals, charts, or Telegram.
 There are also no orders, authenticated account access, or trading-performance
 claims. The filter is a caller-supplied registry, not Sharia certification.
 
-Stop after Phase 14. Phase 15 — Setup Quality Scoring requires explicit approval.
+Stop after Phase 15. Phase 16 — Signal Engine requires explicit approval.

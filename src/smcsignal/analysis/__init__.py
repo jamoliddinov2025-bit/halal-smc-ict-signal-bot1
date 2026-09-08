@@ -1,4 +1,4 @@
-"""Public analysis API through Phase 14: existing evidence and halal registry."""
+"""Public analysis API through Phase 15: existing evidence and setup quality."""
 
 from smcsignal.analysis.breaker_blocks import (
     BreakerBlock,
@@ -152,11 +152,33 @@ from smcsignal.analysis.provenance import (
     ProvenancedEvidence,
     SeriesProvenance,
 )
+from smcsignal.analysis.setup_quality import (
+    DEFAULT_PUBLISH_THRESHOLD,
+    WEIGHTS,
+    ScoreBreakdown,
+    ScoreComponent,
+    ScoreSnapshot,
+    SetupQualityAnalyzer,
+    SetupQualityConfig,
+    SetupQualityScore,
+    analyze_setup_quality,
+    load_setup_quality_config,
+)
 from smcsignal.analysis.structure import MarketStructureAnalyzer, analyze
 from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "DEFAULT_PUBLISH_THRESHOLD",
+    "WEIGHTS",
+    "ScoreBreakdown",
+    "ScoreComponent",
+    "ScoreSnapshot",
+    "SetupQualityAnalyzer",
+    "SetupQualityConfig",
+    "SetupQualityScore",
+    "analyze_setup_quality",
+    "load_setup_quality_config",
     "AssetClassification",
     "FilterMode",
     "HalalDecision",

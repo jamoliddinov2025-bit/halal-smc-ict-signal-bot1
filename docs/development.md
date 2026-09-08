@@ -78,7 +78,8 @@ transport responses and clocks; no live requests, exchange credentials, or exter
 service availability are part of the test results. Fixtures are labeled synthetic.
 
 They do **not** validate a trading strategy, financial performance, or religious
-compliance; the Phase 14 registry only enforces a caller-supplied list.
+compliance; the Phase 14 registry only enforces a caller-supplied list, and
+Phase 15 scores already-published facts without claiming expected returns.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -260,6 +261,20 @@ provenance, every-prefix identity, batch/stream/chunk replay, and provider
 integration. No scoring, signal, Telegram, or religious-authority test is
 included.
 
+## Phase 15 setup quality tests and example
+
+```bash
+python -m pytest tests/setup_quality
+python -m pytest --collect-only -q tests/setup_quality
+```
+
+`config/setup-quality.example.toml` scores synthetic allow-listed `BTCUSDT` as
+10 at index 0 and 25 at index 4 against default threshold 75, so
+`threshold_passed` stays false. Tests cover HARAM/UNKNOWN hard zeros, missing
+evidence as 0 points, frozen weights, threshold flags, immutable provenance,
+every-prefix identity, batch/stream/chunk replay, and provider integration.
+No signal, ranking, probability, Telegram, or performance test is included.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -290,7 +305,9 @@ completed-candle HTF eligibility, independent 1h/4h labels, MIXED confluence,
 primary-prefix hashes, and prefix/batch/stream equivalence through the installed
 wheel. For Phase 14 verify allow-list HALAL, unlisted UNKNOWN, deny-list HARAM,
 case normalization, unchanged upstream IDs, and prefix/batch/stream equivalence
-through the installed wheel.
+through the installed wheel. For Phase 15 verify integer totals 10 then 25 on
+the synthetic example, HARAM/UNKNOWN zeros, unchanged upstream IDs, threshold
+flags, and prefix/batch/stream equivalence through the installed wheel.
 Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
@@ -302,5 +319,5 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 13. Do not implement Phase 14 /
-Setup Quality Scoring without explicit approval.
+the designated working branch. Stop after Phase 15. Do not implement Phase 16
+Signal Engine without explicit approval.

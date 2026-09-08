@@ -13,16 +13,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="smcsignal",
         description=(
-            "Professional Halal SMC/ICT Spot Signal Bot — Phase 14 configuration-driven "
-            "halal asset filter."
+            "Professional Halal SMC/ICT Spot Signal Bot — Phase 15 deterministic "
+            "setup quality score."
         ),
-        epilog="No signal engine is implemented. Phase 15 requires explicit approval.",
+        epilog="No signal engine is implemented. Phase 16 requires explicit approval.",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.parse_args(argv)
 
     print("Professional Halal SMC/ICT Spot Signal Bot")
-    print("Phase 14: configuration-driven halal asset filter.")
+    print("Phase 15: deterministic setup quality score.")
     print("Market data and analysis are available through the Python API.")
-    print("No signal engine, scoring, or trading.")
+    print("No signal engine or trading.")
     return 0
