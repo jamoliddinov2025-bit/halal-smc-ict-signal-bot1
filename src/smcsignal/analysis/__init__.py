@@ -1,5 +1,21 @@
 """Public analysis API through Phase 18: existing evidence, signals, and outcomes."""
 
+from smcsignal.analysis.backtest import (
+    BacktestConfig,
+    BacktestConfiguration,
+    BacktestReport,
+    BacktestSignalResult,
+    HistoricalReplay,
+    ReplayDataset,
+    ReplayResult,
+    ReplayStep,
+    load_backtest_config,
+    load_backtest_configuration,
+    machine_summary,
+    render_backtest_text,
+    replay_history,
+    run_backtest,
+)
 from smcsignal.analysis.breaker_blocks import (
     BreakerBlock,
     BreakerBlockAnalyzer,
@@ -255,6 +271,20 @@ from smcsignal.analysis.visualization import (
 )
 
 __all__ = [
+    "BacktestConfig",
+    "BacktestConfiguration",
+    "BacktestReport",
+    "BacktestSignalResult",
+    "HistoricalReplay",
+    "ReplayDataset",
+    "ReplayResult",
+    "ReplayStep",
+    "load_backtest_config",
+    "load_backtest_configuration",
+    "machine_summary",
+    "replay_history",
+    "render_backtest_text",
+    "run_backtest",
     "AttributionSnapshot",
     "SetupAttribution",
     "SetupAttributionAnalyzer",

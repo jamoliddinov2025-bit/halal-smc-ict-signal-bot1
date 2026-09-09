@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 19
+# Configuration — market data and analysis through Phase 20
 
-Twenty-two explicit loaders consume separate tables:
+Twenty-three explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -24,6 +24,7 @@ Twenty-two explicit loaders consume separate tables:
 - `smcsignal.analysis.load_performance_config(path)` reads only `[performance]`.
 - `smcsignal.analysis.load_review_config(path)` reads only `[review]`.
 - `smcsignal.analysis.load_visualization_config(path)` reads only `[visualization]`.
+- `smcsignal.analysis.load_backtest_config(path)` reads only `[backtest]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -80,6 +81,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
   `visualization.example.toml`: the same synthetic history plus the Phase 19
   `[indicators]`, `[setup_attribution]`, `[performance]`, `[review]`, and
   `[visualization]` tables.
+- `backtest.example.toml`: the same synthetic history plus the full pipeline
+  tables and the Phase 20 `[backtest]` table; load the whole bundle with
+  `smcsignal.analysis.load_backtest_configuration(path)`.
 - `outcome-tracking.example.toml`: the same synthetic history plus the
   fixed-horizon outcome table; zero outcomes at default threshold 75.
 - `signal-engine.example.toml`: the same synthetic history plus frozen
@@ -534,6 +538,21 @@ semantic style tokens, never colors; output is deterministic SVG and plain
 text only — no PNG, raster, or Telegram transport. Visualization consumes
 published facts and never re-detects. See
 [visualization methodology](../docs/visualization-methodology.md).
+
+## Backtest settings (Phase 20a)
+
+```toml
+[backtest]
+enabled = true
+```
+
+The table requires exactly this key. A backtest replays one declared
+historical dataset chronologically through the unchanged Phase 3–19 pipeline;
+the bundle loader `load_backtest_configuration` reads every pipeline table
+through its existing strict loader and cross-validates the setup-quality and
+signal-engine thresholds. There are no strategy, order, sizing, fee,
+optimization, or self-modification settings. See
+[backtest methodology](../docs/backtest-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

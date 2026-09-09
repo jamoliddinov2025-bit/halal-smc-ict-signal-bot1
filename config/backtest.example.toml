@@ -1,37 +1,21 @@
-# Phase 17 offline configuration. Separate loaders consume each runtime table.
-# Project/scope/safety tables document intent, not a runtime trading policy engine.
-# This CSV is explicitly synthetic test data, not historical Binance observations.
-# Never add credentials or account data.
-
-[project]
-name = "Professional Halal SMC/ICT Spot Signal Bot"
-phase = 20
-
-[scope]
-market = "spot"
-direction = "long_only"
-signal_only = true
-
-[safety]
-authenticated_exchange_access = false
-order_execution = false
-leverage = false
-margin = false
-short_selling = false
-
-[market_data]
+# Phase 20: deterministic historical replay and backtesting foundation.
+# A backtest replays one declared historical dataset chronologically through the
+# UNCHANGED Phase 3-19 pipeline: no second strategy, detector, classifier, or
+# formula exists. Higher-timeframe frames are generated from the same history
+# and joined by the existing completed-candle availability rule, so no future
+# candle can influence a published fact. Results are descriptive research
+# records over published BUY_SIGNAL facts: no orders, execution, fees, sizing,
+# optimization, or advice.
 symbol = "BTCUSDT"
 timeframe = "15m"
 data_source = "csv"
 history_limit = 500
-# Resolved relative to this TOML file, not the process working directory.
-csv_path = "../tests/fixtures/ohlcv.csv"
+csv_path = "../tests/fixtures/mtf-15m.csv"
 missing_value_policy = "error"
 timeout_seconds = 10.0
 
 [analysis]
-# Total window of five candles: two left + pivot + two right.
-fractal_length = 5
+fractal_length = 3
 
 [liquidity]
 price_unit = "USDT"
@@ -60,21 +44,6 @@ require_fvg = false
 
 [premium_discount]
 equilibrium_half_width_fraction = "0"
-
-[mss]
-enable_displacement_requirement = true
-enable_structure_requirement = true
-
-[breaker_blocks]
-require_displacement = true
-require_mss = true
-invalidation_basis = "close_through_far_boundary"
-zone_basis = "original_order_block"
-
-[mitigation_blocks]
-interaction_basis = "range_intersection"
-first_interaction_only = true
-ignore_after_breaker = true
 
 [ote]
 lower_retracement = "0.62"
@@ -114,11 +83,8 @@ duplicate_policy = "one_per_setup"
 enabled = true
 horizon_bars = 10
 
-[indicators]
+[backtest]
 enabled = true
-ema_periods = [20, 50]
-rsi_period = 14
-volume_average_period = 20
 
 [setup_attribution]
 enabled = true
@@ -126,16 +92,3 @@ enabled = true
 [performance]
 enabled = true
 minimum_finalized_for_ranking = 10
-
-[review]
-enabled = true
-minimum_finalized_for_comparison = 10
-
-[visualization]
-enabled = true
-svg_width = 800
-svg_height = 400
-text_rows = 24
-
-[backtest]
-enabled = true

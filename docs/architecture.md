@@ -1,4 +1,4 @@
-# Architecture — Phase 19
+# Architecture — Phase 20
 
 ## Layers and explicit I/O
 
@@ -454,16 +454,41 @@ without reading anything the stream has not published. See
 [monthly review methodology](monthly-review-methodology.md), and
 [visualization methodology](visualization-methodology.md).
 
+## Phase 20 historical replay and backtesting foundation
+
+`analysis/backtest/` is a consumer-only orchestration layer: it replays
+declared historical datasets chronologically through the **unchanged**
+Phase 3–19 pipeline and composes the existing analytics. Nothing is
+duplicated and no decision module can import it.
+
+| Module | Responsibility |
+| --- | --- |
+| `ReplayDataset` | one declared offline history: symbol, timeframe, primary + higher candles, series identity |
+| `BacktestConfiguration` | frozen bundle of the existing Phase 3–19 configs, cross-validated |
+| `HistoricalReplay` | pull-based candle-at-a-time replay; never reads beyond the draw cursor |
+| `ReplayResult` | published frames retained by identity plus a digest `replay_id` |
+| `BacktestReport` | per-signal rows plus the composed Phase 19c `PerformanceReport` |
+| text/evidence | deterministic plain-text and canonical-JSON summaries |
+
+Higher-timeframe frames are generated once from the same declared history and
+joined by the existing MTF availability cursor, so no future candle can
+influence a published fact. Batch, streaming, and chunked replays are
+byte-identical; prefix replays reproduce the full replay exactly. Rows copy
+signal, attribution, and outcome facts with exact Decimal ratios from the
+existing Phase 18 helpers; aggregation reuses `analyze_performance` unchanged.
+Import-graph tests keep every Phase 1–19 module free of backtest imports. See
+[backtest methodology](backtest-methodology.md).
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phases 1–19 implement none of:
+Phases 1–20 implement none of:
 session strategy, SELL/SHORT trades, entries, stops, targets, sizing, charts,
 or Telegram.
 There are also no orders, authenticated account access, or trading-performance
 claims. The filter is a caller-supplied registry, not Sharia certification.
 
-Stop after Phase 19. Phase 20 requires explicit approval.
+Stop after Phase 20. Phase 21 requires explicit approval.

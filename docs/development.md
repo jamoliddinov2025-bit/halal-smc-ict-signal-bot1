@@ -83,9 +83,11 @@ Phase 15 scores already-published facts without claiming expected returns,
 Phase 16 gates those facts without emitting trades, Phase 17 publishes
 spot `BUY_SIGNAL` records without SELL, SHORT, entries, or execution,
 Phase 18 tracks fixed-horizon outcomes of those publications without any
-trading, fees, or performance claim, and Phase 19 adds consumer-only
+trading, fees, or performance claim, Phase 19 adds consumer-only
 indicators, attribution, performance, review, and visualization layers
-that never generate, gate, or veto a signal.
+that never generate, gate, or veto a signal, and Phase 20 replays declared
+historical datasets through the unchanged pipeline as descriptive
+backtests without execution, optimization, or advice.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -357,6 +359,26 @@ prefix/future-shock no-look-ahead proofs. Each package's example config
 reuses the synthetic Phase 13–17 history. No trading, execution, Telegram,
 or optimization test is included.
 
+## Phase 20 backtest and replay tests and examples
+
+```bash
+python -m pytest tests/backtest
+```
+
+The focused suite covers the replay layer end to end. Models/config: dataset
+contracts (chronology, overlap, multiples, frozen higher mappings), bundle
+cross-validation, TOML loaders with exact-key tables. Replay: draw-cursor
+ordering, batch/stream/chunk equality, prefix equivalence, zero-signal and
+empty-higher datasets, multi-symbol and multi-timeframe partitioning. No
+lookahead: an access-logging candle tuple proves the engine never indexes
+beyond the draw cursor, published HTF evidence predates each primary open,
+alternate futures leave past signals byte-identical, and outcomes equal the
+standalone Phase 18 replay. Integration: signal, outcome, attribution, and
+performance frames equal the direct Phase 17–19 chains. Reporting: golden
+plain-text and canonical-JSON summaries. Regression: import-graph isolation
+(no Phase 1–19 module imports backtest), dependency scope, baseline pins, and
+input immutability.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -403,7 +425,10 @@ installed wheel. For Phase 19 verify indicator warmup boundaries and exact
 values, the four BUY attribution profiles with canonical combination keys,
 the descriptive performance report over the same replay, the monthly review
 text with both sample sizes, and a deterministic drawing with its golden text
-grid through the installed wheel. Repository configuration and
+grid through the installed wheel. For Phase 20 verify a four-BUY replay of the
+synthetic history (indices 4, 8, 12, 16; one WIN, three OPEN), prefix and
+chunking equivalence, the composed performance report, and the golden backtest
+text through the installed wheel. Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
 ## Before committing
@@ -414,5 +439,5 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 19. Do not implement Phase 20
+the designated working branch. Stop after Phase 20. Do not implement Phase 21
 without explicit approval.
