@@ -19,5 +19,10 @@ include config/setup-quality.example.toml
 include config/signal-eligibility.example.toml
 include config/signal-engine.example.toml
 include config/outcome-tracking.example.toml
+include config/indicators.example.toml
+include config/setup-attribution.example.toml
+include config/performance.example.toml
+include config/review.example.toml
+include config/visualization.example.toml
 recursive-include docs *.md
 recursive-include tests *.py *.csv *.md

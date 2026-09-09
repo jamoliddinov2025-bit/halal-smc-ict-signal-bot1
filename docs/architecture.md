@@ -1,4 +1,4 @@
-# Architecture — Phase 18
+# Architecture — Phase 19
 
 ## Layers and explicit I/O
 
@@ -421,16 +421,49 @@ open at end-of-series; no flush API exists. Aggregates cover finalized
 outcomes only, with `None` for undefined rates. See
 [outcome tracking methodology](outcome-tracking-methodology.md).
 
+## Phase 19 consumer-only analytics and visualization layers
+
+Five packages consume existing frames and publish new facts; none of them can
+change a Phase 1–18 decision, and decision modules cannot import any of them
+(import-graph tests enforce both directions where applicable).
+
+| Module | Responsibility |
+| --- | --- |
+| `indicators/` | EMA/RSI/volume context over displacement frames; ATR reused from Phase 5; never a signal, gate, or veto |
+| `setup_attribution/` | closed twelve-label taxonomy projected from nested signal facts; BUY-only profiles with outcome-independent combination keys |
+| `performance/` | descriptive multi-series statistics over finished outcome replays; statuses copied, never reclassified; sample-gated best/worst combinations |
+| `review/` | UTC calendar-month reviews of one performance report; deltas only for sufficiently sampled months; sample sizes always shown |
+| `visualization/` | deterministic `DrawingModel` over published facts; SVG and plain-text renderers; semantic style tokens; no re-detection |
+
+Indicators read `DisplacementSnapshot` frames from index zero with immutable
+calculator states. Attribution reads `SignalSnapshot` frames and copies the
+engine context verbatim (signal id, setup identity, SQS breakdown) onto a
+closed label taxonomy; MSS/Breaker/Mitigation facts are not reachable on the
+consumed graph and stay unlabeled. Performance consumes finished
+`OutcomeSnapshot` (and aligned `AttributionSnapshot`) replays keyed by the
+caller, imports the Phase 18 return helpers, and keeps open and finalized
+strictly separated. Review renders one performance report as plain text.
+Visualization composes `LevelLine`, `ZoneRect`, `EventMarker`,
+`TextAnnotation`, and `IndicatorOverlay` primitives from published facts —
+including BUY markers, finalized outcome markers, and price-scaled EMA/ATR
+overlays — in one canonical order with digest identities, and renders them
+without reading anything the stream has not published. See
+[indicators methodology](indicators-methodology.md),
+[setup attribution methodology](setup-attribution-methodology.md),
+[performance methodology](performance-methodology.md),
+[monthly review methodology](monthly-review-methodology.md), and
+[visualization methodology](visualization-methodology.md).
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phases 1–18 implement none of:
+Phases 1–19 implement none of:
 session strategy, SELL/SHORT trades, entries, stops, targets, sizing, charts,
 or Telegram.
 There are also no orders, authenticated account access, or trading-performance
 claims. The filter is a caller-supplied registry, not Sharia certification.
 
-Stop after Phase 18. Phase 19 requires explicit approval.
+Stop after Phase 19. Phase 20 requires explicit approval.

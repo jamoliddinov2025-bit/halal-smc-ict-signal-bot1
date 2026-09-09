@@ -1,6 +1,6 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 18 — outcome tracking and analytics over spot signals.**
+**Status: Phase 19 — indicators, setup attribution, performance, review, and visualization.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
@@ -145,6 +145,65 @@ final close difference (`FLAT` on exact ties), arithmetic is exact Decimal, and
 analytics aggregate finalized outcomes only. This is analytics of publication
 records: no entries, exits, fees, sizing, or execution. See
 [outcome tracking methodology](docs/outcome-tracking-methodology.md).
+
+## Phase 19 offline analytics and visualization example
+
+Phase 19 layers are pure consumers of published frames: indicators read
+displacement frames for context only, attribution projects nested facts onto
+a closed label taxonomy, performance recomputes descriptive statistics over
+outcome records, monthly review renders those statistics, and visualization
+composes drawings from existing facts without re-detecting anything. The
+example continues the same synthetic history and chain as Phase 18 above
+(`signals` from `analyze_signal_engine`, `primary` from the `frames` helper):
+
+```python
+from smcsignal.analysis import (
+    IndicatorsConfig,
+    OutcomeTrackingConfig,
+    analyze_indicators,
+    analyze_outcome_tracking,
+    analyze_performance,
+    analyze_setup_attribution,
+    build_monthly_reviews,
+    compose_drawing,
+    render_text,
+)
+from smcsignal.analysis.setup_quality.calculation import nested_displacement
+
+outcomes = analyze_outcome_tracking(signals, OutcomeTrackingConfig(horizon_bars=10))
+attributions = analyze_setup_attribution(signals)
+report = analyze_performance({"btc": outcomes}, {"btc": attributions})
+reviews = build_monthly_reviews(report)
+print(report.overall.win_count, report.by_month[0].name)
+print(reviews[0].comparison_line())
+
+indicators = analyze_indicators(
+    tuple(nested_displacement(f.upstream.upstream.upstream) for f in signals),
+    IndicatorsConfig(ema_periods=(3, 5), rsi_period=3, volume_average_period=4),
+)
+drawing = compose_drawing(primary, signals=signals, indicators=indicators, outcomes=outcomes)
+print(render_text(drawing).splitlines()[0])
+```
+
+```text
+1 2024-01
+comparison: none (first reviewed month)
+BTCUSDT 15m; candles 17; not advice
+```
+
+Every Phase 19 layer is deterministic and replay-local: identical inputs
+produce identical indicators, profiles, reports, reviews, and drawings, with
+`indicator-frame`, `setup-attribution:`, `performance-report:`,
+`monthly-review:`, and `drawing:` digest identities. Indicators never
+generate or veto signals (an import-graph test keeps decision modules
+indicator-free); attribution is outcome-independent; performance copies
+statuses without reclassification; review shows sample sizes always;
+visualization carries semantic style tokens, never colors. See
+[indicators methodology](docs/indicators-methodology.md),
+[setup attribution methodology](docs/setup-attribution-methodology.md),
+[performance methodology](docs/performance-methodology.md),
+[monthly review methodology](docs/monthly-review-methodology.md), and
+[visualization methodology](docs/visualization-methodology.md).
 
 ## Phase 17 offline spot signal example
 
@@ -1458,6 +1517,11 @@ Live Binance availability is not asserted by the offline tests.
 - `[signal_engine]`: `enabled = true`, matching `publish_threshold`, `spot_only = true`, `duplicate_policy = "one_per_setup"`.
 - `config/signal-engine.example.toml`: hand-audited Phase 17 spot publication example on synthetic MTF history.
 - `config/outcome-tracking.example.toml`: hand-audited Phase 18 outcome analytics example on the same synthetic history.
+- `config/indicators.example.toml`: Phase 19a supporting-indicator context example (EMA/RSI/volume, ATR reused).
+- `config/setup-attribution.example.toml`: Phase 19b closed-taxonomy attribution example.
+- `config/performance.example.toml`: Phase 19c descriptive performance-report example.
+- `config/review.example.toml`: Phase 19d monthly review example.
+- `config/visualization.example.toml`: Phase 19e deterministic SVG/text drawing example.
 - `config/signal-eligibility.example.toml`: hand-audited Phase 16 eligibility example on synthetic MTF history.
 - `config/setup-quality.example.toml`: hand-audited Phase 15 integer score example on synthetic MTF history.
 - `config/halal-filter.example.toml`: hand-audited Phase 14 registry example on synthetic MTF history.
@@ -1491,6 +1555,11 @@ src/smcsignal/
 │   ├── errors.py             # Typed input/configuration failures
 │   ├── signal_engine/        # Phase 17 spot BUY_SIGNAL / BEARISH_AVOID; not SELL, SHORT, or orders
 │   ├── outcome_tracking/     # Phase 18 fixed-horizon BUY outcome analytics; not trading
+│   ├── visualization/        # Phase 19e deterministic SVG/text drawings of published facts
+│   ├── review/               # Phase 19d monthly descriptive review over one performance report
+│   ├── performance/          # Phase 19c descriptive multi-series performance analytics
+│   ├── setup_attribution/    # Phase 19b closed-taxonomy BUY confluence labels; outcome-free
+│   ├── indicators/           # Phase 19a EMA/RSI/volume context; never signals
 │   ├── signal_eligibility/   # Phase 16 HALAL+threshold gate and nested bias; not BUY/SELL
 │   ├── setup_quality/        # Phase 15 integer 0–100 score from nested facts; not a signal
 │   ├── halal_filter/         # Phase 14 config-driven registry; no autonomous rulings
@@ -1522,6 +1591,11 @@ tests/mss/                    # MSS definitions, relationships, immutable eviden
 tests/breaker_blocks/         # Strict conversions, rejection facts, exact timing, causal replay
 tests/ote/                    # Retracement geometry, close classification, timing, causal replay
 tests/signal_engine/          # spot mapping, gates, one-per-setup, provenance, causal replay
+tests/indicators/             # exact EMA/RSI/volume values, warmup, provenance, causal replay
+tests/setup_attribution/      # taxonomy, BUY-only profiles, outcome-independence, causal replay
+tests/performance/            # bucket statistics, rankings, multi-series, causal replay
+tests/review/                 # UTC months, sample-size gating, golden text, causal replay
+tests/visualization/          # primitives, composer, renderers, no-lookahead, causal replay
 tests/signal_eligibility/     # HALAL+threshold gate, long/short/neutral, conflict, causal replay
 tests/setup_quality/          # integer awards, HARAM/UNKNOWN gate, threshold flag, causal replay
 tests/halal_filter/           # allow/deny, unknown, case, provenance, and causal replay
@@ -1554,6 +1628,11 @@ python -m pytest tests/setup_quality
 python -m pytest tests/signal_eligibility
 python -m pytest tests/signal_engine
 python -m pytest tests/outcome_tracking
+python -m pytest tests/indicators
+python -m pytest tests/setup_attribution
+python -m pytest tests/performance
+python -m pytest tests/review
+python -m pytest tests/visualization
 python -m pip check
 python -m build
 ```
@@ -1567,7 +1646,7 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 18
+## Evidence provenance through Phase 19
 
 `LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
@@ -1601,6 +1680,15 @@ horizon; MFE/MAE are running extremes with first-occurrence ties; open
 outcomes are never flushed; aggregates cover finalized outcomes only and
 undefined rates are `None`. Historical outcome versions never change.
 
+Phase 19 adds consumer-only layers on the same discipline:
+`IndicatorSnapshot` frames (context only; decision modules cannot read them),
+`SetupAttribution`/`AttributionSnapshot` (outcome-independent labels from
+nested facts, digest identities), `PerformanceBucket`/`PerformanceReport`
+(descriptive statistics copied from outcome records, never reclassified),
+`MonthlyReview`/`MonthComparison` (UTC-month text with sample sizes always),
+and `DrawingModel` with its primitives (semantic style tokens, canonical
+order, digest identity; SVG/text renderers re-detect nothing).
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
@@ -1613,4 +1701,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 18. Phase 19 requires explicit approval.**
+**Stop after Phase 19. Phase 20 requires explicit approval.**

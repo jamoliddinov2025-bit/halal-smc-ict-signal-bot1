@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 18 — outcome tracking and analytics over spot signals**.
+Current scope: **Phase 19 — indicators, setup attribution, performance, review, and visualization**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -41,12 +41,27 @@ Current scope: **Phase 18 — outcome tracking and analytics over spot signals**
 - [Outcome tracking methodology](outcome-tracking-methodology.md): fixed-horizon
   BUY_SIGNAL outcomes, exact return/MFE/MAE, sign-based WIN/LOSS/FLAT,
   aggregate analytics, no flush of open outcomes.
+- [Indicators methodology](indicators-methodology.md): supporting EMA/RSI/volume
+  context with exact Decimal arithmetic; never signals, gates, or vetoes.
+- [Setup attribution methodology](setup-attribution-methodology.md): closed
+  twelve-label taxonomy from nested facts; outcome-independent combination keys.
+- [Performance methodology](performance-methodology.md): descriptive multi-series
+  statistics over published outcome records; open/finalized separated, no
+  reclassification, sample-gated rankings.
+- [Monthly review methodology](monthly-review-methodology.md): UTC calendar-month
+  reviews with exact deltas only for sufficiently sampled comparisons; sample
+  sizes always shown.
+- [Visualization methodology](visualization-methodology.md): deterministic
+  SVG/text drawings of published facts; semantic style tokens, canonical
+  ordering, no re-detection, no raster.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;
-  Phase 18 tracks fixed-horizon outcomes of those publications.
+  Phase 18 tracks fixed-horizon outcomes of those publications; Phase 19 adds
+  consumer-only indicators, attribution, performance, review, and
+  visualization layers over those records.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
-**Stop after Phase 18. Phase 19 requires explicit approval.**
+**Stop after Phase 19. Phase 20 requires explicit approval.**

@@ -45,6 +45,16 @@ from smcsignal.analysis.halal_filter import (
     classify_asset,
     load_halal_filter_config,
 )
+from smcsignal.analysis.indicators import (
+    EMACalculator,
+    IndicatorAnalyzer,
+    IndicatorsConfig,
+    IndicatorSnapshot,
+    RSICalculator,
+    VolumeAverageCalculator,
+    analyze_indicators,
+    load_indicators_config,
+)
 from smcsignal.analysis.liquidity import (
     InvalidationReason,
     LiquidityAnalyzer,
@@ -141,6 +151,13 @@ from smcsignal.analysis.outcome_tracking import (
     analyze_outcome_tracking,
     load_outcome_tracking_config,
 )
+from smcsignal.analysis.performance import (
+    PerformanceBucket,
+    PerformanceConfig,
+    PerformanceReport,
+    analyze_performance,
+    load_performance_config,
+)
 from smcsignal.analysis.premium_discount import (
     DealingRange,
     Equilibrium,
@@ -161,6 +178,23 @@ from smcsignal.analysis.provenance import (
     EvidenceReference,
     ProvenancedEvidence,
     SeriesProvenance,
+)
+from smcsignal.analysis.review import (
+    MonthComparison,
+    MonthlyReview,
+    ReviewConfig,
+    build_monthly_reviews,
+    load_review_config,
+    render_review_text,
+)
+from smcsignal.analysis.setup_attribution import (
+    AttributionSnapshot,
+    SetupAttribution,
+    SetupAttributionAnalyzer,
+    SetupAttributionConfig,
+    SetupLabel,
+    analyze_setup_attribution,
+    load_setup_attribution_config,
 )
 from smcsignal.analysis.setup_quality import (
     DEFAULT_PUBLISH_THRESHOLD,
@@ -204,8 +238,62 @@ from smcsignal.analysis.signal_engine import (
 from smcsignal.analysis.structure import MarketStructureAnalyzer, analyze
 from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
+from smcsignal.analysis.visualization import (
+    DrawingModel,
+    EventMarker,
+    IndicatorOverlay,
+    LevelLine,
+    StyleToken,
+    TextAnnotation,
+    VisualizationConfig,
+    ZoneRect,
+    compose_drawing,
+    load_visualization_config,
+    render_signal_explanation,
+    render_svg,
+    render_text,
+)
 
 __all__ = [
+    "AttributionSnapshot",
+    "SetupAttribution",
+    "SetupAttributionAnalyzer",
+    "SetupAttributionConfig",
+    "SetupLabel",
+    "MonthComparison",
+    "MonthlyReview",
+    "ReviewConfig",
+    "build_monthly_reviews",
+    "load_review_config",
+    "render_review_text",
+    "DrawingModel",
+    "EventMarker",
+    "IndicatorOverlay",
+    "LevelLine",
+    "StyleToken",
+    "TextAnnotation",
+    "VisualizationConfig",
+    "ZoneRect",
+    "compose_drawing",
+    "load_visualization_config",
+    "render_signal_explanation",
+    "render_svg",
+    "render_text",
+    "analyze_performance",
+    "PerformanceBucket",
+    "PerformanceConfig",
+    "PerformanceReport",
+    "load_performance_config",
+    "analyze_setup_attribution",
+    "load_setup_attribution_config",
+    "EMACalculator",
+    "IndicatorAnalyzer",
+    "IndicatorSnapshot",
+    "IndicatorsConfig",
+    "RSICalculator",
+    "VolumeAverageCalculator",
+    "analyze_indicators",
+    "load_indicators_config",
     "AnalyticsSummary",
     "OutcomeSnapshot",
     "OutcomeStatus",

@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 18
+# Configuration — market data and analysis through Phase 19
 
-Seventeen explicit loaders consume separate tables:
+Twenty-two explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -19,6 +19,11 @@ Seventeen explicit loaders consume separate tables:
 - `smcsignal.analysis.load_signal_eligibility_config(path)` reads only `[signal_eligibility]`.
 - `smcsignal.analysis.load_signal_engine_config(path)` reads only `[signal_engine]`.
 - `smcsignal.analysis.load_outcome_tracking_config(path)` reads only `[outcome_tracking]`.
+- `smcsignal.analysis.load_indicators_config(path)` reads only `[indicators]`.
+- `smcsignal.analysis.load_setup_attribution_config(path)` reads only `[setup_attribution]`.
+- `smcsignal.analysis.load_performance_config(path)` reads only `[performance]`.
+- `smcsignal.analysis.load_review_config(path)` reads only `[review]`.
+- `smcsignal.analysis.load_visualization_config(path)` reads only `[visualization]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -70,6 +75,11 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
   integer `publish_threshold = 75`.
 - `signal-eligibility.example.toml`: the same synthetic history plus frozen
   eligibility-v1 `enabled = true` and `conflict_policy = "neutral"`.
+- `indicators.example.toml`, `setup-attribution.example.toml`,
+  `performance.example.toml`, `review.example.toml`, and
+  `visualization.example.toml`: the same synthetic history plus the Phase 19
+  `[indicators]`, `[setup_attribution]`, `[performance]`, `[review]`, and
+  `[visualization]` tables.
 - `outcome-tracking.example.toml`: the same synthetic history plus the
   fixed-horizon outcome table; zero outcomes at default threshold 75.
 - `signal-engine.example.toml`: the same synthetic history plus frozen
@@ -446,6 +456,84 @@ WIN/LOSS/FLAT uses the exact sign of the final close difference; MFE/MAE are
 running evaluation-candle extremes. Open outcomes are never flushed at
 end-of-series. See
 [outcome tracking methodology](../docs/outcome-tracking-methodology.md).
+
+## Indicators settings (Phase 19a)
+
+```toml
+[indicators]
+enabled = true
+ema_periods = [20, 50]
+rsi_period = 14
+volume_average_period = 20
+```
+
+The table requires exactly these four keys. `enabled` must remain true.
+`ema_periods` is a nonempty strictly-increasing list of integers from 1 to
+1000; `rsi_period` and `volume_average_period` are integers from 1 to 1000.
+Indicators are context and visualization support only: they can never
+generate, gate, or veto a signal, and no decision module reads them. ATR is
+reused from Phase 5. Unknown keys, including thresholds or gates, are
+rejected. See [indicators methodology](../docs/indicators-methodology.md).
+
+## Setup attribution settings (Phase 19b)
+
+```toml
+[setup_attribution]
+enabled = true
+```
+
+The table requires exactly this key. Attribution projects already-published
+nested facts onto a closed twelve-label taxonomy; only `BUY_SIGNAL` frames
+carry profiles, labels are outcome-independent, and combination keys join
+labels in canonical order. There are no thresholds, weights, or outcome
+settings. See
+[setup attribution methodology](../docs/setup-attribution-methodology.md).
+
+## Performance settings (Phase 19c)
+
+```toml
+[performance]
+enabled = true
+minimum_finalized_for_ranking = 10
+```
+
+The table requires exactly these two keys. `minimum_finalized_for_ranking`
+is an integer from 1 to 1000 gating best/worst combination quotations; raw
+counts are always shown regardless. Performance recomputes descriptive
+statistics over published outcome records and attribution profiles; statuses
+are copied, never reclassified. See
+[performance methodology](../docs/performance-methodology.md).
+
+## Review settings (Phase 19d)
+
+```toml
+[review]
+enabled = true
+minimum_finalized_for_comparison = 10
+```
+
+The table requires exactly these two keys. `minimum_finalized_for_comparison`
+is an integer from 1 to 1000; month-over-month deltas are quoted only when
+both months reach it, and sample sizes are always shown. Review renders one
+performance report as plain text. See
+[monthly review methodology](../docs/monthly-review-methodology.md).
+
+## Visualization settings (Phase 19e)
+
+```toml
+[visualization]
+enabled = true
+svg_width = 800
+svg_height = 400
+text_rows = 24
+```
+
+The table requires exactly these four keys. `svg_width`/`svg_height` are
+integers from 100 to 10000 and `text_rows` from 5 to 200. Drawings carry
+semantic style tokens, never colors; output is deterministic SVG and plain
+text only — no PNG, raster, or Telegram transport. Visualization consumes
+published facts and never re-detects. See
+[visualization methodology](../docs/visualization-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

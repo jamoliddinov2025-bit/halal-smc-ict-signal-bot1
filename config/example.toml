@@ -5,7 +5,7 @@
 
 [project]
 name = "Professional Halal SMC/ICT Spot Signal Bot"
-phase = 18
+phase = 19
 
 [scope]
 market = "spot"
@@ -113,3 +113,26 @@ duplicate_policy = "one_per_setup"
 [outcome_tracking]
 enabled = true
 horizon_bars = 10
+
+[indicators]
+enabled = true
+ema_periods = [20, 50]
+rsi_period = 14
+volume_average_period = 20
+
+[setup_attribution]
+enabled = true
+
+[performance]
+enabled = true
+minimum_finalized_for_ranking = 10
+
+[review]
+enabled = true
+minimum_finalized_for_comparison = 10
+
+[visualization]
+enabled = true
+svg_width = 800
+svg_height = 400
+text_rows = 24

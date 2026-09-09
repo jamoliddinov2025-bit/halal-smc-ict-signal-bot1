@@ -81,9 +81,11 @@ They do **not** validate a trading strategy, financial performance, or religious
 compliance; the Phase 14 registry only enforces a caller-supplied list,
 Phase 15 scores already-published facts without claiming expected returns,
 Phase 16 gates those facts without emitting trades, Phase 17 publishes
-spot `BUY_SIGNAL` records without SELL, SHORT, entries, or execution, and
+spot `BUY_SIGNAL` records without SELL, SHORT, entries, or execution,
 Phase 18 tracks fixed-horizon outcomes of those publications without any
-trading, fees, or performance claim.
+trading, fees, or performance claim, and Phase 19 adds consumer-only
+indicators, attribution, performance, review, and visualization layers
+that never generate, gate, or veto a signal.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -330,6 +332,31 @@ shocks, batch/stream/chunk equivalence, independent aggregate recomputation,
 CSV provider integration, and Phase 17 regression. No entry, exit, fee,
 execution, or performance backtest is included.
 
+## Phase 19 analytics and visualization tests and examples
+
+```bash
+python -m pytest tests/indicators tests/setup_attribution tests/performance tests/review tests/visualization
+```
+
+Five focused suites cover the Phase 19 layers. Indicators: exact Decimal
+EMA/RSI/volume values against 50-digit reference contexts, warmup `None`
+boundaries, Phase 5 ATR reuse, configuration strictness, every-prefix
+equality, and an import-graph test that keeps every Phase 3–18 decision
+module free of indicator reads. Setup attribution: the closed twelve-label
+taxonomy, BUY-only profiles, verbatim engine context, canonical combination
+keys, outcome-independence (no outcome imports; alternate futures leave past
+profiles identical), and upstream-is-identity regression. Performance:
+hand-recomputed bucket statistics, open/finalized separation, sample-gated
+rankings, multi-series merging, prefix causality, and input immutability.
+Review: UTC month bucketing, both-sufficient gating, exact Decimal deltas,
+golden plain-text rendering, and determinism. Visualization: primitive
+validation, canonical ordering, digest identities, fact-to-primitive mapping
+(including BUY and finalized outcome markers and EMA/ATR overlays), golden
+character grid, well-formed XML SVG, no-float-artifact guarantees, and
+prefix/future-shock no-look-ahead proofs. Each package's example config
+reuses the synthetic Phase 13–17 history. No trading, execution, Telegram,
+or optimization test is included.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -372,7 +399,11 @@ upstream IDs, and prefix/batch/stream equivalence through the installed wheel.
 For Phase 18 verify zero-outcome analytics at default threshold, the threshold-10
 hand-computed `WIN` with open outcomes at end-of-series, unchanged upstream IDs,
 stable outcome identities, and prefix/batch/stream equivalence through the
-installed wheel. Repository configuration and
+installed wheel. For Phase 19 verify indicator warmup boundaries and exact
+values, the four BUY attribution profiles with canonical combination keys,
+the descriptive performance report over the same replay, the monthly review
+text with both sample sizes, and a deterministic drawing with its golden text
+grid through the installed wheel. Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
 ## Before committing
@@ -383,5 +414,5 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 18. Do not implement Phase 19
+the designated working branch. Stop after Phase 19. Do not implement Phase 20
 without explicit approval.
