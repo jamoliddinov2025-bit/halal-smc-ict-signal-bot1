@@ -644,7 +644,70 @@ imported by the presentation core.
 
 ### Deferred to 24C / 24D
 
-- **24C**: persistent delivery records/audit, restart-safe dedup, lifecycle and
-  recovery. Not started.
+- **24C**: delivery orchestration and offline integration. Delivered below.
 - **24D**: a concrete remote-messaging `MessageSink` and its config/credentials
   handling. Not started.
+
+---
+
+## Phase 24C implementation record (additive; design unchanged)
+
+Phase 24C delivered the **delivery orchestration and offline integration** layer
+specified by the frozen Phase 24C scope. It builds entirely on the approved
+Phase 24B public API and the frozen Phase 1-23 types; nothing was rewritten and
+no upstream module was changed. There is no Telegram/SDK/network access, no
+token/chat id/secret, no database, and no durable exactly-once guarantee (only
+at-most-once by in-memory dedup plus a deterministic `SKIPPED_DUPLICATE`).
+
+### Module locations (additions to `src/smcsignal/delivery/`)
+
+| Concern | Module | Public names |
+| --- | --- | --- |
+| Orchestration / offline pipeline | `orchestrator.py` | `DeliveryCoordinator`, `DeliveryOutcome`, `DeliveryBatchResult`, `SignalDeliveryContext`, `OrchestrationConfig`, `load_orchestration_config` |
+| Deterministic audit + redaction | `audit.py` | `DeliveryAuditRecord`, `audit_record_for`, `redact` |
+
+`__init__.py` was extended additively to re-export the new public names.
+
+### Pipeline (proven offline)
+
+```
+immutable SignalSnapshot (BUY_SIGNAL only)
+  -> 24B SignalMessage.from_signal / assemble_signal_message (context bound)
+  -> DeliveryCoordinator (in-memory DeliveryRegistry dedup + finite retry)
+  -> MessageSink (NullSink / FakeTransportSink; never a network)
+  -> DeliveryOutcome envelope (+ optional DeliveryAuditRecord)
+```
+
+- Only `BUY_SIGNAL` snapshots may enter the delivery path; anything else raises
+  before any sink call.
+- Context binding is read-only from the upstream projection: symbol, timeframe,
+  reference close, why/explanation presence, and the optional `DrawingModel`
+  series are bound into `SignalDeliveryContext`; no upstream field is invented.
+- Chart orchestration consumes an existing `DrawingModel`; a mismatched or
+  failing chart is dropped while the valid text still delivers.
+- Determinism: identical input under a fresh coordinator yields byte-identical
+  captions, identical `delivery_id`s and identical outcomes; no wall clock,
+  randomness, machine ids, or unnecessary timestamps.
+- Dedup is explicit and in-memory (owned `DeliveryRegistry`, optionally shared);
+  repeated identical input yields `SKIPPED_DUPLICATE` with the same
+  `delivery_id`; no persistent store.
+- Batch (`deliver_many`) preserves input order and is per-signal independent
+  (no cross-signal contamination, no ranking, no lookahead).
+- `OrchestrationConfig` is strict/frozen and exposes only delivery controls
+  (`enabled`, `max_attempts`, `deduplicate`); the `[orchestration]` loader
+  rejects unknown keys.
+- Audit records are deterministic, machine-readable, redact the destination,
+  and carry a message-content digest; they contain no secrets.
+
+### Scope / safety audit
+
+- New modules import only the Python stdlib and existing `smcsignal` modules.
+- No Telegram SDK, HTTP/network, socket, exchange, order, position, leverage,
+  webhook, token, api-key, or bot-token surface anywhere in `delivery/`.
+- No signal-generation, halal-eligibility, or Phase 23 governance change.
+- No optimization / parameter tuning / automatic strategy or setup control.
+
+### Deferred to 24D
+
+- A concrete remote-messaging `MessageSink` transport and its secret injection /
+  credentials handling. Not started.

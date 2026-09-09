@@ -8,6 +8,7 @@ remote messaging transport is deferred to a later phase and is never imported
 here. The approved design is ``docs/phase24a-*-design.md``.
 """
 
+from smcsignal.delivery.audit import DeliveryAuditRecord, audit_record_for, redact
 from smcsignal.delivery.chart import SVG_MIME, svg_attachment
 from smcsignal.delivery.config import (
     DEFAULT_MAX_CAPTION_LENGTH,
@@ -37,6 +38,14 @@ from smcsignal.delivery.models import (
     RenderedSignalMessage,
     chart_artifact_id,
 )
+from smcsignal.delivery.orchestrator import (
+    DeliveryBatchResult,
+    DeliveryCoordinator,
+    DeliveryOutcome,
+    OrchestrationConfig,
+    SignalDeliveryContext,
+    load_orchestration_config,
+)
 from smcsignal.delivery.sink import (
     DeliveryRegistry,
     FakeTransportSink,
@@ -49,6 +58,10 @@ from smcsignal.delivery.sink import (
 __all__ = [
     "ChartAttachment",
     "DEFAULT_MAX_CAPTION_LENGTH",
+    "DeliveryAuditRecord",
+    "DeliveryBatchResult",
+    "DeliveryCoordinator",
+    "DeliveryOutcome",
     "DeliveryAttempt",
     "DeliveryConfig",
     "DeliveryReceipt",
@@ -70,8 +83,13 @@ __all__ = [
     "format_decimal",
     "format_timestamp",
     "load_delivery_config",
+    "OrchestrationConfig",
+    "SignalDeliveryContext",
+    "audit_record_for",
+    "load_orchestration_config",
     "message_identity",
     "prepare_signal_message",
+    "redact",
     "render_message",
     "require_buy_signal",
     "split_caption",
