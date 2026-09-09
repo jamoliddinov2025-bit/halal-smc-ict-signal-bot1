@@ -25,5 +25,6 @@ include config/performance.example.toml
 include config/review.example.toml
 include config/visualization.example.toml
 include config/backtest.example.toml
+include config/robustness.example.toml
 recursive-include docs *.md
 recursive-include tests *.py *.csv *.md

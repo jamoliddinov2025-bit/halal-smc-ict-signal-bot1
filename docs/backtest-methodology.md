@@ -2,7 +2,7 @@
 
 Historical research layer, not a trading system.
 
-**Stop after Phase 20. Phase 21 requires explicit approval.**
+**Phase 20 is complete; Phase 21 adds walk-forward robustness validation. Stop after Phase 21. Phase 22 requires explicit approval.**
 
 ## Question answered
 
@@ -79,4 +79,4 @@ modification, self-learning, machine-generated rules, indicator-only signals,
 Telegram transport, or automatic deployment exists or will be added silently.
 Backtests are descriptive records of published facts, not advice.
 
-**Stop after Phase 20. Phase 21 requires explicit approval.**
+**Phase 20 is complete; Phase 21 adds walk-forward robustness validation. Stop after Phase 21. Phase 22 requires explicit approval.**

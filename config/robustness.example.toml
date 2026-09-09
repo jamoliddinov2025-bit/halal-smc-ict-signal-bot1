@@ -1,37 +1,23 @@
-# Phase 17 offline configuration. Separate loaders consume each runtime table.
-# Project/scope/safety tables document intent, not a runtime trading policy engine.
-# This CSV is explicitly synthetic test data, not historical Binance observations.
-# Never add credentials or account data.
-
-[project]
-name = "Professional Halal SMC/ICT Spot Signal Bot"
-phase = 21
-
-[scope]
-market = "spot"
-direction = "long_only"
-signal_only = true
-
-[safety]
-authenticated_exchange_access = false
-order_execution = false
-leverage = false
-margin = false
-short_selling = false
-
-[market_data]
+# Phase 21: deterministic walk-forward robustness validation.
+# Walk-forward windows slice one declared historical dataset into sequential
+# development (train) and validation (test) periods and replay each window as
+# one independent UNCHANGED Phase 20 backtest: no second strategy, detector,
+# classifier, or formula exists. Cross-period, cross-asset (symbol),
+# cross-timeframe, and market-regime buckets, development-to-validation
+# degradation, and stability indicators are descriptive research records over
+# published BUY_SIGNAL facts: no optimization, parameter selection,
+# self-modification, live trading, or advice. Halal eligibility stays external
+# and configurable through the existing [halal_filter] registry.
 symbol = "BTCUSDT"
 timeframe = "15m"
 data_source = "csv"
 history_limit = 500
-# Resolved relative to this TOML file, not the process working directory.
-csv_path = "../tests/fixtures/ohlcv.csv"
+csv_path = "../tests/fixtures/mtf-15m.csv"
 missing_value_policy = "error"
 timeout_seconds = 10.0
 
 [analysis]
-# Total window of five candles: two left + pivot + two right.
-fractal_length = 5
+fractal_length = 3
 
 [liquidity]
 price_unit = "USDT"
@@ -60,21 +46,6 @@ require_fvg = false
 
 [premium_discount]
 equilibrium_half_width_fraction = "0"
-
-[mss]
-enable_displacement_requirement = true
-enable_structure_requirement = true
-
-[breaker_blocks]
-require_displacement = true
-require_mss = true
-invalidation_basis = "close_through_far_boundary"
-zone_basis = "original_order_block"
-
-[mitigation_blocks]
-interaction_basis = "range_intersection"
-first_interaction_only = true
-ignore_after_breaker = true
 
 [ote]
 lower_retracement = "0.62"
@@ -114,11 +85,23 @@ duplicate_policy = "one_per_setup"
 enabled = true
 horizon_bars = 10
 
-[indicators]
+[backtest]
 enabled = true
-ema_periods = [20, 50]
-rsi_period = 14
-volume_average_period = 20
+
+[robustness]
+enabled = true
+development_bars = 50
+validation_bars = 25
+step_bars = 25
+regime_lookback_bars = 20
+regime_baseline_multiple = 4
+trend_threshold = "0.30"
+high_volatility_threshold = "1.50"
+low_volatility_threshold = "0.75"
+minimum_finalized_for_stability = 10
+minimum_windows_for_stability = 3
+stability_win_rate_floor = "0.50"
+maximum_win_rate_spread = "0.50"
 
 [setup_attribution]
 enabled = true
@@ -126,16 +109,3 @@ enabled = true
 [performance]
 enabled = true
 minimum_finalized_for_ranking = 10
-
-[review]
-enabled = true
-minimum_finalized_for_comparison = 10
-
-[visualization]
-enabled = true
-svg_width = 800
-svg_height = 400
-text_rows = 24
-
-[backtest]
-enabled = true

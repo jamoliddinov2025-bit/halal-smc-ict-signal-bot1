@@ -15,7 +15,7 @@ def test_default_command_reports_analysis_scope(capsys: pytest.CaptureFixture[st
     captured = capsys.readouterr()
     assert captured.out == (
         "Professional Halal SMC/ICT Spot Signal Bot\n"
-        "Phase 20: deterministic historical replay and backtesting over the existing pipeline.\n"
+        "Phase 21: deterministic walk-forward robustness validation over the unchanged pipeline.\n"
         "Market data and analysis are available through the Python API.\n"
         "Spot BUY_SIGNAL publications only; no SELL, SHORT, or trading.\n"
     )
@@ -35,9 +35,9 @@ def test_help_option(capsys: pytest.CaptureFixture[str]) -> None:
     assert exc.value.code == 0
     output = " ".join(capsys.readouterr().out.split())
     assert "--version" in output
-    assert "Phase 20 historical replay" in output
-    assert "Stop after Phase 20" in output
-    assert "Phase 21 requires explicit approval" in output
+    assert "Phase 21 walk-forward robustness" in output
+    assert "Stop after Phase 21" in output
+    assert "Phase 22 requires explicit approval" in output
 
 
 @pytest.mark.parametrize("option", ["--live", "--trade", "--config"])
@@ -62,7 +62,7 @@ def test_module_entrypoint_works_outside_checkout(tmp_path: Path) -> None:
         check=True,
     )
     assert (
-        "Phase 20: deterministic historical replay and backtesting over the existing pipeline."
+        "Phase 21: deterministic walk-forward robustness validation over the unchanged pipeline."
         in result.stdout
     )
     assert "Spot BUY_SIGNAL publications only; no SELL, SHORT, or trading." in result.stdout

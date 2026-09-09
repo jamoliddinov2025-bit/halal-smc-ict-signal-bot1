@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 20
+# Configuration — market data and analysis through Phase 21
 
-Twenty-three explicit loaders consume separate tables:
+Twenty-four explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -25,6 +25,7 @@ Twenty-three explicit loaders consume separate tables:
 - `smcsignal.analysis.load_review_config(path)` reads only `[review]`.
 - `smcsignal.analysis.load_visualization_config(path)` reads only `[visualization]`.
 - `smcsignal.analysis.load_backtest_config(path)` reads only `[backtest]`.
+- `smcsignal.analysis.load_robustness_config(path)` reads only `[robustness]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -84,6 +85,10 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 - `backtest.example.toml`: the same synthetic history plus the full pipeline
   tables and the Phase 20 `[backtest]` table; load the whole bundle with
   `smcsignal.analysis.load_backtest_configuration(path)`.
+- `robustness.example.toml`: the same full-pipeline bundle plus the Phase 21
+  `[robustness]` walk-forward table; load the bundle with
+  `smcsignal.analysis.load_backtest_configuration(path)` and the robustness
+  settings with `smcsignal.analysis.load_robustness_config(path)`.
 - `outcome-tracking.example.toml`: the same synthetic history plus the
   fixed-horizon outcome table; zero outcomes at default threshold 75.
 - `signal-engine.example.toml`: the same synthetic history plus frozen
@@ -553,6 +558,36 @@ through its existing strict loader and cross-validates the setup-quality and
 signal-engine thresholds. There are no strategy, order, sizing, fee,
 optimization, or self-modification settings. See
 [backtest methodology](../docs/backtest-methodology.md).
+
+## Robustness settings (Phase 21)
+
+```toml
+[robustness]
+enabled = true
+development_bars = 50
+validation_bars = 25
+step_bars = 25
+regime_lookback_bars = 20
+regime_baseline_multiple = 4
+trend_threshold = "0.30"
+high_volatility_threshold = "1.50"
+low_volatility_threshold = "0.75"
+minimum_finalized_for_stability = 10
+minimum_windows_for_stability = 3
+stability_win_rate_floor = "0.50"
+maximum_win_rate_spread = "0.50"
+```
+
+The table requires exactly these keys. `enabled` must be true. Window sizes and
+the step are positive integers with `step_bars >= validation_bars`, so
+validation periods never overlap. The regime thresholds are quoted exact
+Decimals: the efficiency-ratio `trend_threshold` and the volatility thresholds
+must satisfy `0 < low_volatility_threshold < high_volatility_threshold`, with
+`trend_threshold` and `stability_win_rate_floor` at most 1. The stability
+minimums gate the STABLE/WEAK/UNDERSAMPLED labels. These settings parameterize
+the *measurement* only — there are no strategy, order, sizing, fee,
+optimization, or self-modification settings. See
+[robustness methodology](../docs/robustness-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

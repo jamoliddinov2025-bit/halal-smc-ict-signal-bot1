@@ -1,6 +1,6 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 20 — deterministic historical replay and backtesting foundation.**
+**Status: Phase 21 — deterministic walk-forward robustness validation.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
@@ -293,6 +293,108 @@ attribution, and outcome facts with exact Decimal ratios; aggregates come from
 the existing Phase 19c performance report. This is historical research of
 publication records: no orders, execution, fees, sizing, optimization, or
 advice. See [backtest methodology](docs/backtest-methodology.md).
+
+## Phase 21 offline walk-forward robustness example
+
+Robustness validation slices one declared history into sequential
+development/validation windows and replays each window as one independent
+**unchanged** Phase 20 backtest, then reports cross-period, cross-symbol,
+cross-timeframe, and regime buckets, development-to-validation degradation,
+and stability labels. It validates the existing strategy; it never tunes,
+selects, or modifies anything. The synthetic example (30 rising candles, then
+30 choppy candles) uses a small window configuration:
+
+```python
+from datetime import UTC, datetime, timedelta
+from decimal import Decimal
+
+from smcsignal.analysis import (
+    AnalysisConfig,
+    BacktestConfiguration,
+    DisplacementConfig,
+    LiquidityConfig,
+    ReplayDataset,
+    RobustnessConfig,
+    SetupQualityConfig,
+    SignalEngineConfig,
+    render_robustness_text,
+    run_robustness,
+)
+from smcsignal.analysis.mtf import timeframe_seconds
+from smcsignal.data import OHLCV
+
+midnight = datetime(2024, 1, 1, tzinfo=UTC)
+start = datetime(2024, 1, 1, 8, tzinfo=UTC)
+
+
+def bar(opened_at, close):
+    return OHLCV(
+        timestamp=opened_at,
+        open=Decimal(close),
+        high=Decimal(close) + 1,
+        low=Decimal(close) - 1,
+        close=Decimal(close),
+        volume=Decimal(1),
+    )
+
+
+def bars(timeframe, prices, opened):
+    step = timedelta(seconds=timeframe_seconds(timeframe))
+    return tuple(bar(opened + index * step, price) for index, price in enumerate(prices))
+
+
+prices = (*range(20, 50), *(30 - index % 5 for index in range(30)))
+dataset = ReplayDataset(
+    symbol="BTCUSDT",
+    timeframe="15m",
+    candles=bars("15m", prices, start),
+    higher_candles={
+        "1h": bars("1h", (15, 10, 16, 20, 18, 12, 17, 22, 19, 18, 17, 16), midnight),
+        "4h": bars("4h", (15,), start),
+    },
+    dataset_id="robustness-demo:v1",
+)
+backtest = BacktestConfiguration(
+    analysis=AnalysisConfig(3),
+    liquidity=LiquidityConfig("USDT"),
+    displacement=DisplacementConfig(atr_period=3),
+    setup_quality=SetupQualityConfig(10),
+    signal_engine=SignalEngineConfig(publish_threshold=10),
+)
+robustness = RobustnessConfig(
+    development_bars=12,
+    validation_bars=14,
+    step_bars=14,
+    regime_lookback_bars=3,
+    regime_baseline_multiple=2,
+    minimum_finalized_for_stability=1,
+    minimum_windows_for_stability=2,
+)
+
+report = run_robustness([dataset], backtest, robustness)
+overall = report.overall
+print(overall.total_buy_signals, overall.finalized_count, overall.win_count, overall.open_count)
+print(report.stability.status.value, report.degradation.comparable_window_count)
+text = render_robustness_text(report, generated_at=datetime(2024, 2, 1, tzinfo=UTC))
+print(text.splitlines()[7])
+```
+
+```text
+16 4 1 12
+WEAK 2
+overall all
+```
+
+Three windows are planned (validation periods never overlap because
+`step_bars >= validation_bars`); the out-of-sample overall bucket counts the
+16 validation signals once (4 finalized: 1 win, 3 flat; 12 still open at their
+window ends), and the stability label over the two sufficiently sampled
+windows is WEAK — a descriptive statement with sample sizes shown, not a
+significance claim. Each window equals a direct Phase 20 replay of its own
+candle slice, so windows never share state and no future candle can change an
+earlier window. Regime labels (TRENDING/RANGING/HIGH_VOLATILITY/LOW_VOLATILITY)
+are causal annotations only: they never generate, veto, or modify signals.
+See [robustness methodology](docs/robustness-methodology.md).
 
 ## Phase 17 offline spot signal example
 
@@ -1612,6 +1714,7 @@ Live Binance availability is not asserted by the offline tests.
 - `config/review.example.toml`: Phase 19d monthly review example.
 - `config/visualization.example.toml`: Phase 19e deterministic SVG/text drawing example.
 - `config/backtest.example.toml`: Phase 20 full-pipeline historical replay and backtest example.
+- `config/robustness.example.toml`: Phase 21 full-pipeline walk-forward robustness example.
 - `config/signal-eligibility.example.toml`: hand-audited Phase 16 eligibility example on synthetic MTF history.
 - `config/setup-quality.example.toml`: hand-audited Phase 15 integer score example on synthetic MTF history.
 - `config/halal-filter.example.toml`: hand-audited Phase 14 registry example on synthetic MTF history.
@@ -1646,6 +1749,7 @@ src/smcsignal/
 │   ├── signal_engine/        # Phase 17 spot BUY_SIGNAL / BEARISH_AVOID; not SELL, SHORT, or orders
 │   ├── outcome_tracking/     # Phase 18 fixed-horizon BUY outcome analytics; not trading
 │   ├── backtest/             # Phase 20 deterministic historical replay; not execution
+│   ├── robustness/           # Phase 21 walk-forward validation; never optimization
 │   ├── visualization/        # Phase 19e deterministic SVG/text drawings of published facts
 │   ├── review/               # Phase 19d monthly descriptive review over one performance report
 │   ├── performance/          # Phase 19c descriptive multi-series performance analytics
@@ -1688,6 +1792,7 @@ tests/performance/            # bucket statistics, rankings, multi-series, causa
 tests/review/                 # UTC months, sample-size gating, golden text, causal replay
 tests/visualization/          # primitives, composer, renderers, no-lookahead, causal replay
 tests/backtest/               # datasets, replay ordering, determinism, no-lookahead, isolation
+tests/robustness/             # window planning, regimes, degradation, stability, determinism
 tests/signal_eligibility/     # HALAL+threshold gate, long/short/neutral, conflict, causal replay
 tests/setup_quality/          # integer awards, HARAM/UNKNOWN gate, threshold flag, causal replay
 tests/halal_filter/           # allow/deny, unknown, case, provenance, and causal replay
@@ -1726,6 +1831,7 @@ python -m pytest tests/performance
 python -m pytest tests/review
 python -m pytest tests/visualization
 python -m pytest tests/backtest
+python -m pytest tests/robustness
 python -m pip check
 python -m build
 ```
@@ -1739,7 +1845,7 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 20
+## Evidence provenance through Phase 21
 
 `LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
@@ -1793,12 +1899,27 @@ record; aggregates are the existing Phase 19c report, never recomputed.
 Backtests are descriptive research records, not execution, optimization, or
 advice.
 
+Phase 21 adds `RobustnessConfig`, `WalkForwardWindow`, `RegimeObservation`,
+`SegmentStats`, `WindowResult`, `DatasetRobustnessResult`, and
+`RobustnessReport` on the same discipline. Every window is one unchanged
+Phase 20 replay of its own candle slice; validation periods never overlap and
+no candle after a window's end can change its facts. Outcomes and buckets are
+the existing Phase 18/19 records; regime labels are causal annotations that
+never generate, veto, or modify anything. Degradation and stability metrics
+are exact Decimal deltas, spreads, and STABLE/WEAK/UNDERSAMPLED labels gated
+by configurable minimums, with sample sizes always shown and no significance
+claims. `report_id` digests the frozen configuration artifacts, dataset
+identities, window layouts, and replay ids. Robustness is validation only —
+never optimization, selection, or advice.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
 There is no authentication, order execution, leverage/margin/shorting, live
 trading, or trading-performance claim. Phase 20 backtesting is offline
 historical replay of published facts only — never execution or advice.
+Phase 21 robustness is offline walk-forward validation of those same
+published facts — never optimization, selection, or advice.
 
 “Halal” remains a design goal, **not a Sharia certification**. The code performs
 no religious screening and offers no investment advice or guarantee of profit.
@@ -1806,4 +1927,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 20. Phase 21 requires explicit approval.**
+**Stop after Phase 21. Phase 22 requires explicit approval.**

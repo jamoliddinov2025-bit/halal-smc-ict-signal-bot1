@@ -1,4 +1,4 @@
-# Architecture — Phase 20
+# Architecture — Phase 21
 
 ## Layers and explicit I/O
 
@@ -479,16 +479,42 @@ existing Phase 18 helpers; aggregation reuses `analyze_performance` unchanged.
 Import-graph tests keep every Phase 1–19 module free of backtest imports. See
 [backtest methodology](backtest-methodology.md).
 
+## Phase 21 walk-forward robustness validation
+
+`analysis/robustness/` is a consumer-only validation layer over the Phase 20
+replay: it plans sequential development/validation windows over declared
+datasets, replays each window as one independent unchanged backtest, and
+composes the existing analytics into robustness reports. Nothing is
+duplicated, tuned, or selected, and no earlier module can import it.
+
+| Module | Responsibility |
+| --- | --- |
+| `RobustnessConfig` | frozen window/regime/minimum configuration; strict `[robustness]` loader |
+| `plan_windows` | chronological windows; validation periods provably never overlap |
+| `RegimeAnalyzer` | causal exact-Decimal TRENDING/RANGING/HIGH/LOW_VOLATILITY annotation; never a signal |
+| `evaluate_dataset` | per-window Phase 20 replays; development/validation segment statistics |
+| `run_robustness` | multi-dataset reports; Phase 19 buckets over validation rows only |
+| degradation/stability | exact Decimal deltas, spreads, and STABLE/WEAK/UNDERSAMPLED labels |
+| text/evidence | deterministic plain-text and canonical-JSON summaries; digest `report_id` |
+
+Each window replay sees only its own candle slice, so no window can read
+another window's data and no candle after a window's end can change its
+facts. Cross-dataset aggregates count every out-of-sample signal exactly
+once. Regime labels annotate rows and segments; they never generate, gate, or
+veto anything. Import-graph tests keep every Phase 1–20 module free of
+robustness imports. See
+[robustness methodology](robustness-methodology.md).
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phases 1–20 implement none of:
+Phases 1–21 implement none of:
 session strategy, SELL/SHORT trades, entries, stops, targets, sizing, charts,
 or Telegram.
 There are also no orders, authenticated account access, or trading-performance
 claims. The filter is a caller-supplied registry, not Sharia certification.
 
-Stop after Phase 20. Phase 21 requires explicit approval.
+Stop after Phase 21. Phase 22 requires explicit approval.

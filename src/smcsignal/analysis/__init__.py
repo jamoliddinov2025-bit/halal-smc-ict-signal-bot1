@@ -203,6 +203,21 @@ from smcsignal.analysis.review import (
     load_review_config,
     render_review_text,
 )
+from smcsignal.analysis.robustness import (
+    DatasetRobustnessResult,
+    MarketRegime,
+    RegimeAnalyzer,
+    RegimeObservation,
+    RobustnessConfig,
+    RobustnessReport,
+    SegmentStatus,
+    analyze_regimes,
+    evaluate_dataset,
+    load_robustness_config,
+    render_robustness_text,
+    run_robustness,
+)
+from smcsignal.analysis.robustness import machine_summary as machine_robustness_summary
 from smcsignal.analysis.setup_attribution import (
     AttributionSnapshot,
     SetupAttribution,
@@ -271,6 +286,19 @@ from smcsignal.analysis.visualization import (
 )
 
 __all__ = [
+    "DatasetRobustnessResult",
+    "MarketRegime",
+    "RegimeAnalyzer",
+    "RegimeObservation",
+    "RobustnessConfig",
+    "RobustnessReport",
+    "SegmentStatus",
+    "analyze_regimes",
+    "evaluate_dataset",
+    "load_robustness_config",
+    "machine_robustness_summary",
+    "render_robustness_text",
+    "run_robustness",
     "BacktestConfig",
     "BacktestConfiguration",
     "BacktestReport",
