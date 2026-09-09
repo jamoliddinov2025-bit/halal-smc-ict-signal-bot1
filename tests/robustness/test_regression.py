@@ -14,6 +14,7 @@ from tests.robustness.helpers import configuration, dataset
 SRC = Path(smcsignal.__file__).resolve().parent
 ROBUSTNESS = SRC / "analysis" / "robustness"
 INTELLIGENCE = SRC / "analysis" / "intelligence"
+IMPROVEMENT = SRC / "analysis" / "improvement"
 BACKTEST = SRC / "analysis" / "backtest"
 
 
@@ -39,6 +40,10 @@ def test_no_earlier_phase_module_imports_robustness() -> None:
         if ROBUSTNESS in path.parents:
             continue
         if INTELLIGENCE in path.parents:
+            continue
+        # Phase 23 (improvement) is a later terminal consumer that legitimately
+        # reads the Phase 21 robustness report through its public API.
+        if IMPROVEMENT in path.parents:
             continue
         source = path.read_text(encoding="utf-8")
         if "robustness" in source:

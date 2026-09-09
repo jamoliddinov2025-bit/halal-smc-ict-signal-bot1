@@ -34,6 +34,9 @@ PHASE_1_19_SOURCES = (
         if "backtest" not in path.relative_to(SRC).parts
         and "robustness" not in path.relative_to(SRC).parts
         and "intelligence" not in path.relative_to(SRC).parts
+        # Phase 23 (improvement) is a later terminal consumer that legitimately
+        # imports the Phase 20 backtest API.
+        and "improvement" not in path.relative_to(SRC).parts
     ]
     + sorted(SRC.glob("*.py"))
     + sorted((SRC / "data").rglob("*.py"))

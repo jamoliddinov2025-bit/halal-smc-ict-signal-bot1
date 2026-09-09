@@ -14,6 +14,7 @@ from tests.intelligence.helpers import intelligence, report
 
 SRC = Path(smcsignal.__file__).resolve().parent
 INTELLIGENCE = SRC / "analysis" / "intelligence"
+IMPROVEMENT = SRC / "analysis" / "improvement"
 BASELINE = "141b2a5bfdb933b17c4d7104a3eab9fad70b4522"
 
 
@@ -74,6 +75,10 @@ def test_no_earlier_phase_module_imports_intelligence() -> None:
     offenders: list[str] = []
     for path in SRC.rglob("*.py"):
         if INTELLIGENCE in path.parents:
+            continue
+        # Phase 23 (improvement) is a later terminal consumer that legitimately
+        # consumes the Phase 22 strategy-intelligence report through its API.
+        if IMPROVEMENT in path.parents:
             continue
         if "intelligence" in path.read_text(encoding="utf-8"):
             offenders.append(str(path.relative_to(SRC)))

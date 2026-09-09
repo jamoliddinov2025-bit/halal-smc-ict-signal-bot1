@@ -1,0 +1,32 @@
+# Phase 23: controlled, offline self-improvement research framework.
+# Phase 23A ships only the foundational models and approval framework: strict
+# research configuration, immutable Hypotheses and CandidateExperimentDefs
+# (frozen baseline + explicit allow-listed deltas), an explicit human-decision
+# record, deterministic identities, and the approval state machine.
+#
+# Scope guardrails (nothing below can be relaxed by editing this file):
+#   * No candidate evaluator, no backtest/robustness/intelligence changes.
+#   * No optimization, parameter/threshold search, auto-tuning, or strategy
+#     selection, and no feedback into signal generation.
+#   * APPROVED means approved for future consideration ONLY -- there is no
+#     promotion mechanism and nothing here ever reaches production.
+#   * Live trading, exchange connections, Telegram, halal-status changes, and
+#     Phase 24 work are out of scope.
+#
+# The keys under [improvement] are fixed and strictly validated: unknown keys,
+# missing keys, or unsafe values are rejected on load. Research-framework
+# settings only -- no Phase 1-22 strategy setting lives here.
+
+[improvement]
+# Research harness on/off. Must be true in strict improvement-v1; nothing here
+# can alter production signal logic regardless of this value.
+enabled = true
+
+# Smallest number of finalized samples a candidate-versus-baseline comparison
+# may need before it may carry an improvement claim. Below this the comparison
+# is reported inconclusive, never treated as proof. Positive integer.
+minimum_finalized_for_comparison = 30
+
+# Phase 23 components never approve or reject a candidate themselves; only an
+# explicit human decision may. Must stay true.
+human_approval_required = true
