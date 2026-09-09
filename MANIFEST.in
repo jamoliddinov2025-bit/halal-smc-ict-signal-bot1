@@ -18,5 +18,6 @@ include config/halal-filter.example.toml
 include config/setup-quality.example.toml
 include config/signal-eligibility.example.toml
 include config/signal-engine.example.toml
+include config/outcome-tracking.example.toml
 recursive-include docs *.md
 recursive-include tests *.py *.csv *.md

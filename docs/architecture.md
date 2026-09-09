@@ -1,4 +1,4 @@
-# Architecture — Phase 17
+# Architecture — Phase 18
 
 ## Layers and explicit I/O
 
@@ -398,16 +398,39 @@ State commits only after validation and provenance succeed. The current
 consumed-prefix hash is reused. See
 [signal engine methodology](signal-engine-methodology.md).
 
+## Phase 18 outcome tracking and analytics consumer
+
+`analysis/outcome_tracking/` consumes existing `SignalSnapshot` frames. It does
+not rerun or modify Phases 1–17 and has no second price feed: evaluation reads
+only candles published in later consumed signal frames. Only `BUY_SIGNAL`
+publications open outcomes.
+
+| Module | Responsibility |
+| --- | --- |
+| `config.py` | Frozen fixed-horizon configuration and strict TOML loading |
+| `models.py` | Immutable `SignalOutcome` lifecycle versions, `AnalyticsSummary`, `OutcomeSnapshot` |
+| `calculation.py` | Exact difference arithmetic, sign classification, running extremes, aggregates |
+| `evidence.py` | Stable outcome identity, per-version record provenance, frame provenance |
+| `analyzer.py` | Evaluate-then-create frame processing, duplicate guard, batch/stream replay |
+
+The reference price is the signal candle close. The horizon counts completed
+candles after it. Classification uses only the exact sign of the final close
+difference: WIN, LOSS, or exact-tie FLAT. MFE/MAE are running extremes of
+evaluation-candle highs/lows with first-occurrence ties. Open outcomes stay
+open at end-of-series; no flush API exists. Aggregates cover finalized
+outcomes only, with `None` for undefined rates. See
+[outcome tracking methodology](outcome-tracking-methodology.md).
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phase 17 implements none of:
+Phases 1–18 implement none of:
 session strategy, SELL/SHORT trades, entries, stops, targets, sizing, charts,
 or Telegram.
 There are also no orders, authenticated account access, or trading-performance
 claims. The filter is a caller-supplied registry, not Sharia certification.
 
-Stop after Phase 17. Phase 18 requires explicit approval.
+Stop after Phase 18. Phase 19 requires explicit approval.

@@ -1,4 +1,4 @@
-"""Public analysis API through Phase 17: existing evidence and spot signal facts."""
+"""Public analysis API through Phase 18: existing evidence, signals, and outcomes."""
 
 from smcsignal.analysis.breaker_blocks import (
     BreakerBlock,
@@ -131,6 +131,16 @@ from smcsignal.analysis.ote import (
     analyze_ote,
     load_ote_config,
 )
+from smcsignal.analysis.outcome_tracking import (
+    AnalyticsSummary,
+    OutcomeSnapshot,
+    OutcomeStatus,
+    OutcomeTrackingAnalyzer,
+    OutcomeTrackingConfig,
+    SignalOutcome,
+    analyze_outcome_tracking,
+    load_outcome_tracking_config,
+)
 from smcsignal.analysis.premium_discount import (
     DealingRange,
     Equilibrium,
@@ -196,6 +206,14 @@ from smcsignal.analysis.swings import SwingDetector, detect_swings
 from smcsignal.analysis.trend import classify_trend
 
 __all__ = [
+    "AnalyticsSummary",
+    "OutcomeSnapshot",
+    "OutcomeStatus",
+    "OutcomeTrackingAnalyzer",
+    "OutcomeTrackingConfig",
+    "SignalOutcome",
+    "analyze_outcome_tracking",
+    "load_outcome_tracking_config",
     "ConflictPolicy",
     "EligibilityDecision",
     "EligibilityReason",

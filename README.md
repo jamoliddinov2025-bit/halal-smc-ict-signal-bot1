@@ -1,14 +1,14 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 17 — deterministic spot signal engine.**
+**Status: Phase 18 — outcome tracking and analytics over spot signals.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
 data, confirms fractal swings without backdating them, and produces immutable
 per-candle structure, liquidity, displacement, FVG, OB, PD, MSS, Breaker,
 Mitigation, OTE, multi-timeframe confluence, registry-based classification,
-integer setup-quality snapshots, eligibility decisions, and spot publication
-records. It does **not** generate SELL or SHORT trades, execute orders, or issue
+integer setup-quality snapshots, eligibility decisions, spot publication
+records, and fixed-horizon outcome analytics for published buys. It does **not** generate SELL or SHORT trades, execute orders, or issue
 religious rulings. UNKNOWN assets are never silently treated as HALAL. HARAM and
 UNKNOWN receive quality score 0 and are never eligible.
 
@@ -25,6 +25,126 @@ python -m pytest
 
 On Windows, create the environment with `python -m venv .venv` and activate with
 `.venv\Scripts\Activate.ps1` in PowerShell.
+
+## Phase 18 offline outcome tracking example
+
+Outcome tracking consumes existing Phase 17 signal frames only; it has no
+second price feed and never reruns earlier detectors. The example reuses the
+**synthetic** Phase 13 15m/1h/4h history from
+`config/outcome-tracking.example.toml`, with the SQS threshold lowered to 10 so
+`BUY_SIGNAL` publications exist (indices 4, 8, 12, 16):
+
+```python
+from smcsignal.analysis import (
+    SeriesProvenance,
+    OutcomeTrackingConfig,
+    analyze_liquidity,
+    analyze_displacement,
+    analyze_fvg,
+    analyze_order_blocks,
+    analyze_pd,
+    analyze_ote,
+    analyze_mtf,
+    analyze_halal,
+    analyze_setup_quality,
+    analyze_signal_eligibility,
+    analyze_signal_engine,
+    analyze_outcome_tracking,
+    load_analysis_config,
+    load_liquidity_config,
+    load_displacement_config,
+    load_fvg_config,
+    load_order_block_config,
+    load_pd_config,
+    load_ote_config,
+    load_mtf_config,
+    load_halal_filter_config,
+    load_signal_eligibility_config,
+    load_signal_engine_config,
+)
+from smcsignal.analysis.setup_quality import SetupQualityConfig
+from smcsignal.analysis.signal_engine import SignalEngineConfig
+from smcsignal.data import CsvDataProvider, MarketDataConfig, load_data_config
+
+path = "config/outcome-tracking.example.toml"
+data = load_data_config(path)
+mtf = load_mtf_config(path)
+halal = load_halal_filter_config(path)
+eligibility = load_signal_eligibility_config(path)
+
+
+def frames(candles, timeframe):
+    series = SeriesProvenance(
+        data.symbol,
+        timeframe,
+        "synthetic_spot",
+        "csv",
+        f"signal-demo:{timeframe}:v1:from-first-row:missing=error",
+    )
+    a = analyze_liquidity(
+        candles,
+        series=series,
+        config=load_liquidity_config(path),
+        analysis_config=load_analysis_config(path),
+    )
+    b = analyze_displacement(
+        a, load_displacement_config(path), price_unit=load_liquidity_config(path).price_unit
+    )
+    c = analyze_order_blocks(analyze_fvg(b, load_fvg_config(path)), load_order_block_config(path))
+    return analyze_ote(analyze_pd(c, load_pd_config(path)), load_ote_config(path))
+
+
+primary = frames(CsvDataProvider(data).fetch_ohlcv().candles, "15m")
+hourly = frames(
+    CsvDataProvider(
+        MarketDataConfig(
+            symbol="BTCUSDT",
+            timeframe="1h",
+            data_source="csv",
+            history_limit=500,
+            csv_path="tests/fixtures/mtf-1h.csv",
+        )
+    )
+    .fetch_ohlcv()
+    .candles,
+    "1h",
+)
+four = frames(
+    CsvDataProvider(
+        MarketDataConfig(
+            symbol="BTCUSDT",
+            timeframe="4h",
+            data_source="csv",
+            history_limit=500,
+            csv_path="tests/fixtures/mtf-4h.csv",
+        )
+    )
+    .fetch_ohlcv()
+    .candles,
+    "4h",
+)
+filtered = analyze_halal(analyze_mtf(primary, {"1h": hourly, "4h": four}, mtf), halal)
+scored = analyze_setup_quality(filtered, SetupQualityConfig(10))
+eligible = analyze_signal_eligibility(scored, eligibility)
+signals = analyze_signal_engine(eligible, SignalEngineConfig(publish_threshold=10))
+snapshots = analyze_outcome_tracking(signals, OutcomeTrackingConfig(horizon_bars=10))
+print(snapshots[14].completed[0].status.value)
+print(snapshots[-1].analytics.open_count)
+```
+
+```text
+WIN
+3
+```
+
+The index-4 buy (reference close 24) is evaluated on candles 5–14: final close
+34 → `WIN`, MFE 35 @ 14, MAE 24 @ 5. The index-8/12/16 buys stay `OPEN` at
+end-of-series; no flush exists. `OutcomeTrackingAnalyzer(config).update(signal_frame)`
+is the streaming equivalent. Classification uses only the exact sign of the
+final close difference (`FLAT` on exact ties), arithmetic is exact Decimal, and
+analytics aggregate finalized outcomes only. This is analytics of publication
+records: no entries, exits, fees, sizing, or execution. See
+[outcome tracking methodology](docs/outcome-tracking-methodology.md).
 
 ## Phase 17 offline spot signal example
 
@@ -1337,6 +1457,7 @@ Live Binance availability is not asserted by the offline tests.
 - `[signal_eligibility]`: `enabled = true` and `conflict_policy = "neutral"` only.
 - `[signal_engine]`: `enabled = true`, matching `publish_threshold`, `spot_only = true`, `duplicate_policy = "one_per_setup"`.
 - `config/signal-engine.example.toml`: hand-audited Phase 17 spot publication example on synthetic MTF history.
+- `config/outcome-tracking.example.toml`: hand-audited Phase 18 outcome analytics example on the same synthetic history.
 - `config/signal-eligibility.example.toml`: hand-audited Phase 16 eligibility example on synthetic MTF history.
 - `config/setup-quality.example.toml`: hand-audited Phase 15 integer score example on synthetic MTF history.
 - `config/halal-filter.example.toml`: hand-audited Phase 14 registry example on synthetic MTF history.
@@ -1369,6 +1490,7 @@ src/smcsignal/
 │   ├── config.py             # Validated fractal configuration
 │   ├── errors.py             # Typed input/configuration failures
 │   ├── signal_engine/        # Phase 17 spot BUY_SIGNAL / BEARISH_AVOID; not SELL, SHORT, or orders
+│   ├── outcome_tracking/     # Phase 18 fixed-horizon BUY outcome analytics; not trading
 │   ├── signal_eligibility/   # Phase 16 HALAL+threshold gate and nested bias; not BUY/SELL
 │   ├── setup_quality/        # Phase 15 integer 0–100 score from nested facts; not a signal
 │   ├── halal_filter/         # Phase 14 config-driven registry; no autonomous rulings
@@ -1431,6 +1553,7 @@ python -m pytest tests/halal_filter
 python -m pytest tests/setup_quality
 python -m pytest tests/signal_eligibility
 python -m pytest tests/signal_engine
+python -m pytest tests/outcome_tracking
 python -m pip check
 python -m build
 ```
@@ -1444,7 +1567,7 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 17
+## Evidence provenance through Phase 18
 
 `LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
@@ -1470,6 +1593,14 @@ to `BEARISH_AVOID`. HARAM, UNKNOWN, failed threshold, `NEUTRAL`, missing
 evidence, and already-published setups map to `NO_SIGNAL`. Historical
 publications never change. `BUY_SIGNAL` is not an order.
 
+Phase 18 adds `SignalOutcome`, `AnalyticsSummary`, and `OutcomeSnapshot` on the
+same contract. Only `BUY_SIGNAL` publications open outcomes; each lifecycle
+version is immutable with a stable `outcome_id` independent of future candles.
+Classification is the exact sign of the final close difference over a fixed
+horizon; MFE/MAE are running extremes with first-occurrence ties; open
+outcomes are never flushed; aggregates cover finalized outcomes only and
+undefined rates are `None`. Historical outcome versions never change.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
@@ -1482,4 +1613,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 17. Phase 18 requires explicit approval.**
+**Stop after Phase 18. Phase 19 requires explicit approval.**

@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 17
+# Configuration — market data and analysis through Phase 18
 
-Sixteen explicit loaders consume separate tables:
+Seventeen explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -18,6 +18,7 @@ Sixteen explicit loaders consume separate tables:
 - `smcsignal.analysis.load_setup_quality_config(path)` reads only `[setup_quality]`.
 - `smcsignal.analysis.load_signal_eligibility_config(path)` reads only `[signal_eligibility]`.
 - `smcsignal.analysis.load_signal_engine_config(path)` reads only `[signal_engine]`.
+- `smcsignal.analysis.load_outcome_tracking_config(path)` reads only `[outcome_tracking]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -69,6 +70,8 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
   integer `publish_threshold = 75`.
 - `signal-eligibility.example.toml`: the same synthetic history plus frozen
   eligibility-v1 `enabled = true` and `conflict_policy = "neutral"`.
+- `outcome-tracking.example.toml`: the same synthetic history plus the
+  fixed-horizon outcome table; zero outcomes at default threshold 75.
 - `signal-engine.example.toml`: the same synthetic history plus frozen
   signal-engine-v1 `enabled = true`, `publish_threshold = 75`, `spot_only = true`,
   and `duplicate_policy = "one_per_setup"`.
@@ -422,6 +425,27 @@ short trade. Missing HALAL, a failed threshold, or `NEUTRAL` maps to `NO_SIGNAL`
 Under `one_per_setup`, later BUY candidates that share a published setup identity
 become `NO_SIGNAL` with reason `duplicate_setup`. See
 [signal engine methodology](../docs/signal-engine-methodology.md).
+
+## Outcome tracking settings (Phase 18)
+
+```toml
+[outcome_tracking]
+enabled = true
+horizon_bars = 10
+```
+
+The table requires exactly these two keys. `enabled` must remain true.
+`horizon_bars` is an integer from 1 to 10 000 counting completed primary
+candles after the signal candle. Direct `OutcomeTrackingConfig()` uses the same
+defaults. Unknown keys, including entry, stop, target, fee, slippage, and
+position-size options, are rejected; no trading knob exists.
+
+`OutcomeTrackingAnalyzer` consumes existing Phase 17 frames. Only `BUY_SIGNAL`
+publications open outcomes. The reference price is the signal candle close;
+WIN/LOSS/FLAT uses the exact sign of the final close difference; MFE/MAE are
+running evaluation-candle extremes. Open outcomes are never flushed at
+end-of-series. See
+[outcome tracking methodology](../docs/outcome-tracking-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

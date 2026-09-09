@@ -80,8 +80,10 @@ service availability are part of the test results. Fixtures are labeled syntheti
 They do **not** validate a trading strategy, financial performance, or religious
 compliance; the Phase 14 registry only enforces a caller-supplied list,
 Phase 15 scores already-published facts without claiming expected returns,
-Phase 16 gates those facts without emitting trades, and Phase 17 publishes
-spot `BUY_SIGNAL` records without SELL, SHORT, entries, or execution.
+Phase 16 gates those facts without emitting trades, Phase 17 publishes
+spot `BUY_SIGNAL` records without SELL, SHORT, entries, or execution, and
+Phase 18 tracks fixed-horizon outcomes of those publications without any
+trading, fees, or performance claim.
 
 
 ## Analysis-only tests and reproducible offline example
@@ -308,6 +310,26 @@ missing evidence, one-per-setup, immutable provenance, every-prefix identity,
 batch/stream/chunk replay, and provider integration. No SELL, SHORT trade,
 entry, ranking, probability, Telegram, or performance test is included.
 
+## Phase 18 outcome tracking tests and example
+
+```bash
+python -m pytest tests/outcome_tracking
+python -m pytest --collect-only -q tests/outcome_tracking
+```
+
+`config/outcome-tracking.example.toml` reuses the synthetic Phase 13–17 history.
+At default SQS threshold 75 no `BUY_SIGNAL` exists, so every snapshot reports
+zero-outcome analytics. Lowering the SQS threshold to 10 publishes BUYs at
+indices 4, 8, 12, and 16; with `horizon_bars = 10` the index-4 outcome is a
+hand-computed `WIN` (reference 24, final close 34, MFE 35 @ 14, MAE 24 @ 5)
+while the others remain open at end-of-series. Falling and flat tails produce
+hand-computed `LOSS` and exact-tie `FLAT` cases. Tests cover configuration
+strictness, model/provenance invariants, lifecycle versions, first-occurrence
+extremes, duplicate-signal rejection, every-prefix equality, future-price
+shocks, batch/stream/chunk equivalence, independent aggregate recomputation,
+CSV provider integration, and Phase 17 regression. No entry, exit, fee,
+execution, or performance backtest is included.
+
 ## Packaging smoke test
 
 After building, install the resulting wheel into a separate clean virtual
@@ -347,7 +369,10 @@ IDs, and prefix/batch/stream equivalence through the installed wheel. For
 Phase 17 verify default-threshold `NO_SIGNAL` on that same example, threshold-10
 `BUY_SIGNAL` then duplicate collapse, HARAM/UNKNOWN hard gates, unchanged
 upstream IDs, and prefix/batch/stream equivalence through the installed wheel.
-Repository configuration and
+For Phase 18 verify zero-outcome analytics at default threshold, the threshold-10
+hand-computed `WIN` with open outcomes at end-of-series, unchanged upstream IDs,
+stable outcome identities, and prefix/batch/stream equivalence through the
+installed wheel. Repository configuration and
 fixtures are in the source distribution, not installed as runtime wheel resources.
 
 ## Before committing
@@ -358,5 +383,5 @@ git status --short
 ```
 
 Review every staged file for secrets and accidental artifacts. Keep all work on
-the designated working branch. Stop after Phase 17. Do not implement Phase 18
+the designated working branch. Stop after Phase 18. Do not implement Phase 19
 without explicit approval.

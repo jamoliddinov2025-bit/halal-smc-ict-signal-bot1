@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 17 — deterministic spot signal engine**.
+Current scope: **Phase 18 — outcome tracking and analytics over spot signals**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -38,11 +38,15 @@ Current scope: **Phase 17 — deterministic spot signal engine**.
 - [Signal engine methodology](signal-engine-methodology.md): spot `BUY_SIGNAL`
   from eligible `LONG_BIAS`, `BEARISH_AVOID` from eligible `SHORT_BIAS`,
   one-per-setup, causal publication.
+- [Outcome tracking methodology](outcome-tracking-methodology.md): fixed-horizon
+  BUY_SIGNAL outcomes, exact return/MFE/MAE, sign-based WIN/LOSS/FLAT,
+  aggregate analytics, no flush of open outcomes.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
-  `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders.
+  `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;
+  Phase 18 tracks fixed-horizon outcomes of those publications.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
-**Stop after Phase 17. Phase 18 requires explicit approval.**
+**Stop after Phase 18. Phase 19 requires explicit approval.**
