@@ -1,6 +1,6 @@
 # Professional Halal SMC/ICT Spot Signal Bot
 
-**Status: Phase 21 — deterministic walk-forward robustness validation.**
+**Status: Phase 22 — deterministic strategy-intelligence research reporting.**
 
 A Python foundation with a validated OHLCV data layer and incremental market
 structure analysis. It reads local CSV or unauthenticated Binance public **Spot**
@@ -395,6 +395,38 @@ candle slice, so windows never share state and no future candle can change an
 earlier window. Regime labels (TRENDING/RANGING/HIGH_VOLATILITY/LOW_VOLATILITY)
 are causal annotations only: they never generate, veto, or modify signals.
 See [robustness methodology](docs/robustness-methodology.md).
+
+## Phase 22 offline strategy-intelligence example
+
+Strategy Intelligence is a consumer-only layer over the Phase 21 report: it
+reads the validated, out-of-sample validation rows and reports how their
+published outcomes distribute across signal-time strategy profiles, with
+deterministic winner/loser patterns, strength/weakness diagnostics, and
+sample-gated research ranks. It never re-runs the replay, re-detects a regime,
+recomputes an outcome, or selects anything.
+
+```python
+from smcsignal.analysis import (
+    analyze_report,
+    render_intelligence_text,
+    load_intelligence_config,
+)
+from smcsignal.analysis.robustness import run_robustness
+
+robust = run_robustness(datasets, backtest_configuration, robustness_config)  # Phase 21
+config = load_intelligence_config("config/intelligence.example.toml")
+research = analyze_report(robust, config)  # IntelligenceReport
+print(render_intelligence_text(research))  # deterministic text
+```
+
+The overall population is the Phase 21 validation rows, each counted exactly
+once. Each cell carries exact Decimal statistics plus its `pattern`
+(WINNER/LOSER/NEUTRAL/UNDERSAMPLED), `diagnostic`
+(STRENGTH/WEAKNESS/UNDETERMINED), and deterministic `rank` (1 = best) among
+groups that reach the configured ranking minimum. The intelligence `report_id`
+is derived from the concrete row facts — never the Phase 21 report id — so
+appended futures cannot rewrite an observed cell. See
+[strategy-intelligence methodology](docs/intelligence-methodology.md).
 
 ## Phase 17 offline spot signal example
 
@@ -1715,6 +1747,7 @@ Live Binance availability is not asserted by the offline tests.
 - `config/visualization.example.toml`: Phase 19e deterministic SVG/text drawing example.
 - `config/backtest.example.toml`: Phase 20 full-pipeline historical replay and backtest example.
 - `config/robustness.example.toml`: Phase 21 full-pipeline walk-forward robustness example.
+- `config/intelligence.example.toml`: Phase 22 full-pipeline strategy-intelligence research example.
 - `config/signal-eligibility.example.toml`: hand-audited Phase 16 eligibility example on synthetic MTF history.
 - `config/setup-quality.example.toml`: hand-audited Phase 15 integer score example on synthetic MTF history.
 - `config/halal-filter.example.toml`: hand-audited Phase 14 registry example on synthetic MTF history.
@@ -1750,6 +1783,7 @@ src/smcsignal/
 │   ├── outcome_tracking/     # Phase 18 fixed-horizon BUY outcome analytics; not trading
 │   ├── backtest/             # Phase 20 deterministic historical replay; not execution
 │   ├── robustness/           # Phase 21 walk-forward validation; never optimization
+│   ├── intelligence/         # Phase 22 research reporting over validation rows; never optimization
 │   ├── visualization/        # Phase 19e deterministic SVG/text drawings of published facts
 │   ├── review/               # Phase 19d monthly descriptive review over one performance report
 │   ├── performance/          # Phase 19c descriptive multi-series performance analytics
@@ -1793,6 +1827,7 @@ tests/review/                 # UTC months, sample-size gating, golden text, cau
 tests/visualization/          # primitives, composer, renderers, no-lookahead, causal replay
 tests/backtest/               # datasets, replay ordering, determinism, no-lookahead, isolation
 tests/robustness/             # window planning, regimes, degradation, stability, determinism
+tests/intelligence/           # patterns, diagnostics, rankings, partitioning, no-lookahead, isolation
 tests/signal_eligibility/     # HALAL+threshold gate, long/short/neutral, conflict, causal replay
 tests/setup_quality/          # integer awards, HARAM/UNKNOWN gate, threshold flag, causal replay
 tests/halal_filter/           # allow/deny, unknown, case, provenance, and causal replay
@@ -1832,6 +1867,7 @@ python -m pytest tests/review
 python -m pytest tests/visualization
 python -m pytest tests/backtest
 python -m pytest tests/robustness
+python -m pytest tests/intelligence
 python -m pip check
 python -m build
 ```
@@ -1845,7 +1881,7 @@ See the [development guide](docs/development.md).
 `smcsignal`, `smcsignal --help`, and `python -m smcsignal --version` remain
 informational; they do not load configuration, fetch data, or start analysis.
 
-## Evidence provenance through Phase 21
+## Evidence provenance through Phase 22
 
 `LiquidityPool`, `SweepEvent`, `ATRReference`, `DisplacementEvent`, `FVGEvent`, and `OrderBlockEvent` compose the approved immutable provenance
 contract. They retain source/producer identity, configuration and consumed-prefix
@@ -1912,6 +1948,19 @@ claims. `report_id` digests the frozen configuration artifacts, dataset
 identities, window layouts, and replay ids. Robustness is validation only —
 never optimization, selection, or advice.
 
+Phase 22 adds `IntelligenceConfig`, `IntelligenceCell`, and
+`IntelligenceReport` on the same discipline. It consumes the Phase 21
+validation rows — each counted exactly once — and groups them by signal-time
+strategy profiles (the Phase 19 setup combination key, symbol, timeframe, UTC
+month, and the Phase 21 regime annotation) with no replay, no regime
+re-detection, and no outcome recomputation. Each cell carries exact Decimal
+statistics and deterministic WINNER/LOSER/NEUTRAL/UNDERSAMPLED patterns,
+STRENGTH/WEAKNESS diagnostics, and contiguous sample-gated ranks. Cell
+membership uses signal-time facts only; the intelligence `report_id` is
+derived from row facts, never the Phase 21 report id, so appended futures
+cannot rewrite an observed cell. Intelligence is observational research only —
+never optimization, selection, or advice.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
@@ -1919,7 +1968,9 @@ There is no authentication, order execution, leverage/margin/shorting, live
 trading, or trading-performance claim. Phase 20 backtesting is offline
 historical replay of published facts only — never execution or advice.
 Phase 21 robustness is offline walk-forward validation of those same
-published facts — never optimization, selection, or advice.
+published facts — never optimization, selection, or advice. Phase 22
+strategy intelligence is offline observational reporting over those validated
+facts — never optimization, selection, or advice.
 
 “Halal” remains a design goal, **not a Sharia certification**. The code performs
 no religious screening and offers no investment advice or guarantee of profit.
@@ -1927,4 +1978,4 @@ no religious screening and offers no investment advice or guarantee of profit.
 [Repository](https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1) ·
 [Architecture](docs/architecture.md) · [Documentation index](docs/README.md)
 
-**Stop after Phase 21. Phase 22 requires explicit approval.**
+**Stop after Phase 22. Phase 23 requires explicit approval.**

@@ -33,6 +33,7 @@ PHASE_1_19_SOURCES = (
         for path in sorted((SRC / "analysis").rglob("*.py"))
         if "backtest" not in path.relative_to(SRC).parts
         and "robustness" not in path.relative_to(SRC).parts
+        and "intelligence" not in path.relative_to(SRC).parts
     ]
     + sorted(SRC.glob("*.py"))
     + sorted((SRC / "data").rglob("*.py"))
@@ -134,8 +135,8 @@ def test_backtest_adds_no_runtime_dependency_entries() -> None:
 def test_package_version_matches_the_current_release() -> None:
     import smcsignal
 
-    # Bumped to 0.21.0 by the approved Phase 21 finalization.
-    assert smcsignal.__version__ == "0.21.0"
+    # Bumped to 0.22.0 by the approved Phase 22 finalization.
+    assert smcsignal.__version__ == "0.22.0"
 
 
 def test_baseline_signal_behavior_matches_phase_18_and_19() -> None:

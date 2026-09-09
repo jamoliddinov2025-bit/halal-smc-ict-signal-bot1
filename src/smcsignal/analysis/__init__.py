@@ -71,6 +71,19 @@ from smcsignal.analysis.indicators import (
     analyze_indicators,
     load_indicators_config,
 )
+from smcsignal.analysis.intelligence import (
+    DiagnosticLabel,
+    IntelligenceCell,
+    IntelligenceConfig,
+    IntelligenceDimension,
+    IntelligencePattern,
+    IntelligenceReport,
+    analyze_report,
+    load_intelligence_config,
+    render_intelligence_text,
+    run_intelligence,
+)
+from smcsignal.analysis.intelligence import machine_summary as machine_intelligence_summary
 from smcsignal.analysis.liquidity import (
     InvalidationReason,
     LiquidityAnalyzer,
@@ -286,6 +299,17 @@ from smcsignal.analysis.visualization import (
 )
 
 __all__ = [
+    "DiagnosticLabel",
+    "IntelligenceCell",
+    "IntelligenceConfig",
+    "IntelligenceDimension",
+    "IntelligencePattern",
+    "IntelligenceReport",
+    "analyze_report",
+    "load_intelligence_config",
+    "machine_intelligence_summary",
+    "render_intelligence_text",
+    "run_intelligence",
     "DatasetRobustnessResult",
     "MarketRegime",
     "RegimeAnalyzer",

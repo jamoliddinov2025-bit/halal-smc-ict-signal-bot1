@@ -13,6 +13,7 @@ from tests.robustness.helpers import configuration, dataset
 
 SRC = Path(smcsignal.__file__).resolve().parent
 ROBUSTNESS = SRC / "analysis" / "robustness"
+INTELLIGENCE = SRC / "analysis" / "intelligence"
 BACKTEST = SRC / "analysis" / "backtest"
 
 
@@ -29,17 +30,20 @@ def module_imports(path: Path) -> set[str]:
 
 def test_no_earlier_phase_module_imports_robustness() -> None:
     # Robustness is a terminal consumer: nothing in Phases 1-20 may reach it.
-    # The analysis facade re-exports the Phase 21 API additively, and the
-    # informational CLI names the current phase; no other earlier file may
-    # mention robustness at all.
+    # The analysis facade re-exports the Phase 21 API additively. Phase 22
+    # (intelligence) is a later terminal consumer that legitimately reads the
+    # robustness report, and the Phase 22 CLI no longer names robustness; no
+    # other earlier file may mention robustness at all.
     offenders: list[str] = []
     for path in SRC.rglob("*.py"):
         if ROBUSTNESS in path.parents:
             continue
+        if INTELLIGENCE in path.parents:
+            continue
         source = path.read_text(encoding="utf-8")
         if "robustness" in source:
             offenders.append(str(path.relative_to(SRC)))
-    assert sorted(offenders) == ["analysis/__init__.py", "cli.py"]
+    assert sorted(offenders) == ["analysis/__init__.py"]
 
 
 def test_backtest_sources_never_reference_robustness() -> None:
@@ -112,8 +116,8 @@ def test_phase20_buy_pattern_is_unchanged() -> None:
     assert all(row.direction.value == "LONG" for row in rows)
 
 
-def test_package_version_matches_the_phase21_finalization() -> None:
-    assert smcsignal.__version__ == "0.21.0"
+def test_package_version_matches_the_phase22_finalization() -> None:
+    assert smcsignal.__version__ == "0.22.0"
 
 
 def test_pyproject_declares_no_runtime_dependencies() -> None:
@@ -151,6 +155,13 @@ def test_decision_modules_are_unmodified_since_the_phase20_baseline() -> None:
         "src/smcsignal/analysis/robustness/models.py",
         "src/smcsignal/analysis/robustness/regime.py",
         "src/smcsignal/analysis/robustness/text.py",
+        "src/smcsignal/analysis/intelligence/__init__.py",
+        "src/smcsignal/analysis/intelligence/analyzer.py",
+        "src/smcsignal/analysis/intelligence/calculation.py",
+        "src/smcsignal/analysis/intelligence/config.py",
+        "src/smcsignal/analysis/intelligence/evidence.py",
+        "src/smcsignal/analysis/intelligence/models.py",
+        "src/smcsignal/analysis/intelligence/text.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

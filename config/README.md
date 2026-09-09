@@ -1,6 +1,6 @@
-# Configuration — market data and analysis through Phase 21
+# Configuration — market data and analysis through Phase 22
 
-Twenty-four explicit loaders consume separate tables:
+Twenty-five explicit loaders consume separate tables:
 
 - `smcsignal.data.load_data_config(path)` reads only `[market_data]`.
 - `smcsignal.analysis.load_analysis_config(path)` reads only `[analysis]`.
@@ -26,6 +26,7 @@ Twenty-four explicit loaders consume separate tables:
 - `smcsignal.analysis.load_visualization_config(path)` reads only `[visualization]`.
 - `smcsignal.analysis.load_backtest_config(path)` reads only `[backtest]`.
 - `smcsignal.analysis.load_robustness_config(path)` reads only `[robustness]`.
+- `smcsignal.analysis.load_intelligence_config(path)` reads only `[intelligence]`.
 
 Loading settings does not fetch data or run analysis. The CLI remains informational.
 
@@ -89,6 +90,10 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
   `[robustness]` walk-forward table; load the bundle with
   `smcsignal.analysis.load_backtest_configuration(path)` and the robustness
   settings with `smcsignal.analysis.load_robustness_config(path)`.
+- `intelligence.example.toml`: the same full-pipeline bundle plus the Phase 22
+  `[intelligence]` research table; load the bundle with
+  `smcsignal.analysis.load_backtest_configuration(path)` and the intelligence
+  settings with `smcsignal.analysis.load_intelligence_config(path)`.
 - `outcome-tracking.example.toml`: the same synthetic history plus the
   fixed-horizon outcome table; zero outcomes at default threshold 75.
 - `signal-engine.example.toml`: the same synthetic history plus frozen
@@ -588,6 +593,27 @@ minimums gate the STABLE/WEAK/UNDERSAMPLED labels. These settings parameterize
 the *measurement* only — there are no strategy, order, sizing, fee,
 optimization, or self-modification settings. See
 [robustness methodology](../docs/robustness-methodology.md).
+
+## Intelligence settings (Phase 22)
+
+```toml
+[intelligence]
+enabled = true
+minimum_finalized_for_diagnosis = 20
+minimum_finalized_for_ranking = 20
+winner_win_rate_floor = "0.60"
+loser_win_rate_ceiling = "0.40"
+```
+
+The table requires exactly these keys. `enabled` must be true. The two minimums
+are positive integers with `minimum_finalized_for_ranking >=
+minimum_finalized_for_diagnosis`. The pattern bounds are quoted exact Decimals:
+both are positive and at most 1, and `loser_win_rate_ceiling` must sit strictly
+below `winner_win_rate_floor` so the WINNER and LOSER patterns stay mutually
+exclusive. These settings gate descriptive *reporting* labels over the Phase 21
+validation rows only — there are no strategy, order, sizing, fee,
+optimization, or self-modification settings. See
+[intelligence methodology](../docs/intelligence-methodology.md).
 
 ## Metadata, secrets, and artifacts
 

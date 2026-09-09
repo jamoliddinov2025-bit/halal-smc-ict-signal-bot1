@@ -1,6 +1,6 @@
 # Documentation
 
-Current scope: **Phase 21 — deterministic walk-forward robustness validation**.
+Current scope: **Phase 22 — deterministic strategy-intelligence research reporting**.
 
 - [Architecture](architecture.md): package boundaries, per-candle data flow, and immutable outputs.
 - [Market data methodology](market-data-methodology.md): the approved data layer and its limits.
@@ -61,6 +61,11 @@ Current scope: **Phase 21 — deterministic walk-forward robustness validation**
   development/validation windows over the unchanged Phase 20 replay;
   cross-period, cross-asset, cross-timeframe, and regime buckets;
   degradation and stability indicators; validation only, never optimization.
+- [Strategy Intelligence methodology](intelligence-methodology.md): consumer-only
+  research reporting over the Phase 21 validation rows; setup, symbol,
+  timeframe, month, and regime conditionals with exact winner/loser patterns,
+  strength/weakness diagnostics, and deterministic sample-gated rankings;
+  observational only, never optimization or advice.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;
@@ -69,9 +74,12 @@ Current scope: **Phase 21 — deterministic walk-forward robustness validation**
   visualization layers over those records; Phase 20 replays declared
   historical datasets through the unchanged pipeline as backtests; Phase 21
   validates those publications across walk-forward windows, datasets,
-  timeframes, and regimes without tuning anything.
+  timeframes, and regimes without tuning anything; Phase 22 reports how the
+  validated out-of-sample outcomes distribute across signal-time setup,
+  symbol, timeframe, month, and regime profiles without optimizing or
+  selecting anything.
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
-**Stop after Phase 21. Phase 22 requires explicit approval.**
+**Stop after Phase 22. Phase 23 requires explicit approval.**

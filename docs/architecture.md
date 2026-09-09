@@ -1,4 +1,4 @@
-# Architecture — Phase 21
+# Architecture — Phase 22
 
 ## Layers and explicit I/O
 
@@ -505,16 +505,41 @@ veto anything. Import-graph tests keep every Phase 1–20 module free of
 robustness imports. See
 [robustness methodology](robustness-methodology.md).
 
+## Phase 22 strategy-intelligence research reporting
+
+`analysis/intelligence/` is a consumer-only research layer over the Phase 21
+`RobustnessReport`: it groups the validated out-of-sample validation rows by
+signal-time strategy profiles and composes exact descriptive statistics with
+the existing Phase 18 aggregate helper. Nothing is duplicated, re-detected, or
+selected, and no earlier module can import it.
+
+| Module | Responsibility |
+| --- | --- |
+| `IntelligenceConfig` | frozen diagnosis/ranking minimums and pattern bounds; strict `[intelligence]` loader |
+| `analyze_report` | read a Phase 21 report's validation rows exactly once; build the report's cells |
+| `IntelligenceReport` | overall / by-setup / by-symbol / by-timeframe / by-month / by-regime cells |
+| `IntelligenceCell` | exact Decimal statistics plus pattern, diagnostic, and deterministic rank |
+| diagnose/rank | winner/loser/neutral/undersampled patterns; strength/weakness labels; contiguous ranks |
+| text/evidence | deterministic plain-text and canonical-JSON summaries; digest `report_id` |
+
+Cell membership uses only signal-time facts (Phase 19 combination key, symbol,
+timeframe, UTC month, Phase 21 regime label); post-outcome fields appear only as
+statistics inside an already-formed cell. The `report_id` is derived from row
+facts, never the Phase 21 report id, so appended futures or re-annotated tails
+cannot rewrite an observed cell. Import-graph tests keep every Phase 1–21
+module free of intelligence imports. See
+[Strategy Intelligence methodology](intelligence-methodology.md).
+
 ## Methodology and phase boundary
 
 - [Market structure, swing confirmation, BOS/CHoCH definitions](market-structure-methodology.md)
 - [Trend classification and readiness](trend-methodology.md)
 - [No-look-ahead argument, tests, and limitations](no-look-ahead.md)
 
-Phases 1–21 implement none of:
+Phases 1–22 implement none of:
 session strategy, SELL/SHORT trades, entries, stops, targets, sizing, charts,
 or Telegram.
 There are also no orders, authenticated account access, or trading-performance
 claims. The filter is a caller-supplied registry, not Sharia certification.
 
-Stop after Phase 21. Phase 22 requires explicit approval.
+Stop after Phase 22. Phase 23 requires explicit approval.

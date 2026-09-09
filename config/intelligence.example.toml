@@ -1,37 +1,26 @@
-# Phase 17 offline configuration. Separate loaders consume each runtime table.
-# Project/scope/safety tables document intent, not a runtime trading policy engine.
-# This CSV is explicitly synthetic test data, not historical Binance observations.
-# Never add credentials or account data.
-
-[project]
-name = "Professional Halal SMC/ICT Spot Signal Bot"
-phase = 22
-
-[scope]
-market = "spot"
-direction = "long_only"
-signal_only = true
-
-[safety]
-authenticated_exchange_access = false
-order_execution = false
-leverage = false
-margin = false
-short_selling = false
-
-[market_data]
+# Phase 22: deterministic Strategy Intelligence research reporting.
+# Strategy Intelligence is a consumer-only descriptive layer over a Phase 21
+# walk-forward RobustnessReport: it groups the published, out-of-sample spot
+# BUY_SIGNAL validation facts by signal-time strategy profiles (setup
+# combination, symbol, timeframe, month, causal regime) and reports exact
+# winner/loser patterns, strength/weakness diagnostics, and deterministic
+# research rankings gated by a minimum finalized sample. It never re-runs the
+# replay, re-detects regimes, or recomputes outcomes: no second strategy,
+# detector, classifier, or formula exists. Research only: no optimization,
+# parameter or threshold tuning, automatic strategy selection, enabling or
+# disabling of setups, signal veto, feedback into signal generation,
+# self-modification, live trading, or advice. Halal eligibility stays external
+# and configurable through the existing [halal_filter] registry.
 symbol = "BTCUSDT"
 timeframe = "15m"
 data_source = "csv"
 history_limit = 500
-# Resolved relative to this TOML file, not the process working directory.
-csv_path = "../tests/fixtures/ohlcv.csv"
+csv_path = "../tests/fixtures/mtf-15m.csv"
 missing_value_policy = "error"
 timeout_seconds = 10.0
 
 [analysis]
-# Total window of five candles: two left + pivot + two right.
-fractal_length = 5
+fractal_length = 3
 
 [liquidity]
 price_unit = "USDT"
@@ -60,21 +49,6 @@ require_fvg = false
 
 [premium_discount]
 equilibrium_half_width_fraction = "0"
-
-[mss]
-enable_displacement_requirement = true
-enable_structure_requirement = true
-
-[breaker_blocks]
-require_displacement = true
-require_mss = true
-invalidation_basis = "close_through_far_boundary"
-zone_basis = "original_order_block"
-
-[mitigation_blocks]
-interaction_basis = "range_intersection"
-first_interaction_only = true
-ignore_after_breaker = true
 
 [ote]
 lower_retracement = "0.62"
@@ -114,29 +88,6 @@ duplicate_policy = "one_per_setup"
 enabled = true
 horizon_bars = 10
 
-[indicators]
-enabled = true
-ema_periods = [20, 50]
-rsi_period = 14
-volume_average_period = 20
-
-[setup_attribution]
-enabled = true
-
-[performance]
-enabled = true
-minimum_finalized_for_ranking = 10
-
-[review]
-enabled = true
-minimum_finalized_for_comparison = 10
-
-[visualization]
-enabled = true
-svg_width = 800
-svg_height = 400
-text_rows = 24
-
 [backtest]
 enabled = true
 
@@ -146,3 +97,10 @@ minimum_finalized_for_diagnosis = 20
 minimum_finalized_for_ranking = 20
 winner_win_rate_floor = "0.60"
 loser_win_rate_ceiling = "0.40"
+
+[setup_attribution]
+enabled = true
+
+[performance]
+enabled = true
+minimum_finalized_for_ranking = 10
