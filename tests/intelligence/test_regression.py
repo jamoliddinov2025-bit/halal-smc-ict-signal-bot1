@@ -231,6 +231,16 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         "src/smcsignal/delivery/telegram/integration.py",
         "src/smcsignal/delivery/telegram/rate_limit.py",
         "src/smcsignal/delivery/telegram/sink.py",
+        # Phase 25 approved a read-only, strictly downstream monitoring layer.
+        # It observes already published immutable records and returns monitoring
+        # values only: it cannot generate, gate, veto, reinterpret, or modify a
+        # signal, a classification, a decision, or a delivery. Phase 25B-1 adds
+        # the foundations (errors, models, clocks, configuration).
+        "src/smcsignal/monitoring/__init__.py",
+        "src/smcsignal/monitoring/clock.py",
+        "src/smcsignal/monitoring/config.py",
+        "src/smcsignal/monitoring/errors.py",
+        "src/smcsignal/monitoring/models.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed
