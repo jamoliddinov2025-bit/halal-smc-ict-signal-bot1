@@ -1,0 +1,443 @@
+# Development guide
+
+## Prerequisites
+
+- Python 3.11 or newer.
+- Git and a Python virtual environment.
+- Network access for dependency installation and explicitly requested Binance
+  public fetches. CSV replay and all tests work offline.
+
+## Set up an isolated environment
+
+From the repository root on a POSIX shell:
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e ".[dev]"
+```
+
+On Windows, create the environment with `python -m venv .venv` and activate it
+with `.venv\Scripts\Activate.ps1` in PowerShell instead.
+
+The distribution and import package are both named `smcsignal`. Development tools
+are optional dependencies; the runtime package depends only on Python's standard
+library. Dependency ranges live in `pyproject.toml`; this phase does not include a
+lockfile or claim byte-for-byte reproducible dependency resolution.
+
+## Run the informational CLI
+
+```bash
+smcsignal
+smcsignal --help
+smcsignal --version
+python -m smcsignal --version
+```
+
+The CLI stays informational. Use the Python API in the README to load configuration
+and explicitly fetch market data; no CLI data or trading command is implemented.
+
+## Quality checks
+
+Run all commands from the repository root with the virtual environment active:
+
+```bash
+python -m ruff check .
+python -m ruff format --check .
+python -m mypy --strict src/smcsignal
+python -m pytest
+python -m pip check
+python -m build
+```
+
+`python -m build` creates a source distribution and a wheel under the ignored
+`dist/` directory. Its isolated build environment may download build dependencies.
+Do not commit virtual environments, build outputs, caches, or downloaded datasets.
+
+The tests cover:
+
+- Agreement between the package version and installed distribution metadata.
+- Console-entry-point registration and the packaged typing marker.
+- Status, help, version, and rejection of unsupported CLI options.
+- Running `python -m smcsignal` outside the repository's working directory.
+- TOML configuration types/ranges, source selection, unknown keys, and relative paths.
+- UTC/decimal OHLCV normalization, schema checks, missing cells, conflicting/exact
+  duplicates, sorting, range invariants, and latest-N windowing.
+- Strict CSV import, deterministic independent replay snapshots, and error handling.
+- Binance public request parameters, closed-candle cutoff, response mapping, timeouts,
+  HTTP 429/418/other failures, invalid JSON, and bounded response size.
+- Configurable delayed fractal highs/lows, strict ties, and confirmation metadata.
+- Confirmed-swing trend states/readiness and the documented BOS/CHoCH decision table.
+- Prefix/full-series identity, extreme future replacement, pending pivots, and
+  immutable historical snapshots against an independent prefix extrema oracle.
+- Batch/stream/chunk replay equivalence, invalid-update atomicity, and CSV/Binance
+  integration through the existing canonical data layer.
+
+`tests/conftest.py` blocks socket access in the pytest process. Provider tests inject
+transport responses and clocks; no live requests, exchange credentials, or external
+service availability are part of the test results. Fixtures are labeled synthetic.
+
+They do **not** validate a trading strategy, financial performance, or religious
+compliance; the Phase 14 registry only enforces a caller-supplied list,
+Phase 15 scores already-published facts without claiming expected returns,
+Phase 16 gates those facts without emitting trades, Phase 17 publishes
+spot `BUY_SIGNAL` records without SELL, SHORT, entries, or execution,
+Phase 18 tracks fixed-horizon outcomes of those publications without any
+trading, fees, or performance claim, Phase 19 adds consumer-only
+indicators, attribution, performance, review, and visualization layers
+that never generate, gate, or veto a signal, and Phase 20 replays declared
+historical datasets through the unchanged pipeline as descriptive
+backtests without execution, optimization, or advice.
+
+
+## Analysis-only tests and reproducible offline example
+
+```bash
+python -m pytest tests/analysis
+python -m pytest --collect-only -q tests/analysis
+```
+
+The full suite includes the approved earlier tests as well as the new analysis
+suite. All parameterized cases count as collected tests. For the hand-computed
+example, load both tables from `config/analysis.example.toml`, explicitly fetch
+its synthetic CSV with `create_data_provider`, then call `analyze` or feed a fresh
+`MarketStructureAnalyzer` one closed candle at a time. The expected event indices
+are 6, 8, 12, and 13. See the README for the complete executable snippet.
+
+Use the same starting history, configuration, and canonical candles for prefix
+comparisons. Never compare a shifted latest-N batch to a long-lived stream as if
+they had identical warm-up state. See [no-look-ahead guarantees](no-look-ahead.md).
+
+## Phase 4 tests and example
+
+```bash
+python -m pytest tests/liquidity
+python -m pytest --collect-only -q tests/liquidity
+```
+
+The twelve-candle `config/liquidity.example.toml` demonstration must emit a buy-side
+EQH sweep at index 9 and a sell-side EQL sweep at 10. Tests additionally verify
+prefix-stable identities, independently reconstructed input hashes, dependency
+graphs, raw serialization, immutable lifecycle versions, strict rejection/gap
+boundaries, delayed availability, and data-provider replay consistency.
+
+No scoring is implemented or tested as a feature. No signal-count target is used.
+
+## Phase 5 tests and example
+
+```bash
+python -m pytest tests/displacement
+python -m pytest --collect-only -q tests/displacement
+```
+
+The default twenty-candle `config/displacement.example.toml` example must emit
+bullish displacement at index 15 and bearish displacement at 16. Feed the existing
+Phase 4 frames to `DisplacementAnalyzer`; do not run duplicate upstream detectors.
+Tests cover ATR gaps/warm-up/reference timing, exact threshold boundaries, tiny/zero
+ATR, doji/long-wick cases, optional sweep cohorts, raw artifacts, immutable models,
+independent graph/ATR reconstruction, every-prefix equality, and future invariance.
+These tests do not evaluate returns or implement a backtesting/strategy engine.
+
+## Phase 6 tests and example
+
+```bash
+python -m pytest tests/fvg
+python -m pytest --collect-only -q tests/fvg
+```
+
+`config/fvg.example.toml` must emit bullish [101,104] at index 16 and bearish
+[98,106] at index 19, linked to actual C2 displacement at 15/18. Tests cover strict
+geometry, one-tick/minimum equality, overlaps/nesting/opposition, inherited sweep
+context, precision, source continuity, immutable JSON evidence, causal identity,
+full-prefix/future-price invariance, and CSV/mocked-Binance replay. There is no fill,
+entry, lifecycle, strategy, performance test, or scoring implementation.
+
+## Phase 7 tests and example
+
+```bash
+python -m pytest tests/order_blocks
+python -m pytest --collect-only -q tests/order_blocks
+```
+
+The synthetic `config/order-block.example.toml` example must create candidate 18's
+bullish block at displacement/BOS 20 and candidate 21's bearish block at
+displacement/CHoCH 22. Required-FVG mode publishes those candidates at 21/23,
+respectively, with no earlier OB output. Tests cover selection/lookback, exact
+zone and doji behavior, all confirmation modes, future-evidence exclusion,
+immutable provenance, every-prefix equality, chunking, and provider integration.
+This is not a strategy, performance test, or lifecycle/entry implementation.
+
+## Phase 8 tests and example
+
+```bash
+python -m pytest tests/premium_discount
+python -m pytest --collect-only -q tests/premium_discount
+```
+
+The seven-candle synthetic `config/premium-discount.example.toml` example produces
+three insufficient-context frames followed by premium, discount, equilibrium, and
+outside-range closes. Tests cover range orientation/selection, exact boundaries,
+same-pivot/nonpositive pairs, all five immutable array sidecars, unchanged original
+IDs, future HTF reference metadata only, dependency graphs, and causal replay.
+No scoring, trading, risk, performance analysis, or execution is introduced.
+
+## Phase 9 MSS tests and example
+
+```bash
+python -m pytest tests/mss
+python -m pytest --collect-only -q tests/mss
+```
+
+`config/mss.example.toml` demonstrates bearish MSS at index 22 (known low 13)
+and bullish MSS at 27 (known high 15), using default displacement thresholds and
+ATR(14). Tests cover positive/consecutive shifts, false/equal/wick breaks, wrong
+or missing displacement, prior range/warm-up states, real relationship references,
+late availability, unchanged source IDs, every-prefix identity, future invariance,
+provider integration, and frozen evidence. No trading-performance test is included.
+
+## Phase 10 Breaker tests and example
+
+```bash
+python -m pytest tests/breaker_blocks
+python -m pytest --collect-only -q tests/breaker_blocks
+```
+
+`config/breaker-block.example.toml` produces a bearish Breaker at 22 from original
+bullish OB 20 and a bullish Breaker at 27 from original bearish OB 22. The original
+zones/IDs and candidate times remain unchanged. Tests include strict boundary,
+wick/equality/gap cases, all-source multiple conversions, rejected first violations,
+future-data invariance, frozen evidence, identity, and provider integration. No
+entry, retest, trade-management, performance, or backtesting engine is introduced.
+
+## Phase 11 Mitigation tests and example
+
+```bash
+python -m pytest tests/mitigation_blocks
+python -m pytest --collect-only -q tests/mitigation_blocks
+```
+
+`config/mitigation-block.example.toml` produces a bullish Mitigation at 21 from
+original bullish OB 20 and a bearish Mitigation at 24 from original bearish OB 23.
+The original zones/IDs and candidate times remain unchanged. Tests include strict
+boundary, wick/body/traversal/inside geometry, first vs repeated interactions,
+pre-publication exclusion, multiple/identical/nested sources, mitigation-before-Breaker
+immutability, post-Breaker rejection, future-data invariance, frozen evidence,
+identity, and provider integration. No entry, retest, trade-management, performance,
+or backtesting engine is introduced.
+
+## Phase 12 OTE tests and example
+
+```bash
+python -m pytest tests/ote
+python -m pytest --collect-only -q tests/ote
+```
+
+`config/ote.example.toml` produces insufficient context through the range-creating
+candle at 4, then inside / below / above / exact-boundary closes against bullish
+[15.72, 21.16]. Tests include bullish/bearish formulas, 0.62 versus 0.618,
+inclusive boundaries, wick-versus-close basis, before-open timing, delayed
+availability, no older-range fallback, independent successive zones, unchanged
+upstream IDs, every-prefix identity, future invariance, and provider integration.
+No entry, stop, target, score, or backtesting engine is introduced.
+
+## Phase 13 MTF tests and example
+
+```bash
+python -m pytest tests/mtf
+python -m pytest --collect-only -q tests/mtf
+```
+
+`config/mtf.example.toml` joins synthetic 15m primary frames to independent 1h and
+4h OTE histories. A 4h candle 08:00–12:00 is unknown at 15m 09:00 and eligible at
+15m 12:00. Ready 1h bullish structure at 09:00 is not collapsed by missing 4h
+context. Tests cover integer-multiple timeframes, completed-candle eligibility,
+delayed HTF arrival, MIXED independent labels, symbol isolation, immutable
+provenance, every-prefix identity, and provider integration. No score, entry, or
+backtesting engine is introduced.
+
+## Phase 14 halal filter tests and example
+
+```bash
+python -m pytest tests/halal_filter
+python -m pytest --collect-only -q tests/halal_filter
+```
+
+`config/halal-filter.example.toml` classifies synthetic `BTCUSDT` as HALAL under
+the default allow list and leaves `ADAUSDT` UNKNOWN. Tests cover allow/deny
+modes, unknown assets, case normalization, config validation, immutable
+provenance, every-prefix identity, batch/stream/chunk replay, and provider
+integration. No scoring, signal, Telegram, or religious-authority test is
+included.
+
+## Phase 15 setup quality tests and example
+
+```bash
+python -m pytest tests/setup_quality
+python -m pytest --collect-only -q tests/setup_quality
+```
+
+`config/setup-quality.example.toml` scores synthetic allow-listed `BTCUSDT` as
+10 at index 0 and 25 at index 4 against default threshold 75, so
+`threshold_passed` stays false. Tests cover HARAM/UNKNOWN hard zeros, missing
+evidence as 0 points, frozen weights, threshold flags, immutable provenance,
+every-prefix identity, batch/stream/chunk replay, and provider integration.
+No signal, ranking, probability, Telegram, or performance test is included.
+
+## Phase 16 signal eligibility tests and example
+
+```bash
+python -m pytest tests/signal_eligibility
+python -m pytest --collect-only -q tests/signal_eligibility
+```
+
+`config/signal-eligibility.example.toml` marks synthetic allow-listed `BTCUSDT`
+`NOT_ELIGIBLE`/`NEUTRAL` at index 0 and `NOT_ELIGIBLE`/`LONG_BIAS` at index 4
+against default SQS threshold 75. Tests cover HARAM/UNKNOWN hard gates,
+conflicting votes remaining NEUTRAL, missing evidence as abstention, immutable
+provenance, every-prefix identity, batch/stream/chunk replay, and provider
+integration. No BUY/SELL, entry, ranking, probability, Telegram, or performance
+test is included.
+
+## Phase 17 signal engine tests and example
+
+```bash
+python -m pytest tests/signal_engine
+python -m pytest --collect-only -q tests/signal_engine
+```
+
+`config/signal-engine.example.toml` maps synthetic allow-listed `BTCUSDT` to
+`NO_SIGNAL` at indices 0 and 4 against default SQS threshold 75. Lowering only
+the SQS threshold to 10, with a matching engine threshold, makes index 4
+`BUY_SIGNAL` and later same-identity candles `NO_SIGNAL` / `duplicate_setup`.
+Tests cover HARAM/UNKNOWN hard gates, eligible SHORT as `BEARISH_AVOID`,
+missing evidence, one-per-setup, immutable provenance, every-prefix identity,
+batch/stream/chunk replay, and provider integration. No SELL, SHORT trade,
+entry, ranking, probability, Telegram, or performance test is included.
+
+## Phase 18 outcome tracking tests and example
+
+```bash
+python -m pytest tests/outcome_tracking
+python -m pytest --collect-only -q tests/outcome_tracking
+```
+
+`config/outcome-tracking.example.toml` reuses the synthetic Phase 13–17 history.
+At default SQS threshold 75 no `BUY_SIGNAL` exists, so every snapshot reports
+zero-outcome analytics. Lowering the SQS threshold to 10 publishes BUYs at
+indices 4, 8, 12, and 16; with `horizon_bars = 10` the index-4 outcome is a
+hand-computed `WIN` (reference 24, final close 34, MFE 35 @ 14, MAE 24 @ 5)
+while the others remain open at end-of-series. Falling and flat tails produce
+hand-computed `LOSS` and exact-tie `FLAT` cases. Tests cover configuration
+strictness, model/provenance invariants, lifecycle versions, first-occurrence
+extremes, duplicate-signal rejection, every-prefix equality, future-price
+shocks, batch/stream/chunk equivalence, independent aggregate recomputation,
+CSV provider integration, and Phase 17 regression. No entry, exit, fee,
+execution, or performance backtest is included.
+
+## Phase 19 analytics and visualization tests and examples
+
+```bash
+python -m pytest tests/indicators tests/setup_attribution tests/performance tests/review tests/visualization
+```
+
+Five focused suites cover the Phase 19 layers. Indicators: exact Decimal
+EMA/RSI/volume values against 50-digit reference contexts, warmup `None`
+boundaries, Phase 5 ATR reuse, configuration strictness, every-prefix
+equality, and an import-graph test that keeps every Phase 3–18 decision
+module free of indicator reads. Setup attribution: the closed twelve-label
+taxonomy, BUY-only profiles, verbatim engine context, canonical combination
+keys, outcome-independence (no outcome imports; alternate futures leave past
+profiles identical), and upstream-is-identity regression. Performance:
+hand-recomputed bucket statistics, open/finalized separation, sample-gated
+rankings, multi-series merging, prefix causality, and input immutability.
+Review: UTC month bucketing, both-sufficient gating, exact Decimal deltas,
+golden plain-text rendering, and determinism. Visualization: primitive
+validation, canonical ordering, digest identities, fact-to-primitive mapping
+(including BUY and finalized outcome markers and EMA/ATR overlays), golden
+character grid, well-formed XML SVG, no-float-artifact guarantees, and
+prefix/future-shock no-look-ahead proofs. Each package's example config
+reuses the synthetic Phase 13–17 history. No trading, execution, Telegram,
+or optimization test is included.
+
+## Phase 20 backtest and replay tests and examples
+
+```bash
+python -m pytest tests/backtest
+```
+
+The focused suite covers the replay layer end to end. Models/config: dataset
+contracts (chronology, overlap, multiples, frozen higher mappings), bundle
+cross-validation, TOML loaders with exact-key tables. Replay: draw-cursor
+ordering, batch/stream/chunk equality, prefix equivalence, zero-signal and
+empty-higher datasets, multi-symbol and multi-timeframe partitioning. No
+lookahead: an access-logging candle tuple proves the engine never indexes
+beyond the draw cursor, published HTF evidence predates each primary open,
+alternate futures leave past signals byte-identical, and outcomes equal the
+standalone Phase 18 replay. Integration: signal, outcome, attribution, and
+performance frames equal the direct Phase 17–19 chains. Reporting: golden
+plain-text and canonical-JSON summaries. Regression: import-graph isolation
+(no Phase 1–19 module imports backtest), dependency scope, baseline pins, and
+input immutability.
+
+## Packaging smoke test
+
+After building, install the resulting wheel into a separate clean virtual
+environment with `pip install --no-deps <path-to-wheel>`, then run that environment's
+`python -m smcsignal --version` from outside this checkout. This checks that the
+package does not rely on an editable installation or the current directory. Also
+import `smcsignal.data` and `smcsignal.analysis`, replay the explicit Phase 3 CSV
+fixture through the installed wheel, and verify its known structure event indices.
+Also replay the Phase 4 liquidity fixture and verify sweeps at 9 and 10, prefix
+identity, and public liquidity/provenance imports. Then feed the default Phase 5
+fixture through the installed pipeline and verify displacement at 15/16, raw
+serialization, and every-prefix equivalence. Also verify Phase 6 creation at 16/19
+from the installed wheel, matching stream/batch records and prefix identities.
+Then verify Phase 7 default and required-FVG publications, full pipeline reuse,
+raw serialization, and prefix identity in the installed wheel. Finally verify
+Phase 8 classifications, range/sidecar provenance, source identity preservation,
+and full-pipeline streaming through the installed wheel. For Phase 9 verify the
+MSS default example, both directions/levels, every prefix, original evidence links,
+and isolated package imports as well. For Phase 10 verify original-zone Breakers,
+source-OB identity, prior/publication timestamps, serialization, both directions,
+and prefix/batch/stream equivalence through the installed wheel. For Phase 11 verify
+original-zone Mitigations, source-OB identity, interaction geometry, both directions,
+Breaker policy, and prefix/batch/stream equivalence through the installed wheel.
+For Phase 12 verify OTE classifications, exact 0.62/0.79 bounds, before-open
+timing, source-range identity, serialization, both directions, and
+prefix/batch/stream equivalence through the installed wheel. For Phase 13 verify
+completed-candle HTF eligibility, independent 1h/4h labels, MIXED confluence,
+primary-prefix hashes, and prefix/batch/stream equivalence through the installed
+wheel. For Phase 14 verify allow-list HALAL, unlisted UNKNOWN, deny-list HARAM,
+case normalization, unchanged upstream IDs, and prefix/batch/stream equivalence
+through the installed wheel. For Phase 15 verify integer totals 10 then 25 on
+the synthetic example, HARAM/UNKNOWN zeros, unchanged upstream IDs, threshold
+flags, and prefix/batch/stream equivalence through the installed wheel. For
+Phase 16 verify `NOT_ELIGIBLE`/`NEUTRAL` then `NOT_ELIGIBLE`/`LONG_BIAS` on the
+synthetic example at threshold 75, HARAM/UNKNOWN hard gates, unchanged upstream
+IDs, and prefix/batch/stream equivalence through the installed wheel. For
+Phase 17 verify default-threshold `NO_SIGNAL` on that same example, threshold-10
+`BUY_SIGNAL` then duplicate collapse, HARAM/UNKNOWN hard gates, unchanged
+upstream IDs, and prefix/batch/stream equivalence through the installed wheel.
+For Phase 18 verify zero-outcome analytics at default threshold, the threshold-10
+hand-computed `WIN` with open outcomes at end-of-series, unchanged upstream IDs,
+stable outcome identities, and prefix/batch/stream equivalence through the
+installed wheel. For Phase 19 verify indicator warmup boundaries and exact
+values, the four BUY attribution profiles with canonical combination keys,
+the descriptive performance report over the same replay, the monthly review
+text with both sample sizes, and a deterministic drawing with its golden text
+grid through the installed wheel. For Phase 20 verify a four-BUY replay of the
+synthetic history (indices 4, 8, 12, 16; one WIN, three OPEN), prefix and
+chunking equivalence, the composed performance report, and the golden backtest
+text through the installed wheel. Repository configuration and
+fixtures are in the source distribution, not installed as runtime wheel resources.
+
+## Before committing
+
+```bash
+git diff --check
+git status --short
+```
+
+Review every staged file for secrets and accidental artifacts. Keep all work on
+the designated working branch. Stop after Phase 20. Do not implement Phase 21
+without explicit approval.

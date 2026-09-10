@@ -1,0 +1,47 @@
+# Phase 8: seven synthetic observations; no signals, scores, or execution.
+[market_data]
+symbol = "BTCUSDT"
+timeframe = "15m"
+data_source = "csv"
+history_limit = 500
+csv_path = "../tests/fixtures/premium_discount.csv"
+missing_value_policy = "error"
+timeout_seconds = 10.0
+
+[analysis]
+fractal_length = 3
+
+[liquidity]
+price_unit = "USDT"
+equal_tolerance_bps = "0"
+
+[displacement]
+atr_period = 14
+min_body_atr = "1.0"
+min_range_atr = "1.5"
+bullish_close_min = "0.70"
+bearish_close_max = "0.30"
+atr_floor = "0"
+sweep_lookback_bars = 20
+
+[fvg]
+min_gap_size = "0"
+require_displacement = false
+
+[order_blocks]
+max_candidate_lookback = 10
+candidate_selection = "nearest"
+zone_basis = "full_range"
+allow_doji = false
+structure_requirement = "bos_or_choch"
+require_fvg = false
+
+[premium_discount]
+# Half-width as a fraction of the confirmed range; zero is the exact midpoint.
+equilibrium_half_width_fraction = "0"
+
+[ote]
+lower_retracement = "0.62"
+upper_retracement = "0.79"
+boundary_policy = "inclusive"
+price_basis = "close"

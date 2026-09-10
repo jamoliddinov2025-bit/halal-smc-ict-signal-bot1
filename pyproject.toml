@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smcsignal"
+dynamic = ["version"]
+description = "Professional Halal SMC/ICT Spot Signal Bot — Phase 18 outcome tracking and analytics over spot signals"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+keywords = ["smc", "ict", "spot", "signals", "halal"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2,<2",
+  "mypy>=1.15,<2",
+  "pytest>=8.3,<10",
+  "ruff>=0.11,<1",
+]
+
+[project.scripts]
+smcsignal = "smcsignal.cli:main"
+
+[project.urls]
+Repository = "https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1"
+Issues = "https://github.com/jamoliddinov2025-bit/halal-smc-ict-signal-bot1/issues"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["smcsignal*"]
+namespaces = false
+
+[tool.setuptools.dynamic]
+version = { attr = "smcsignal.__version__" }
+
+[tool.setuptools.package-data]
+smcsignal = ["py.typed"]
+
+[tool.pytest.ini_options]
+minversion = "8.3"
+testpaths = ["tests"]
+addopts = "-ra --strict-config --strict-markers --import-mode=importlib"
+filterwarnings = ["error"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.format]
+docstring-code-format = true

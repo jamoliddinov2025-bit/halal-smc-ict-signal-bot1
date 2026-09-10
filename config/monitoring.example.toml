@@ -1,0 +1,54 @@
+# Phase 25B: read-only monitoring and reliability observation thresholds.
+#
+# This table configures only WHAT the monitor notices. It never generates,
+# gates, vetoes, retries, repairs, or modifies anything: monitoring consumes
+# already published immutable records and returns its own monitoring values. No
+# setting here can reach signal generation, SMC/ICT thresholds, indicators,
+# halal classification, eligibility, risk, governance, or delivery routing and
+# content.
+#
+# Secrets are NOT configured here. There is no bot token, no chat id, no
+# destination, and no endpoint: operational alerting is a later, separately
+# approved phase. Never commit secret material.
+#
+# Scope guardrails (nothing below can be relaxed by editing this file):
+#   * No optimization, auto-tuning, or feedback path into signal generation.
+#   * No data repair: market data is observed, never filled, dropped, or moved.
+#   * No delivery control: the monitor cannot resend, retarget, or reorder.
+#   * No governance action: a human approval decision is never taken here.
+#
+# The keys under [monitoring] are fixed and strictly validated: unknown keys,
+# missing keys, or unsafe values are rejected on load. `enabled = false` is the
+# default so that nothing is observed until an operator opts in. The values
+# below are the documented defaults.
+
+[monitoring]
+# Master switch. When false the pipeline behaves exactly as it does with a null
+# monitor: observation is additive and inert.
+enabled = false
+
+# A market-data series is reported stale once the newest completed candle is
+# older than this many timeframe intervals. Positive integer.
+stale_after_intervals = 3
+
+# Extra whole intervals tolerated between consecutive candles before a gap is
+# reported. Nonnegative integer; 0 reports any step larger than one interval.
+gap_tolerance_intervals = 0
+
+# Consecutive failed attempts to one redacted destination before repeated
+# failure is reported. Positive integer. Reporting only: no retry is triggered.
+repeated_failure_threshold = 3
+
+# Lower bound of the expected share of published buy signals, as a quoted
+# decimal string. The bound is reported on, never enforced: no signal is
+# suppressed, gated, or reinterpreted when it is crossed.
+distribution_shift_low = "0"
+
+# Upper bound of the expected share, as a quoted decimal string. A band of
+# 0 to 1 is the inert default and reports nothing.
+distribution_shift_high = "1"
+
+# Hard cap on events retained for one monitoring run. Positive integer. Once
+# reached, further conditions are counted but not appended, so a pathological
+# loop cannot grow memory without bound.
+max_events_per_run = 10000

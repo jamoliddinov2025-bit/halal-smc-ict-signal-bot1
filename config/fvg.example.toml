@@ -1,0 +1,31 @@
+# Phase 6: twenty synthetic candles; no live market, signals, or trading claims.
+[market_data]
+symbol = "BTCUSDT"
+timeframe = "15m"
+data_source = "csv"
+history_limit = 500
+csv_path = "../tests/fixtures/fvg.csv"
+missing_value_policy = "error"
+timeout_seconds = 10.0
+
+[analysis]
+fractal_length = 5
+
+[liquidity]
+price_unit = "USDT"
+equal_tolerance_bps = "0"
+
+[displacement]
+atr_period = 14
+min_body_atr = "1.0"
+min_range_atr = "1.5"
+bullish_close_min = "0.70"
+bearish_close_max = "0.30"
+atr_floor = "0"
+sweep_lookback_bars = 20
+
+[fvg]
+# Absolute quote-price distance. Zero still requires a strictly positive gap.
+min_gap_size = "0"
+# True requires an existing, same-direction displacement event on C2.
+require_displacement = false

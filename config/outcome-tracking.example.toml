@@ -1,0 +1,84 @@
+# Phase 18: BUY_SIGNAL outcome analytics over existing Phase 17 spot signal facts.
+# Primary 15m CSV; HTF frames are generated separately from tests/fixtures/mtf-1h.csv
+# and tests/fixtures/mtf-4h.csv. Only published BUY_SIGNAL records are tracked.
+# The reference price is the signal candle close; the fixed horizon counts completed
+# candles after it. WIN/LOSS/FLAT uses the exact sign of the final close difference.
+# Outcomes stay open when a replay ends; no end-of-series flush exists.
+# This is analytics of publication records, not execution, entries, exits, or fees.
+[market_data]
+symbol = "BTCUSDT"
+timeframe = "15m"
+data_source = "csv"
+history_limit = 500
+csv_path = "../tests/fixtures/mtf-15m.csv"
+missing_value_policy = "error"
+timeout_seconds = 10.0
+
+[analysis]
+fractal_length = 3
+
+[liquidity]
+price_unit = "USDT"
+equal_tolerance_bps = "0"
+
+[displacement]
+atr_period = 14
+min_body_atr = "1.0"
+min_range_atr = "1.5"
+bullish_close_min = "0.70"
+bearish_close_max = "0.30"
+atr_floor = "0"
+sweep_lookback_bars = 20
+
+[fvg]
+min_gap_size = "0"
+require_displacement = false
+
+[order_blocks]
+max_candidate_lookback = 10
+candidate_selection = "nearest"
+zone_basis = "full_range"
+allow_doji = false
+structure_requirement = "bos_or_choch"
+require_fvg = false
+
+[premium_discount]
+equilibrium_half_width_fraction = "0"
+
+[ote]
+lower_retracement = "0.62"
+upper_retracement = "0.79"
+boundary_policy = "inclusive"
+price_basis = "close"
+
+[mtf]
+enabled = true
+primary_timeframe = "15m"
+higher_timeframes = ["1h", "4h"]
+availability_policy = "completed_candle"
+
+[halal_filter]
+mode = "allow_list"
+allowed_assets = [
+  "BTCUSDT",
+  "ETHUSDT",
+  "BNBUSDT",
+  "SOLUSDT",
+]
+
+[setup_quality]
+publish_threshold = 75
+
+[signal_eligibility]
+enabled = true
+conflict_policy = "neutral"
+
+[signal_engine]
+enabled = true
+publish_threshold = 75
+spot_only = true
+duplicate_policy = "one_per_setup"
+
+[outcome_tracking]
+enabled = true
+horizon_bars = 10

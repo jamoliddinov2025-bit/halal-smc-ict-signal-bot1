@@ -1,0 +1,67 @@
+# Phase 24D: outbound Telegram transport settings (real delivery, downstream only).
+#
+# This table configures only HOW an already-rendered message is sent. It never
+# generates, gates, or vetoes a signal: the payload is produced by the frozen
+# Phase 24B presentation layer and the Telegram transport is a pure consumer.
+#
+# Secrets are NOT configured here. The bot token is injected at construction
+# from the approved secret path (environment variable or secret store), and real
+# chat/channel ids come from a separate destination map. A missing token means
+# the transport stays disabled and reports NOT_ATTEMPTED -- never a half-built
+# sender. Never commit a bot token, chat id, or account data.
+#
+# Scope guardrails (nothing below can be relaxed by editing this file):
+#   * No trading, execution, broker, exchange, portfolio, order, position,
+#     sizing, margin, leverage, or fee setting exists.
+#   * No retry-on-timeout: a timeout is UNKNOWN because the reply was lost, not
+#     because the send failed.
+#   * No optimization, auto-tuning, or feedback path into signal generation.
+#   * Chart delivery is best effort and can never invalidate a delivered text.
+#
+# The keys under [telegram] are fixed and strictly validated: unknown keys,
+# missing keys, or unsafe values are rejected on load. `enabled = false` is the
+# default so that nothing is sent until an operator opts in AND injects a token.
+# The values below are the documented defaults.
+
+[telegram]
+# Master switch. A transport is active only when this is true AND a token was
+# injected; otherwise every delivery reports NOT_ATTEMPTED without a network call.
+enabled = false
+
+# Send captions with Telegram HTML parse mode. The frozen presentation layer
+# escapes HTML before rendering, so entities are literal text, never markup.
+html_parse_mode = true
+
+# Send the optional already-prepared SVG chart as a document after the caption.
+# Best effort: a chart failure never invalidates the delivered text.
+chart_enabled = true
+
+# Per-request timeout in seconds, covering the whole HTTP call. This is the
+# single timeout knob: a timeout yields UNKNOWN (the message may or may not have
+# arrived), never a silent retry. Positive number.
+network_timeout_seconds = 10.0
+
+# Network-level attempts for one HTTP call, including the first. Only transient
+# outcomes (HTTP 429 and 5xx) are retried; 401 and other client errors are not.
+# Positive integer.
+retry_max_attempts = 3
+
+# Base backoff between retries in seconds (nonnegative). Delay is applied before
+# each retry after the first; there is no jitter and no unbounded growth.
+retry_backoff_seconds = 1.0
+
+# Upper bound for the backoff delay in seconds (nonnegative).
+retry_backoff_max_seconds = 30.0
+
+# Outbound token-bucket refill rate, in requests per second. Positive number.
+requests_per_second = 20.0
+
+# Outbound token-bucket burst capacity. Positive integer.
+rate_limit_capacity = 40
+
+# Largest caption the transport will attempt to send in one message. A longer
+# caption is refused before any network call (NOT_ATTEMPTED) rather than sent
+# and rejected by the API; content is never truncated or re-rendered. The frozen
+# presentation budget is 4000 characters, below Telegram's 4096 limit. Positive
+# integer.
+max_message_chars = 4096

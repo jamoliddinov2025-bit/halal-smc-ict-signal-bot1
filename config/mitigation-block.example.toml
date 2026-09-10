@@ -1,0 +1,55 @@
+# Phase 11: synthetic first-interaction evidence, never trade entries or performance data.
+[market_data]
+symbol = "BTCUSDT"
+timeframe = "15m"
+data_source = "csv"
+history_limit = 500
+csv_path = "../tests/fixtures/mitigation_blocks.csv"
+missing_value_policy = "error"
+timeout_seconds = 10.0
+
+[analysis]
+fractal_length = 3
+
+[liquidity]
+price_unit = "USDT"
+equal_tolerance_bps = "0"
+
+[displacement]
+atr_period = 14
+min_body_atr = "1.0"
+min_range_atr = "1.5"
+bullish_close_min = "0.70"
+bearish_close_max = "0.30"
+atr_floor = "0"
+sweep_lookback_bars = 20
+
+[fvg]
+min_gap_size = "0"
+require_displacement = false
+
+[order_blocks]
+max_candidate_lookback = 10
+candidate_selection = "nearest"
+zone_basis = "full_range"
+allow_doji = false
+structure_requirement = "bos_or_choch"
+require_fvg = false
+
+[premium_discount]
+equilibrium_half_width_fraction = "0"
+
+[mss]
+enable_displacement_requirement = true
+enable_structure_requirement = true
+
+[breaker_blocks]
+require_displacement = true
+require_mss = true
+invalidation_basis = "close_through_far_boundary"
+zone_basis = "original_order_block"
+
+[mitigation_blocks]
+interaction_basis = "range_intersection"
+first_interaction_only = true
+ignore_after_breaker = true

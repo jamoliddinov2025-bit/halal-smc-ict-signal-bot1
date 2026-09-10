@@ -1,0 +1,19 @@
+# Phase 4 offline demonstration. All twelve candles are explicitly synthetic.
+# No scoring, signal generation, network access, or orders are enabled.
+[market_data]
+symbol = "BTCUSDT"
+timeframe = "15m"
+data_source = "csv"
+history_limit = 500
+csv_path = "../tests/fixtures/liquidity.csv"
+missing_value_policy = "error"
+timeout_seconds = 10.0
+
+[analysis]
+fractal_length = 3
+
+[liquidity]
+price_unit = "USDT"
+# Geometric equality tolerance, in basis points of the FIRST confirmed swing.
+# Zero means exact equality; this is not a quality value.
+equal_tolerance_bps = "0"
