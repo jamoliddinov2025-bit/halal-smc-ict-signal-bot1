@@ -2019,6 +2019,22 @@ new finals, and no frames, and they resume no evaluator; evaluator
 continuation after a restart remains a future phase by design. Delivery state
 never participates.
 
+Phase 26D adds the durable ledger store (`smcsignal.persistence`:
+`LedgerStore` protocol, `MemoryLedgerStore`, `FileLedgerStore`) — the
+repository's first writer, placed deliberately outside the IO-free analytics
+leaf. The store consumes only the Phase 26C public API: writes are exactly
+`ledger_bytes(snapshot)` and reads delegate entirely to `load_ledger_bytes`,
+so no second format, digest, or validation exists. One validated key maps to
+one file under the store root; keys are checked against a closed charset and
+can never traverse out of the root. Writes are atomic — a sibling temporary
+file swapped into place with `os.replace` — so a reader sees either the
+complete previous snapshot or the complete new one, and a failure before the
+swap leaves no residue. The store resumes nothing: loading yields a Phase 26C
+snapshot (a read-only restored ledger), never a live lifecycle or evaluator.
+No scheduler, polling, feed, clock, fleet, monitoring, delivery, database,
+network, encryption, compression, retention, rotation, or version history is
+introduced.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.

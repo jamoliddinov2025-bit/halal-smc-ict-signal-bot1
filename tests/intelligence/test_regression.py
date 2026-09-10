@@ -276,6 +276,14 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # file, database, network, clock, or scheduler; restored ledgers are
         # read-only historical facts; evaluator resume remains a future phase.
         "src/smcsignal/analytics/ledger.py",
+        # Phase 26D approved the durable ledger store: the repository's first
+        # writer, placed deliberately outside the IO-free analytics leaf. It
+        # consumes only the Phase 26C public API (ledger_bytes /
+        # load_ledger_bytes), keeps one atomic snapshot file per validated
+        # key, and invents no second format, digest, or validation. No resume,
+        # scheduling, feed, fleet, monitoring, delivery, or network.
+        "src/smcsignal/persistence/__init__.py",
+        "src/smcsignal/persistence/ledger_store.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

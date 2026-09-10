@@ -128,6 +128,35 @@ accepts bytes; storage is a future phase's job).
 - **Delivery never participates.** The module imports nothing from
   ``smcsignal.delivery`` and no API accepts a delivery record.
 
+## Phase 26D: the durable ledger store boundary
+
+Phase 26D is the repository's first writer, placed deliberately outside the
+IO-free analytics leaf as a new downstream package, ``smcsignal.persistence``
+(``LedgerStore`` protocol, ``MemoryLedgerStore`` offline reference
+implementation, ``FileLedgerStore`` explicit filesystem boundary).
+
+- **One connection, one format.** The store consumes only the Phase 26C
+  public API: writes are exactly ``ledger_bytes(snapshot)`` and reads
+  delegate entirely to ``load_ledger_bytes``. No second persistence format,
+  no second digest, no parsing or validation of ledger JSON inside the store
+  — integrity stays single-sourced in Phase 26C.
+- **Key safety.** A key is an opaque caller label (one per series ledger),
+  validated against a closed charset: empty/oversized keys, separators,
+  traversal fragments (``..``), unsafe edges, and reserved device names are
+  rejected. A validated key maps to exactly one file under the root — never
+  outside it.
+- **Atomic writes.** The payload lands in a sibling temporary file and is
+  swapped into place with ``os.replace``; a failure before the swap removes
+  the temporary file, leaves the previous snapshot intact, and leaves no
+  residue.
+- **No resume.** ``load`` returns a Phase 26C snapshot (which yields a
+  read-only ``RestoredAnalyticsLedger``); it never rebuilds a live observer
+  or lifecycle, resumes an evaluator, ingests frames, or merges anything.
+  Evaluator continuation remains a future phase.
+- **No live operations.** No scheduler, polling, feed, clock, run loop, fleet
+  orchestration, monitoring, delivery, database, network, encryption,
+  compression, retention, rotation, or version history.
+
 ## Guarantees
 
 - **Downstream-only.** Nothing upstream imports ``smcsignal.analytics``; the

@@ -72,7 +72,9 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
   never a trade outcome; no double counting; Phase 26B deterministic lifecycle
   composition (evaluate, observe, finalize) with no new arithmetic; Phase 26C
   canonical, content-addressed ledger snapshot and restore — bytes only,
-  read-only restored ledgers, evaluator resume deferred.
+  read-only restored ledgers, evaluator resume deferred; Phase 26D durable
+  ledger store (`smcsignal.persistence`) — atomic, key-validated file
+  persistence of Phase 26C bytes, no resume, no live operations.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;
