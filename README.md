@@ -2075,6 +2075,30 @@ live trading, execution, exchange, websocket, polling, Telegram, fleet,
 database, network persistence, candle persistence, monitoring, or strategy
 change.
 
+Phase 26G adds the single-series ledger session (`smcsignal.sessions`:
+`open_ledger_session`, `LedgerSession`) — the open-or-recover-and-continue
+coordinator over the frozen arc. Opening requires the caller's outcome
+configuration explicitly: configuration is never defaulted, inferred,
+replaced, or overridden. With no stored entry, a fresh Phase 26B lifecycle is
+created under exactly the supplied configuration and fed the supplied
+history; with a stored entry, its settings must equal the supplied
+configuration, a fresh lifecycle replays the history, the monotone ledger
+counts trigger the candidate comparison, and only complete Phase 26C snapshot
+equality authorizes recovery — counts alone are never proof. The store is
+never written before successful verification, so failed opens leave stored
+bytes unchanged; a successful open ends with one approved open-time
+persistence write. `update()` continues through the real 26B lifecycle with
+no persistence IO; `persist()` explicitly checkpoints. `frames_verified`
+counts the supplied history frames actually replayed during the verified
+reconstruction and never claims to identify the persisted snapshot's original
+physical frame boundary (plateau frames make that boundary non-unique; Phase
+26C is deliberately not modified to resolve the ambiguity). The session owns
+no frame source, no second ledger model, no state machine, no clock,
+scheduler, concurrency, fleet, delivery, or monitoring capability, and
+introduces no live trading, execution, exchange, websocket, polling,
+Telegram, database, network persistence, candle persistence, or strategy
+change.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.

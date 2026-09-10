@@ -1,4 +1,4 @@
-# Analytics connection to the real signal pipeline (Phase 26A–26F)
+# Analytics connection to the real signal pipeline (Phase 26A–26G)
 
 Phase 26A connects the existing Phase 18 outcome-analytics foundation to the
 real signal publication path. It adds no second pipeline, no demo engine, and
@@ -8,9 +8,10 @@ loop with a deterministic lifecycle composition; both remain one downstream-only
 leaf (`smcsignal.analytics`) that nothing upstream imports. Phase 26C makes the
 ledger snapshotable and restorable as canonical, content-addressed bytes; Phase
 26D persists those bytes durably; Phase 26E turns a persisted snapshot plus the
-series' regenerated frame history back into a verified live lifecycle; and
-Phase 26F supplies the sanctioned production seam for regenerating that frame
-history itself.
+series' regenerated frame history back into a verified live lifecycle; Phase
+26F supplies the sanctioned production seam for regenerating that frame
+history itself; and Phase 26G composes all of it into the single-series ledger
+session — open-or-recover, continue, checkpoint.
 
 ## The real connection point
 
@@ -240,6 +241,52 @@ only in test glue until Phase 26F gave it a sanctioned production seam
   session, coordinator, run loop, scheduler, or application runtime; no live
   trading, execution, exchange, fleet, database, candle persistence,
   monitoring wiring, or strategy change exists here.
+
+## Phase 26G: the single-series ledger session
+
+Phase 26G supplies the operational unit the arc was missing
+(``smcsignal.sessions``: ``open_ledger_session``, ``LedgerSession``): given a
+store, a key, an explicitly declared outcome configuration, and the series'
+caller-supplied frame history, open the series' ledger — verified — ready to
+continue.
+
+- **Explicit configuration, never defaulted.** ``open_ledger_session(store,
+  key, config, history)`` requires the caller's ``OutcomeTrackingConfig``.
+  Nothing is defaulted, inferred, replaced, or overridden: a fresh session is
+  built under exactly the supplied configuration, so ``fresh(config,
+  history)`` equals the uninterrupted lifecycle over the same inputs by
+  construction. With a stored entry, its settings must equal the supplied
+  configuration before any replay — the stored settings act as a verification
+  constraint on the caller's single declared configuration, never as a
+  competing source; a mismatch refuses atomically.
+- **Counts trigger; equality authorizes.** Recovery replays the history
+  through the unchanged 26B machinery. The observer ledger is strictly
+  append-only, so observation and finalization counts are monotone; reaching
+  the stored snapshot's counts merely triggers the candidate comparison.
+  Authorization is always complete ``LedgerSnapshot`` equality — settings,
+  configuration hash, every observation and final, content-addressed
+  identity. A wrong history with coincidentally similar counts fails the full
+  comparison; a wrong configuration cannot start the replay; a truncated
+  history never matches. ``store.save()`` is never called before successful
+  verification, so a failed open leaves the stored bytes completely
+  unchanged.
+- **Plateau semantics.** Non-BUY frames leave the ledger untouched, so one
+  complete snapshot can correspond to several consecutive frame boundaries;
+  the original physical persist boundary is not uniquely identifiable, and
+  Phase 26C is deliberately not modified to make it so. ``frames_verified``
+  therefore documents exactly one thing: the number of supplied history
+  frames actually replayed during the verified reconstruction at open.
+- **Session discipline.** ``update()`` delegates to the real Phase 26B
+  lifecycle and performs no persistence IO; ``persist()`` explicitly
+  snapshots and saves; a successful open ends with one approved open-time
+  write, so a session is always durable immediately after open. The session
+  owns no frame source (``smcsignal.series`` stays caller-composed), no
+  second ledger or outcome model, and no state machine beyond the live
+  lifecycle plus immutable provenance facts (``recovered_from``,
+  ``frames_verified``). No clock, file, network, scheduler, concurrency,
+  fleet, delivery, or monitoring capability exists here — its only IO is the
+  Phase 26D store it was given. One session describes one series; no run
+  loop, application runtime, or service framework.
 
 ## Guarantees
 

@@ -80,7 +80,10 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
   returns it for continuation only on exact Phase 26C snapshot equality; Phase
   26F deterministic series frame source (`smcsignal.series`) — the sanctioned
   seam regenerating the real Phase 17 publication stream from a declared
-  history by wrapping the frozen Phase 20 replay, prefix-stable and IO-free.
+  history by wrapping the frozen Phase 20 replay, prefix-stable and IO-free;
+  Phase 26G single-series ledger session (`smcsignal.sessions`) —
+  open-or-recover-and-continue over the frozen arc under an explicitly
+  declared configuration, authorized only by complete snapshot equality.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;

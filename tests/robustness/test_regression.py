@@ -286,6 +286,15 @@ def test_decision_modules_are_unmodified_since_the_phase20_baseline() -> None:
         # analytics, persistence, delivery, monitoring, or any data provider.
         "src/smcsignal/series/__init__.py",
         "src/smcsignal/series/frame_source.py",
+        # Phase 26G approved the single-series ledger session: the
+        # open-or-recover-and-continue coordinator. It composes the frozen
+        # Phase 26B lifecycle, Phase 26C snapshot equality, and the Phase 26D
+        # store protocol under an explicitly supplied outcome configuration —
+        # never defaulted — and authorizes recovery only by complete snapshot
+        # equality. It owns no frame source, no second ledger model, no state
+        # machine, and no IO beyond the store it is given.
+        "src/smcsignal/sessions/__init__.py",
+        "src/smcsignal/sessions/ledger_session.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

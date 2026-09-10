@@ -103,16 +103,19 @@ def test_analytics_never_reads_an_ambient_capability() -> None:
 
 
 def test_no_upstream_package_imports_analytics() -> None:
-    # Phase 26D approved exactly one downstream consumer of the analytics leaf:
+    # Phase 26D approved the first downstream consumer of the analytics leaf:
     # smcsignal.persistence, which stores Phase 26C snapshots through the
-    # public API. Every other package — analysis, data, delivery, monitoring —
-    # remains forbidden from importing analytics: no upstream dependency ever
-    # exists.
+    # public API. Phase 26G approved the second: smcsignal.sessions, which
+    # composes the frozen lifecycle/snapshot surface into single-series ledger
+    # sessions. Every other package — analysis, data, delivery, monitoring,
+    # series — remains forbidden from importing analytics: no other upstream
+    # dependency ever exists.
     persistence_root = SRC_ROOT / "persistence"
+    sessions_root = SRC_ROOT / "sessions"
     for path in sorted(SRC_ROOT.rglob("*.py")):
         if ANALYTICS_ROOT in path.parents:
             continue
-        allowed_consumer = persistence_root in path.parents
+        allowed_consumer = persistence_root in path.parents or sessions_root in path.parents
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
