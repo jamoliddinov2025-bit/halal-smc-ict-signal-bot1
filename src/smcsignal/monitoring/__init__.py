@@ -12,10 +12,11 @@ eligibility decision, a risk decision, a Phase 23 governance decision, or a
 delivery. Telegram remains downstream only: monitoring observes delivery
 outcomes and never sends, retries, retargets, or reorders anything.
 
-Phase 25B-1 ships the foundations only: errors, models, clocks, and
-configuration. Observers, sessions, reports, metrics, and alerting arrive in
-later sub-phases. The approved design is
-``docs/phase25a-production-monitoring-reliability-design.md``.
+Phase 25B ships the inert core first: errors, models, clocks, and configuration
+(25B-1), then the pure health transitions, precedence rollup, and the metric
+model layer (25B-2). Observers, sessions, reports, and alerting arrive in later
+sub-phases; nothing here reads a clock, a file, or a network. The approved design
+is ``docs/phase25a-production-monitoring-reliability-design.md``.
 """
 
 from smcsignal.monitoring.clock import Clock, FixedClock, SystemClock
@@ -31,6 +32,24 @@ from smcsignal.monitoring.errors import (
     MonitoringConfigurationError,
     MonitoringError,
     MonitoringInputError,
+)
+from smcsignal.monitoring.health import (
+    HEALTH_PRECEDENCE,
+    INITIAL_HEALTH_STATE,
+    clear,
+    rank,
+    rollup,
+    transition,
+    unobserved,
+    worse_of,
+)
+from smcsignal.monitoring.metrics import (
+    CounterMetric,
+    DurationMetric,
+    GaugeMetric,
+    Metric,
+    MetricSummary,
+    RatioMetric,
 )
 from smcsignal.monitoring.models import (
     SEVERITY_BY_CODE,
@@ -50,28 +69,42 @@ from smcsignal.monitoring.models import (
 
 __all__ = [
     "Clock",
+    "CounterMetric",
     "DEFAULT_GAP_TOLERANCE_INTERVALS",
     "DEFAULT_MAX_EVENTS_PER_RUN",
     "DEFAULT_REPEATED_FAILURE_THRESHOLD",
     "DEFAULT_STALE_AFTER_INTERVALS",
+    "DurationMetric",
     "FixedClock",
+    "GaugeMetric",
+    "HEALTH_PRECEDENCE",
     "HealthCode",
     "HealthEvent",
     "HealthEventAggregate",
     "HealthState",
+    "INITIAL_HEALTH_STATE",
+    "Metric",
+    "MetricSummary",
     "MonitoredComponent",
     "MonitoringConfig",
     "MonitoringConfigurationError",
     "MonitoringError",
     "MonitoringInputError",
+    "RatioMetric",
     "SEVERITY_BY_CODE",
     "Severity",
     "SystemClock",
     "build_health_event",
+    "clear",
     "event_identity",
     "load_monitoring_config",
+    "rank",
     "require_detail",
     "require_subject_id",
     "require_utc_timestamp",
+    "rollup",
     "severity_for",
+    "transition",
+    "unobserved",
+    "worse_of",
 ]

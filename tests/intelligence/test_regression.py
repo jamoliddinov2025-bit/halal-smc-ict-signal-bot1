@@ -235,11 +235,14 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # It observes already published immutable records and returns monitoring
         # values only: it cannot generate, gate, veto, reinterpret, or modify a
         # signal, a classification, a decision, or a delivery. Phase 25B-1 adds
-        # the foundations (errors, models, clocks, configuration).
+        # the foundations (errors, models, clocks, configuration) and Phase 25B-2
+        # adds health transitions, precedence rollup, and the metric model layer.
         "src/smcsignal/monitoring/__init__.py",
         "src/smcsignal/monitoring/clock.py",
         "src/smcsignal/monitoring/config.py",
         "src/smcsignal/monitoring/errors.py",
+        "src/smcsignal/monitoring/health.py",
+        "src/smcsignal/monitoring/metrics.py",
         "src/smcsignal/monitoring/models.py",
         "src/smcsignal/analysis/__init__.py",
     }

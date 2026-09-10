@@ -127,6 +127,47 @@ def test_nothing_outside_monitoring_imports_monitoring() -> None:
     assert offenders == []
 
 
+def test_health_and_metrics_import_nothing_from_upstream_packages() -> None:
+    """The 25B-2 modules must depend only on stdlib and monitoring interior.
+
+    This is the structural reason a transition, a rollup, or a metric cannot
+    reach a producer: the modules that compute them have no handle on the data,
+    analysis, or delivery layers at all.
+    """
+    allowed = set(sys.stdlib_module_names) | {"smcsignal"}
+    for name in ("health.py", "metrics.py"):
+        for dotted in _module_imports(MONITORING / name):
+            assert dotted.split(".")[0] in allowed, f"{name} imports {dotted}"
+            for upstream in ("smcsignal.data", "smcsignal.analysis", "smcsignal.delivery"):
+                assert not (dotted == upstream or dotted.startswith(upstream + ".")), (
+                    f"{name} imports {dotted}"
+                )
+
+
+def test_health_and_metrics_reach_only_monitoring_siblings() -> None:
+    for name in ("health.py", "metrics.py"):
+        for dotted in _module_imports(MONITORING / name):
+            if dotted.startswith("smcsignal."):
+                assert dotted.startswith("smcsignal.monitoring."), f"{name} imports {dotted}"
+
+
+def test_no_observers_sessions_reports_or_alerting_modules_exist() -> None:
+    # Phase 25B-2 adds health and metrics only. Observers, sessions, reports,
+    # and alerting remain unimplemented.
+    present = {path.name for path in MONITORING.glob("*.py")}
+    assert present == {
+        "__init__.py",
+        "clock.py",
+        "config.py",
+        "errors.py",
+        "health.py",
+        "metrics.py",
+        "models.py",
+    }
+    for absent in ("observers", "alerting.py", "session.py", "report.py", "monitor.py"):
+        assert not (MONITORING / absent).exists(), absent
+
+
 def test_top_level_facade_is_not_grown() -> None:
     assert smcsignal.__all__ == ["__version__"]
 
@@ -151,8 +192,11 @@ def test_package_declares_no_runtime_dependency() -> None:
     assert "dependencies = []" in pyproject
 
 
-def test_phase_25b1_adds_no_observers_sessions_reports_or_alerting() -> None:
-    # Phase 25B-1 is foundations only. These modules arrive in later sub-phases.
-    present = {path.name for path in MONITORING.glob("*.py")}
-    assert present == {"__init__.py", "clock.py", "config.py", "errors.py", "models.py"}
-    assert not (MONITORING / "observers").exists()
+def test_public_api_is_declared_and_importable_after_25b2() -> None:
+    module = sys.modules["smcsignal.monitoring"]
+    for name in ("rollup", "transition", "clear", "rank", "worse_of", "unobserved"):
+        assert name in monitoring_public, name
+        assert hasattr(module, name), name
+    for name in ("CounterMetric", "DurationMetric", "RatioMetric", "GaugeMetric", "MetricSummary"):
+        assert name in monitoring_public, name
+        assert hasattr(module, name), name
