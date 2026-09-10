@@ -244,6 +244,10 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         "src/smcsignal/monitoring/health.py",
         "src/smcsignal/monitoring/metrics.py",
         "src/smcsignal/monitoring/models.py",
+        "src/smcsignal/monitoring/monitor.py",
+        "src/smcsignal/monitoring/report.py",
+        "src/smcsignal/monitoring/serialization.py",
+        "src/smcsignal/monitoring/session.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

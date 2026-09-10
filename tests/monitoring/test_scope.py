@@ -110,10 +110,18 @@ def test_the_evidence_canon_is_reused_never_copied() -> None:
     """
     frozen = (SRC / "delivery" / "audit.py").read_text(encoding="utf-8")
     assert "from smcsignal.analysis.liquidity.evidence import digest" in frozen
+    importers: set[str] = set()
     for path in MONITORING.rglob("*.py"):
         text = path.read_text(encoding="utf-8")
-        if "liquidity.evidence" in text:
-            assert "from smcsignal.analysis.liquidity.evidence import" in text
+        if "smcsignal.analysis.liquidity" not in text:
+            continue
+        importers.add(path.name)
+        assert (
+            "from smcsignal.analysis.liquidity import evidence" in text
+            or "from smcsignal.analysis.liquidity.evidence import" in text
+        ), path.name
+    # Exactly two modules may reach the canon, and neither may re-implement it.
+    assert importers == {"models.py", "serialization.py"}
 
 
 def test_nothing_outside_monitoring_imports_monitoring() -> None:
@@ -135,7 +143,15 @@ def test_health_and_metrics_import_nothing_from_upstream_packages() -> None:
     analysis, or delivery layers at all.
     """
     allowed = set(sys.stdlib_module_names) | {"smcsignal"}
-    for name in ("health.py", "metrics.py"):
+    for name in (
+        "clock.py",
+        "config.py",
+        "health.py",
+        "metrics.py",
+        "monitor.py",
+        "report.py",
+        "session.py",
+    ):
         for dotted in _module_imports(MONITORING / name):
             assert dotted.split(".")[0] in allowed, f"{name} imports {dotted}"
             for upstream in ("smcsignal.data", "smcsignal.analysis", "smcsignal.delivery"):
@@ -145,7 +161,15 @@ def test_health_and_metrics_import_nothing_from_upstream_packages() -> None:
 
 
 def test_health_and_metrics_reach_only_monitoring_siblings() -> None:
-    for name in ("health.py", "metrics.py"):
+    for name in (
+        "clock.py",
+        "config.py",
+        "health.py",
+        "metrics.py",
+        "monitor.py",
+        "report.py",
+        "session.py",
+    ):
         for dotted in _module_imports(MONITORING / name):
             if dotted.startswith("smcsignal."):
                 assert dotted.startswith("smcsignal.monitoring."), f"{name} imports {dotted}"
@@ -163,8 +187,12 @@ def test_no_observers_sessions_reports_or_alerting_modules_exist() -> None:
         "health.py",
         "metrics.py",
         "models.py",
+        "monitor.py",
+        "report.py",
+        "serialization.py",
+        "session.py",
     }
-    for absent in ("observers", "alerting.py", "session.py", "report.py", "monitor.py"):
+    for absent in ("observers", "alerting.py"):
         assert not (MONITORING / absent).exists(), absent
 
 
@@ -200,3 +228,26 @@ def test_public_api_is_declared_and_importable_after_25b2() -> None:
     for name in ("CounterMetric", "DurationMetric", "RatioMetric", "GaugeMetric", "MetricSummary"):
         assert name in monitoring_public, name
         assert hasattr(module, name), name
+
+
+def test_public_api_is_declared_and_importable_after_25b3() -> None:
+    module = sys.modules["smcsignal.monitoring"]
+    for name in (
+        "Monitor",
+        "NullMonitor",
+        "RecordingMonitor",
+        "MonitoredRun",
+        "MonitoringSession",
+        "MonitoringReport",
+        "aggregate_events",
+        "merge_aggregates",
+        "advance_aggregate",
+        "run_identity",
+        "canonical_record",
+        "canonical_bytes",
+        "content_digest",
+        "require_serializable",
+    ):
+        assert name in monitoring_public, name
+        assert hasattr(module, name), name
+    assert sorted(monitoring_public) == list(monitoring_public)
