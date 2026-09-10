@@ -99,6 +99,9 @@ Loading settings does not fetch data or run analysis. The CLI remains informatio
 - `signal-engine.example.toml`: the same synthetic history plus frozen
   signal-engine-v1 `enabled = true`, `publish_threshold = 75`, `spot_only = true`,
   and `duplicate_policy = "one_per_setup"`.
+- `telegram.example.toml`: the standalone Phase 24D `[telegram]` transport table
+  only (no market-data bundle); it configures outbound delivery and contains no
+  token and no chat id.
 
 ## Market data settings (unchanged)
 
@@ -614,6 +617,40 @@ exclusive. These settings gate descriptive *reporting* labels over the Phase 21
 validation rows only — there are no strategy, order, sizing, fee,
 optimization, or self-modification settings. See
 [intelligence methodology](../docs/intelligence-methodology.md).
+
+## Telegram transport settings (Phase 24D)
+
+```toml
+[telegram]
+enabled = false
+html_parse_mode = true
+chart_enabled = true
+network_timeout_seconds = 10.0
+retry_max_attempts = 3
+retry_backoff_seconds = 1.0
+retry_backoff_max_seconds = 30.0
+requests_per_second = 20.0
+rate_limit_capacity = 40
+max_message_chars = 4096
+```
+
+The table requires exactly these ten keys, read only by
+`smcsignal.delivery.telegram.load_telegram_config(path)`. It is transport-only
+and strictly downstream: it cannot generate, gate, or veto a signal, and it
+carries **no** bot token and **no** chat id. The token is injected at
+construction from the approved secret path, and real chat/channel ids come from a
+separate destination map; a missing token leaves the transport disabled
+(`NOT_ATTEMPTED`). There is no trading, order, position, sizing, margin,
+leverage, or fee key, and no optimization or feedback setting.
+
+`network_timeout_seconds` is the single per-request timeout: a timeout reports
+`UNKNOWN` (the reply was lost) and is never retried silently. `retry_max_attempts`
+covers transient outcomes only (HTTP 429 and 5xx); `401` maps to a configuration
+failure. `max_message_chars` is a pre-flight caption budget — a longer caption is
+refused before any network call rather than sent and rejected, and content is
+never truncated or re-rendered. Chart delivery is best effort and can never
+invalidate a delivered text. See
+[Telegram transport design](../docs/phase24d-telegram-transport-design.md).
 
 ## Metadata, secrets, and artifacts
 

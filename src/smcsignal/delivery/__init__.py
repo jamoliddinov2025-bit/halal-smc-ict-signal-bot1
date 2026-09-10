@@ -54,6 +54,12 @@ from smcsignal.delivery.sink import (
     deliver_message,
     deliver_signal,
 )
+from smcsignal.delivery.transport import (
+    OfflinePayloadSink,
+    PayloadSink,
+    TransportPayload,
+    transport_payload_from_outcome,
+)
 
 __all__ = [
     "ChartAttachment",
@@ -71,9 +77,12 @@ __all__ = [
     "FailureCategory",
     "MessageSink",
     "NullSink",
+    "OfflinePayloadSink",
+    "PayloadSink",
     "RenderedSignalMessage",
     "SVG_MIME",
     "SignalMessage",
+    "TransportPayload",
     "assemble_signal_message",
     "chart_artifact_id",
     "deliver_message",
@@ -94,4 +103,5 @@ __all__ = [
     "require_buy_signal",
     "split_caption",
     "svg_attachment",
+    "transport_payload_from_outcome",
 ]
