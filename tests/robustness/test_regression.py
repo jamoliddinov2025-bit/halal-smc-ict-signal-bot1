@@ -234,6 +234,18 @@ def test_decision_modules_are_unmodified_since_the_phase20_baseline() -> None:
         "src/smcsignal/monitoring/report.py",
         "src/smcsignal/monitoring/serialization.py",
         "src/smcsignal/monitoring/session.py",
+        # Phase 26A approved a strictly downstream analytics connection. It
+        # observes immutable SignalSnapshot frames exactly where the Phase 17
+        # engine publishes them, opens one OPEN Phase 18 outcome per published
+        # BUY via the existing open_outcome() mapping, and accepts finalization
+        # only from the real market outcome evaluator. It imports nothing from
+        # delivery or monitoring, nothing upstream imports it, and it can never
+        # generate, gate, veto, reinterpret, or modify a signal, a halal
+        # classification, an eligibility decision, or a delivery. A delivery
+        # state is never a trade outcome.
+        "src/smcsignal/analytics/__init__.py",
+        "src/smcsignal/analytics/models.py",
+        "src/smcsignal/analytics/observer.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed
