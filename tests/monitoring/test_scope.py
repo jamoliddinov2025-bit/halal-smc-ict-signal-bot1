@@ -113,7 +113,7 @@ def test_the_evidence_canon_is_reused_never_copied() -> None:
     importers: set[str] = set()
     for path in MONITORING.rglob("*.py"):
         text = path.read_text(encoding="utf-8")
-        if "smcsignal.analysis.liquidity" not in text:
+        if "liquidity import evidence" not in text and "liquidity.evidence" not in text:
             continue
         importers.add(path.name)
         assert (
@@ -175,9 +175,9 @@ def test_health_and_metrics_reach_only_monitoring_siblings() -> None:
                 assert dotted.startswith("smcsignal.monitoring."), f"{name} imports {dotted}"
 
 
-def test_no_observers_sessions_reports_or_alerting_modules_exist() -> None:
-    # Phase 25B-2 adds health and metrics only. Observers, sessions, reports,
-    # and alerting remain unimplemented.
+def test_no_unimplemented_monitoring_module_exists() -> None:
+    # Phase 25B-4 adds the market-data observer. Signal and delivery observers,
+    # and alerting, remain unimplemented.
     present = {path.name for path in MONITORING.glob("*.py")}
     assert present == {
         "__init__.py",
@@ -192,8 +192,49 @@ def test_no_observers_sessions_reports_or_alerting_modules_exist() -> None:
         "serialization.py",
         "session.py",
     }
-    for absent in ("observers", "alerting.py"):
-        assert not (MONITORING / absent).exists(), absent
+    assert not (MONITORING / "alerting.py").exists()
+    observers = {path.name for path in (MONITORING / "observers").glob("*.py")}
+    assert observers == {"__init__.py", "data.py"}
+
+
+def test_the_observer_package_exposes_only_the_market_data_observer() -> None:
+    from smcsignal.monitoring import observers
+
+    assert sorted(observers.__all__) == list(observers.__all__)
+    assert observers.__all__ == [
+        "DataObservation",
+        "MARKET_DATA_METRICS",
+        "MarketDataObserver",
+        "series_subject",
+    ]
+
+
+def test_only_the_documented_modules_reach_upstream_packages() -> None:
+    """Monitoring's outward edges are three files, each for a frozen value type.
+
+    This is the structural reason an observer cannot reach a producer: no other
+    monitoring module imports the data or analysis layers at all.
+    """
+    consumers: set[str] = set()
+    for path in MONITORING.rglob("*.py"):
+        for dotted in _module_imports(path):
+            if dotted.startswith(("smcsignal.data", "smcsignal.analysis")):
+                consumers.add(path.name)
+    assert consumers == {"data.py", "models.py", "serialization.py"}
+
+
+def test_the_market_data_observer_reads_only_published_value_types() -> None:
+    dotted = _module_imports(MONITORING / "observers" / "data.py")
+    upstream = {
+        name for name in dotted if name.startswith(("smcsignal.data", "smcsignal.analysis"))
+    }
+    assert upstream == {
+        "smcsignal.analysis.errors",
+        "smcsignal.analysis.liquidity.time",
+        "smcsignal.analysis.mtf.timeframes",
+        "smcsignal.data.errors",
+        "smcsignal.data.models",
+    }
 
 
 def test_top_level_facade_is_not_grown() -> None:
@@ -228,6 +269,14 @@ def test_public_api_is_declared_and_importable_after_25b2() -> None:
     for name in ("CounterMetric", "DurationMetric", "RatioMetric", "GaugeMetric", "MetricSummary"):
         assert name in monitoring_public, name
         assert hasattr(module, name), name
+
+
+def test_public_api_is_declared_and_importable_after_25b4() -> None:
+    module = sys.modules["smcsignal.monitoring"]
+    for name in ("MarketDataObserver", "DataObservation", "MARKET_DATA_METRICS", "series_subject"):
+        assert name in monitoring_public, name
+        assert hasattr(module, name), name
+    assert sorted(monitoring_public) == list(monitoring_public)
 
 
 def test_public_api_is_declared_and_importable_after_25b3() -> None:

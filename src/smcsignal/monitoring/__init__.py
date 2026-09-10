@@ -12,11 +12,14 @@ eligibility decision, a risk decision, a Phase 23 governance decision, or a
 delivery. Telegram remains downstream only: monitoring observes delivery
 outcomes and never sends, retries, retargets, or reorders anything.
 
-Phase 25B ships the inert core first: errors, models, clocks, and configuration
+Phase 25B builds the inert core first: errors, models, clocks, and configuration
 (25B-1), then the pure health transitions, precedence rollup, and the metric
-model layer (25B-2). Observers, sessions, reports, and alerting arrive in later
-sub-phases; nothing here reads a clock, a file, or a network. The approved design
-is ``docs/phase25a-production-monitoring-reliability-design.md``.
+model layer (25B-2), then runs, sessions, reports, and the shared serialization
+helpers (25B-3), and then the market-data observer (25B-4). The signal and
+delivery observers, alerting, and any runtime wiring into a production pipeline
+remain unimplemented, so nothing here is reachable from a running pipeline and
+nothing here reads a clock, a file, or a network. The approved design is
+``docs/phase25a-production-monitoring-reliability-design.md``.
 """
 
 from smcsignal.monitoring.clock import Clock, FixedClock, SystemClock
@@ -72,6 +75,12 @@ from smcsignal.monitoring.monitor import (
     RecordingMonitor,
     require_metric,
 )
+from smcsignal.monitoring.observers import (
+    MARKET_DATA_METRICS,
+    DataObservation,
+    MarketDataObserver,
+    series_subject,
+)
 from smcsignal.monitoring.report import (
     LABEL_MAX_LENGTH,
     MonitoredRun,
@@ -96,6 +105,7 @@ __all__ = [
     "DEFAULT_MAX_EVENTS_PER_RUN",
     "DEFAULT_REPEATED_FAILURE_THRESHOLD",
     "DEFAULT_STALE_AFTER_INTERVALS",
+    "DataObservation",
     "DurationMetric",
     "FixedClock",
     "GaugeMetric",
@@ -106,6 +116,8 @@ __all__ = [
     "HealthState",
     "INITIAL_HEALTH_STATE",
     "LABEL_MAX_LENGTH",
+    "MARKET_DATA_METRICS",
+    "MarketDataObserver",
     "Metric",
     "MetricSummary",
     "Monitor",
@@ -141,6 +153,7 @@ __all__ = [
     "require_utc_timestamp",
     "rollup",
     "run_identity",
+    "series_subject",
     "severity_for",
     "transition",
     "unobserved",

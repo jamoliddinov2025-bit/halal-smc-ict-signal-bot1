@@ -23,9 +23,18 @@ MONITORING = Path(__file__).resolve().parents[2] / "src" / "smcsignal" / "monito
 START = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
 LATER = START + timedelta(minutes=1)
 
-# The four modules this phase adds. The 25B-1/25B-2 modules are frozen and are
-# screened by test_clock.py and test_scope.py; config.py legitimately reads a file.
-NEW_MODULES = ("monitor.py", "report.py", "session.py", "serialization.py")
+# Everything added from Phase 25B-3 onwards. The 25B-1/25B-2 modules are frozen
+# and are screened by test_clock.py and test_scope.py; config.py legitimately
+# reads a file, and the observers legitimately read upstream value types (their
+# exact boundary is pinned by test_scope.py).
+NEW_MODULES = (
+    "monitor.py",
+    "report.py",
+    "session.py",
+    "serialization.py",
+    "data.py",
+)
+UPSTREAM_READERS = ("serialization.py", "data.py")
 FORBIDDEN_MODULES = ("threading", "asyncio", "concurrent", "socket", "urllib", "http", "logging")
 FORBIDDEN_CALLS = ("open", "print", "input", "exec", "eval", "compile", "__import__")
 
@@ -33,7 +42,7 @@ FORBIDDEN_CALLS = ("open", "print", "input", "exec", "eval", "compile", "__impor
 def _trees() -> list[tuple[str, ast.Module]]:
     return [
         (path.name, ast.parse(path.read_text(encoding="utf-8"), filename=str(path)))
-        for path in sorted(MONITORING.glob("*.py"))
+        for path in sorted(MONITORING.rglob("*.py"))
         if path.name in NEW_MODULES
     ]
 
@@ -68,10 +77,10 @@ def test_no_new_module_calls_an_ambient_capability() -> None:
                 assert dotted.split(".")[-1] not in FORBIDDEN_CALLS, f"{name} calls {dotted}"
 
 
-def test_the_new_modules_touch_only_monitoring_and_stdlib() -> None:
+def test_the_pure_core_touches_only_monitoring_and_stdlib() -> None:
     for name, tree in _trees():
-        if name == "serialization.py":
-            continue  # the single canon import is pinned by test_scope.py
+        if name in UPSTREAM_READERS:
+            continue  # each reads exactly one pinned upstream surface
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
@@ -85,15 +94,18 @@ def test_the_new_modules_touch_only_monitoring_and_stdlib() -> None:
                 assert module.startswith("smcsignal.monitoring"), f"{name}: {module}"
 
 
-def test_no_upstream_import_appears_in_any_new_module() -> None:
-    banned = ("smcsignal.analysis", "smcsignal.delivery", "smcsignal.data", "smcsignal.mtf")
+def test_no_new_module_reaches_a_producer_or_a_decision() -> None:
+    banned = (
+        "smcsignal.analysis.signal_engine",
+        "smcsignal.analysis.improvement",
+        "smcsignal.analysis.halal_filter",
+        "smcsignal.analysis.signal_eligibility",
+        "smcsignal.delivery",
+    )
+    assert set(NEW_MODULES) | set(UPSTREAM_READERS)
     for name, tree in _trees():
         text = ast.unparse(tree)
         for prefix in banned:
-            # serialization.py may reference the evidence canon only through the
-            # single pinned import asserted in test_scope.py.
-            if name == "serialization.py" and prefix == "smcsignal.analysis":
-                continue
             assert prefix not in text, f"{name} reaches {prefix}"
 
 
