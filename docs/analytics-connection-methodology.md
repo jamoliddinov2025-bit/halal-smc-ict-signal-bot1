@@ -1,4 +1,4 @@
-# Analytics connection to the real signal pipeline (Phase 26A–26E)
+# Analytics connection to the real signal pipeline (Phase 26A–26F)
 
 Phase 26A connects the existing Phase 18 outcome-analytics foundation to the
 real signal publication path. It adds no second pipeline, no demo engine, and
@@ -7,8 +7,10 @@ exact point where real signals are already published. Phase 26B closes the
 loop with a deterministic lifecycle composition; both remain one downstream-only
 leaf (`smcsignal.analytics`) that nothing upstream imports. Phase 26C makes the
 ledger snapshotable and restorable as canonical, content-addressed bytes; Phase
-26D persists those bytes durably; and Phase 26E turns a persisted snapshot plus
-the series' regenerated frame history back into a verified live lifecycle.
+26D persists those bytes durably; Phase 26E turns a persisted snapshot plus the
+series' regenerated frame history back into a verified live lifecycle; and
+Phase 26F supplies the sanctioned production seam for regenerating that frame
+history itself.
 
 ## The real connection point
 
@@ -202,6 +204,42 @@ frozen Phase 18 evaluator opaque.
   exist here. No scheduler, run loop, feed, websocket, polling, fleet,
   monitoring, Telegram, database, remote persistence, encryption, compression,
   retention, history, or evaluator serialization.
+
+## Phase 26F: the deterministic series frame source
+
+Phase 26E's recovery contract requires the series' historical frames
+"regenerated through the real Phase 3-17 chain" — yet that regeneration lived
+only in test glue until Phase 26F gave it a sanctioned production seam
+(``smcsignal.series``: ``SeriesFrameSource``, ``series_frames``).
+
+- **Real publication frames only.** Every emitted frame is the actual Phase 17
+  ``SignalSnapshot`` the frozen signal engine published inside the frozen
+  Phase 20 ``HistoricalReplay``, consumed from ``ReplayStep.signal``. No frame
+  is manufactured, reconstructed, or re-published by Phase 26F.
+- **Reuse, not duplication.** The source wraps one ``HistoricalReplay`` and
+  owns no analyzer composition of its own: the liquidity→engine chain, the
+  draw cursor, chronological order, and higher-timeframe availability gating
+  all stay exactly where the frozen replay owns them. The replay's internal
+  Phase 18/19 outcome and attribution work is inherited frozen behavior; it
+  is not exposed and connects to nothing downstream.
+- **Deterministic and prefix-stable.** Identical dataset and configuration
+  produce identical frame sequences across independent sources; each declared
+  candle is processed exactly once in order; ``update()`` past the declared
+  history raises through the frozen machinery; and the first ``k`` frames of a
+  complete history equal all frames of the corresponding declared prefix,
+  because no future candle can influence a published fact. That prefix
+  stability is precisely what Phase 26E recovery relies on when regenerating
+  history.
+- **Frames in, frames out.** The source knows no ledger, snapshot, store,
+  recovery, or delivery state; feeding a Phase 26B lifecycle, persisting
+  Phase 26C bytes, or recovering through Phase 26E stays the caller's
+  composition. It performs no IO, clock, network, websocket, scheduler, or
+  concurrency; candle acquisition remains caller-owned at the Phase 2
+  boundary. It imports only ``smcsignal.analysis.*`` — never analytics,
+  persistence, delivery, monitoring, or any provider. It is not a lifecycle,
+  session, coordinator, run loop, scheduler, or application runtime; no live
+  trading, execution, exchange, fleet, database, candle persistence,
+  monitoring wiring, or strategy change exists here.
 
 ## Guarantees
 

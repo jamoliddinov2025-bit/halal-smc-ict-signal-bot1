@@ -278,6 +278,14 @@ def test_decision_modules_are_unmodified_since_the_phase20_baseline() -> None:
         # evaluator state, performs no IO, and imports nothing from
         # persistence, delivery, monitoring, data, or any clock/network.
         "src/smcsignal/analytics/recovery.py",
+        # Phase 26F approved the deterministic series frame source: the
+        # sanctioned frame-regeneration seam. It wraps the frozen Phase 20
+        # HistoricalReplay and projects each replayed step to its published
+        # Phase 17 SignalSnapshot; it owns no analyzer composition, no second
+        # cursor, no ledger state, and no IO, and it imports nothing from
+        # analytics, persistence, delivery, monitoring, or any data provider.
+        "src/smcsignal/series/__init__.py",
+        "src/smcsignal/series/frame_source.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

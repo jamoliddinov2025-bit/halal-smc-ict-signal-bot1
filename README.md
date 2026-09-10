@@ -2056,6 +2056,25 @@ fleet, multi-series orchestration, monitoring, Telegram, database, remote
 persistence, encryption, compression, retention, history, or evaluator
 serialization is introduced.
 
+Phase 26F adds the deterministic series frame source
+(`smcsignal.series`: `SeriesFrameSource`, `series_frames`) — the sanctioned
+frame-regeneration seam. Given one declared `ReplayDataset` and one
+`BacktestConfiguration`, it emits the exact real Phase 17 `SignalSnapshot`
+publication stream by wrapping the frozen Phase 20 `HistoricalReplay` and
+projecting each replayed step to its published frame — no analyzer chain is
+recomposed, no second cursor exists, and no frame is ever manufactured. The
+source is chronological (each declared candle processed exactly once),
+deterministic across independent instances, and prefix-stable: the first `k`
+frames of a complete history equal all frames of the corresponding declared
+prefix — the exact property Phase 26E recovery depends on when regenerating
+history. It knows no ledger, snapshot, store, recovery, or delivery state; it
+performs no IO, clock, network, or concurrency; candle acquisition stays
+caller-owned at the Phase 2 boundary. It is not a lifecycle, session,
+coordinator, run loop, scheduler, or application runtime, and introduces no
+live trading, execution, exchange, websocket, polling, Telegram, fleet,
+database, network persistence, candle persistence, monitoring, or strategy
+change.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
