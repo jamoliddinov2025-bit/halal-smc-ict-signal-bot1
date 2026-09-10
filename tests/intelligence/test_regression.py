@@ -159,6 +159,17 @@ def test_pyproject_declares_no_runtime_dependencies() -> None:
 
 
 def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
+    """Only the Phase 22 package, its additive facade exports, the two
+    informational finalization files, and the downstream packages introduced by
+    the later approved phases may differ from the frozen Phase 21 baseline.
+
+    The allow-list is exact-path: any file outside it that differs from the
+    Phase 21 baseline (including a new file inside an allowed package) still
+    fails this guard. Extend it only when an approved phase adds sources, as was
+    done here for Phase 23 (improvement) and Phase 24 (delivery/transport/
+    telegram).
+    """
+
     import subprocess
 
     root = Path(SRC).parent.parent
@@ -179,6 +190,47 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         "src/smcsignal/analysis/intelligence/evidence.py",
         "src/smcsignal/analysis/intelligence/models.py",
         "src/smcsignal/analysis/intelligence/text.py",
+        # Phase 23 approved the improvement research package: a terminal
+        # consumer of Phase 22 reports that publishes nothing and cannot reach
+        # any decision module.
+        "src/smcsignal/analysis/improvement/__init__.py",
+        "src/smcsignal/analysis/improvement/candidates.py",
+        "src/smcsignal/analysis/improvement/comparison.py",
+        "src/smcsignal/analysis/improvement/config.py",
+        "src/smcsignal/analysis/improvement/evaluation.py",
+        "src/smcsignal/analysis/improvement/evidence.py",
+        "src/smcsignal/analysis/improvement/findings.py",
+        "src/smcsignal/analysis/improvement/hypotheses.py",
+        "src/smcsignal/analysis/improvement/models.py",
+        "src/smcsignal/analysis/improvement/reporting.py",
+        "src/smcsignal/analysis/improvement/results.py",
+        "src/smcsignal/analysis/improvement/review.py",
+        "src/smcsignal/analysis/improvement/state.py",
+        "src/smcsignal/analysis/improvement/surfaces.py",
+        # Phase 24 approved the delivery core (24B presentation/transport
+        # payload, 24C orchestration) and the Telegram transport (24C/24D).
+        # Delivery is output-only and strictly downstream: it consumes already
+        # published, already rendered signals and can never generate, gate,
+        # veto, or rescore one.
+        "src/smcsignal/delivery/__init__.py",
+        "src/smcsignal/delivery/audit.py",
+        "src/smcsignal/delivery/chart.py",
+        "src/smcsignal/delivery/config.py",
+        "src/smcsignal/delivery/formatting.py",
+        "src/smcsignal/delivery/identity.py",
+        "src/smcsignal/delivery/message.py",
+        "src/smcsignal/delivery/models.py",
+        "src/smcsignal/delivery/orchestrator.py",
+        "src/smcsignal/delivery/sink.py",
+        "src/smcsignal/delivery/transport.py",
+        "src/smcsignal/delivery/telegram/__init__.py",
+        "src/smcsignal/delivery/telegram/audit.py",
+        "src/smcsignal/delivery/telegram/config.py",
+        "src/smcsignal/delivery/telegram/destination.py",
+        "src/smcsignal/delivery/telegram/http.py",
+        "src/smcsignal/delivery/telegram/integration.py",
+        "src/smcsignal/delivery/telegram/rate_limit.py",
+        "src/smcsignal/delivery/telegram/sink.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed
