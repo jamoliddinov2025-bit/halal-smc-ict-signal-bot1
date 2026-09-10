@@ -22,6 +22,15 @@ Phase 26C adds the deterministic ledger snapshot and restore layer
 content-addressed bytes through the existing evidence canon, restored exactly
 through the frozen model constructors. Bytes only — no IO; restored ledgers
 are read-only historical facts, and evaluator continuation is a future phase.
+
+Phase 26E adds verified replay-based restart (``recover_lifecycle``,
+``RecoveredLedger``): a fresh Phase 26B lifecycle under the expected
+snapshot's configuration replays the supplied historical frames through the
+unchanged 26B machinery and is returned for continuation only when its Phase
+26C snapshot equals the expected snapshot exactly — replay, not
+checkpointing, so the Phase 18 evaluator stays frozen and opaque. No IO, no
+persistence import (the 26D store stays the caller-side snapshot source), no
+new outcome semantics; any mismatch fails atomically.
 """
 
 from smcsignal.analytics.ledger import (
@@ -48,6 +57,7 @@ from smcsignal.analytics.models import (
     strategy_stats,
 )
 from smcsignal.analytics.observer import AnalyticsObserver, ObservedSignalEngine
+from smcsignal.analytics.recovery import RecoveredLedger, recover_lifecycle
 
 __all__ = [
     "BREAKEVEN",
@@ -58,12 +68,14 @@ __all__ = [
     "MonthlyReport",
     "MonthlySummary",
     "ObservedSignalEngine",
+    "RecoveredLedger",
     "RestoredAnalyticsLedger",
     "SignalObservation",
     "SignalOutcomeLifecycle",
     "StrategyStats",
     "ledger_bytes",
     "load_ledger_bytes",
+    "recover_lifecycle",
     "run_lifecycle",
     "snapshot_ledger",
     "strategy_stats",

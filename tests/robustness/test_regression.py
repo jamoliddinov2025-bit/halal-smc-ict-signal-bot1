@@ -268,6 +268,16 @@ def test_decision_modules_are_unmodified_since_the_phase20_baseline() -> None:
         # scheduling, feed, fleet, monitoring, delivery, or network.
         "src/smcsignal/persistence/__init__.py",
         "src/smcsignal/persistence/ledger_store.py",
+        # Phase 26E approved ledger recovery and continuation: a verified,
+        # replay-based restart. It rebuilds a fresh Phase 26B lifecycle under
+        # the expected Phase 26C snapshot's configuration, replays the
+        # supplied historical frames through the unchanged 26B machinery, and
+        # returns a live lifecycle only when the reconstructed Phase 26C
+        # snapshot equals the expected one exactly; any mismatch fails
+        # atomically. It exposes no Phase 18 internals, checkpoints no
+        # evaluator state, performs no IO, and imports nothing from
+        # persistence, delivery, monitoring, data, or any clock/network.
+        "src/smcsignal/analytics/recovery.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

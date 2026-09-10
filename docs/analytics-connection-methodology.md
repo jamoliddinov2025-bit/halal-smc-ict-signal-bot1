@@ -1,11 +1,14 @@
-# Analytics connection to the real signal pipeline (Phase 26A/26B)
+# Analytics connection to the real signal pipeline (Phase 26A–26E)
 
 Phase 26A connects the existing Phase 18 outcome-analytics foundation to the
 real signal publication path. It adds no second pipeline, no demo engine, and
 no new outcome semantics: it attaches a strictly downstream observer at the
 exact point where real signals are already published. Phase 26B closes the
 loop with a deterministic lifecycle composition; both remain one downstream-only
-leaf (`smcsignal.analytics`) that nothing upstream imports.
+leaf (`smcsignal.analytics`) that nothing upstream imports. Phase 26C makes the
+ledger snapshotable and restorable as canonical, content-addressed bytes; Phase
+26D persists those bytes durably; and Phase 26E turns a persisted snapshot plus
+the series' regenerated frame history back into a verified live lifecycle.
 
 ## The real connection point
 
@@ -156,6 +159,49 @@ implementation, ``FileLedgerStore`` explicit filesystem boundary).
 - **No live operations.** No scheduler, polling, feed, clock, run loop, fleet
   orchestration, monitoring, delivery, database, network, encryption,
   compression, retention, rotation, or version history.
+
+## Phase 26E: verified ledger recovery and continuation
+
+Phase 26E answers the question the Phase 26C/26D docs deliberately deferred:
+*after a restart, how does a series continue its ledger where it left off?*
+The answer is **replay, not checkpointing** — the only mechanism that keeps the
+frozen Phase 18 evaluator opaque.
+
+- **The mechanism.** ``recover_lifecycle(frames, expected)`` builds a fresh
+  Phase 26B lifecycle (fresh observer, fresh evaluator) under the
+  configuration carried by the expected Phase 26C snapshot, replays the
+  series' historical ``SignalSnapshot`` frames through the unchanged 26B
+  ``update()`` loop (evaluate → observe → forward finals), and then projects
+  the reconstruction through Phase 26C ``snapshot_ledger()``. Because Phases
+  3–18 are deterministic, replaying the identical frame history reproduces the
+  identical ledger; the stored snapshot is the verification oracle, not the
+  state source.
+- **The acceptance rule.** The reconstructed snapshot must equal ``expected``
+  exactly — observations, OPEN and finalized outcomes, ordering, settings,
+  configuration hash, and the content-addressed ``snapshot_id``. On equality
+  the live lifecycle is returned inside ``RecoveredLedger`` ready for
+  continuation; feeding it further frames behaves exactly like uninterrupted
+  operation (new BUYs observed, finalization at exactly the horizon, identical
+  statistics and monthly reports).
+- **Atomic refusal.** Any difference raises ``AnalysisInputError`` before
+  anything is returned: no partially recovered lifecycle escapes, the frozen
+  expected snapshot is never mutated, and the failure is deterministic.
+  Sequence violations (replayed, out-of-order, gapped frames) raise inside the
+  frozen Phase 18 evaluator before any ledger state changes.
+- **No new semantics.** Recovery invents no outcome rule, no evaluation rule,
+  and no statistic. The configuration is derived from the expected snapshot and
+  never supplied separately, so a recovered lifecycle can never run under a
+  configuration other than the one the snapshot records. The Phase 18 evaluator
+  is never serialized, never checkpointed, and never re-implemented.
+- **Offline and one-way.** Recovery performs no IO, clock, or network, and
+  imports nothing from ``smcsignal.persistence``, delivery, monitoring, or
+  data. Persistence stays the caller-side snapshot source (the 26D store
+  ``load()``s the snapshot and hands it in), and the dependency direction stays
+  ``persistence -> analytics``. One snapshot plus one frame history describe one
+  series; composing multiple series is the caller's orchestration and does not
+  exist here. No scheduler, run loop, feed, websocket, polling, fleet,
+  monitoring, Telegram, database, remote persistence, encryption, compression,
+  retention, history, or evaluator serialization.
 
 ## Guarantees
 

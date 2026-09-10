@@ -2035,6 +2035,27 @@ No scheduler, polling, feed, clock, fleet, monitoring, delivery, database,
 network, encryption, compression, retention, rotation, or version history is
 introduced.
 
+Phase 26E adds ledger recovery and continuation
+(`smcsignal.analytics.recovery`: `recover_lifecycle`, `RecoveredLedger`) — a
+verified, replay-based restart. Given the series' regenerated historical
+frames and the expected Phase 26C snapshot (typically loaded from the Phase
+26D store), recovery rebuilds a fresh Phase 26B lifecycle under the
+snapshot's own configuration, replays those frames through the unchanged 26B
+machinery, and returns the live lifecycle for continuation only when the
+reconstructed Phase 26C snapshot equals the expected one exactly — records,
+OPEN and finalized outcomes, ordering, settings, configuration hash, and
+content-addressed identity. It is replay, not checkpointing: the Phase 18
+evaluator stays frozen and opaque, no evaluator internals are serialized, and
+no ledger state is merged. Any mismatch fails atomically — no partially
+recovered lifecycle escapes and the expected snapshot is never mutated.
+Recovery performs no IO, no clock, no network, and imports nothing from
+persistence, delivery, monitoring, or data; persistence remains the
+caller-side snapshot source and the dependency direction stays
+`persistence -> analytics`. No scheduler, run loop, feed, websocket, polling,
+fleet, multi-series orchestration, monitoring, Telegram, database, remote
+persistence, encryption, compression, retention, history, or evaluator
+serialization is introduced.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
