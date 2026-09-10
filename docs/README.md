@@ -88,6 +88,11 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
   declared history run end-to-end into a durable verified session, binding
   frame generation and outcome evaluation to one configuration; offline
   composition only, never a live runtime.
+  Phase 27 durable declared-history store (`smcsignal.datasets`) — frozen
+  `ReplayDataset` values persist and restore exactly through the evidence
+  canon and the frozen constructors, under the Phase 26D key-safety and
+  atomicity discipline; the boundary fetches nothing, persists no
+  configuration, and wires no runtime.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;

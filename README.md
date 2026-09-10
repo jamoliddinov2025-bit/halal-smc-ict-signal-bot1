@@ -2117,6 +2117,21 @@ machine, and no result model; `series` and `sessions` remain unaware of it,
 verification, atomicity, and persistence semantics belong to the frozen
 26F/26G machinery.
 
+Phase 27 makes the declared history itself durable (`smcsignal.datasets`:
+`DatasetStore`, `MemoryDatasetStore`, `FileDatasetStore`). The Phase
+26E–26H restart story assumes the caller can always re-supply the exact
+`ReplayDataset` a ledger was verified against; before this phase that
+history lived only in caller memory or in Phase 2 acquisition. Declared
+datasets now persist and restore exactly — serialized through the existing
+evidence canon, reconstructed exclusively through the frozen `OHLCV` and
+`ReplayDataset` constructors, with the embedded content digest recomputed
+and never trusted, under the same key-safety and atomic `os.replace`
+discipline as the Phase 26D ledger store. The boundary fetches no candle,
+persists no configuration, wires no runtime, scheduler, monitoring,
+delivery, or CLI, and never composes a run: restored datasets feed
+`run_declared_history` unchanged, making the offline arc durable
+end-to-end.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.

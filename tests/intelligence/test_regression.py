@@ -319,6 +319,14 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # and it owns no frame source, coordinator, state machine, or model.
         "src/smcsignal/runs/__init__.py",
         "src/smcsignal/runs/series_run.py",
+        # Phase 27 approved the durable declared-history store: frozen
+        # ReplayDataset values persist and restore through the existing
+        # evidence canon and the frozen dataset constructors, under the same
+        # key-safety and atomicity discipline as Phase 26D. It fetches no
+        # candle, wires no runtime, monitoring, delivery, or CLI, persists
+        # no configuration, and never composes a run itself.
+        "src/smcsignal/datasets/__init__.py",
+        "src/smcsignal/datasets/dataset_store.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed
