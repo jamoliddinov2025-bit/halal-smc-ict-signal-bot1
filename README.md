@@ -1961,6 +1961,29 @@ derived from row facts, never the Phase 21 report id, so appended futures
 cannot rewrite an observed cell. Intelligence is observational research only —
 never optimization, selection, or advice.
 
+Phase 26A connects the existing Phase 18 analytics foundation to the real
+signal publication path without touching it. The connection point is the
+immutable `SignalSnapshot` exactly where the Phase 17
+`SignalEngineAnalyzer.update()` publishes it; `smcsignal.analytics` is a new
+downstream-only leaf (nothing upstream imports it) containing
+`AnalyticsObserver`, `ObservedSignalEngine`, `SignalObservation`,
+`StrategyStats`, `MonthlySummary`, and `MonthlyReport`. Every published
+`BUY_SIGNAL` opens exactly one initial Phase 18 `SignalOutcome` version with
+`OPEN` status via the existing `open_outcome()` mapping; observation is
+idempotent per outcome identity, so replaying a publication can never create a
+second outcome or double-count a signal. Only the real market outcome
+evaluator (later candles of the signal's own series, through the Phase 18
+`advance_outcome()` machinery) may transition `OPEN` to `WIN`, `LOSS`, or
+`FLAT` (breakeven); finalized versions are recorded exactly once per outcome
+identity, a conflicting duplicate is rejected, and statistics are the frozen
+Phase 18 `aggregate()` arithmetic — never recomputed. `DeliveryState` is a
+transport fact and is never interpreted as a trade outcome: a Telegram
+`DELIVERED` receipt can never become a `WIN`. Documented limitation: the
+current architecture has no live market feed after publication, so an outcome
+stays `OPEN` — never flushed, never expired — until a horizon evaluation
+exists. Analytics never alters signal generation, SMC/ICT logic, halal
+filtering, confidence, delivery, or strategy decisions.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.

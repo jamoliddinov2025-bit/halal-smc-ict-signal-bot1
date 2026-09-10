@@ -66,6 +66,10 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
   timeframe, month, and regime conditionals with exact winner/loser patterns,
   strength/weakness diagnostics, and deterministic sample-gated rankings;
   observational only, never optimization or advice.
+- [Analytics connection methodology](analytics-connection-methodology.md): Phase 26A
+  downstream observer at the real Phase 17 publication boundary; one OPEN Phase 18
+  outcome per published BUY; market-evaluator-only finalization; delivery state is
+  never a trade outcome; no double counting.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;
