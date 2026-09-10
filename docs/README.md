@@ -81,5 +81,6 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
 - [Development guide](development.md): installation, offline tests, typing, and packaging.
 - [Configuration](../config/README.md): separate market data and analysis tables.
 
-No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
+No session strategy or SELL/SHORT trades are implemented; chart rendering and
+Telegram delivery are implemented (Phase 24), downstream-only.
 **Stop after Phase 22. Phase 23 requires explicit approval.**
