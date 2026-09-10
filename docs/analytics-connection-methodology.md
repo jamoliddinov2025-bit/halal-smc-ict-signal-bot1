@@ -97,6 +97,37 @@ manual Phase 26A bridge (identical OPEN observations, finalized outcomes,
 strategy statistics, and monthly reports) across WIN, LOSS, BREAKEVEN, mixed,
 and open-only histories.
 
+## Phase 26C: deterministic ledger snapshot and restore (bytes only)
+
+Phase 26C turns the lifecycle ledger into canonical, content-addressed bytes
+and back, so a later approved phase can persist those bytes — while this layer
+performs no IO at all (``ledger_bytes`` returns bytes; ``load_ledger_bytes``
+accepts bytes; storage is a future phase's job).
+
+- **One canon, reused.** Bytes are produced by the repository's existing
+  evidence canon (sorted compact JSON, exact ``Decimal`` text, UTC ISO-8601
+  timestamps, enum values, frozen-dataclass field mapping). No competing
+  serialization convention exists in this layer.
+- **Exact restoration through frozen constructors.** Restore mirrors the
+  frozen field sets and passes every value through the real constructors
+  (``SeriesProvenance``, ``CandleReference``, ``EvidenceReference``,
+  ``EvidenceProvenance``, ``OutcomeTrackingConfig``, Phase 18
+  ``SignalOutcome``, Phase 26A ``SignalObservation``), so load-time validation
+  is the frozen validation — nothing re-implemented.
+- **Integrity.** ``snapshot_id`` digests the contents and is embedded in the
+  document; on load the digest is recomputed and compared — a supplied digest
+  is never trusted. Strict exact-key checks, enum/datetime/configuration
+  validation, and the frozen model invariants reject tampering and malformity.
+- **Read-only restored ledgers.** ``RestoredAnalyticsLedger`` exposes exactly
+  the live observer's read views (observations, open outcomes, finalized
+  outcomes, ``StrategyStats``, UTC ``MonthlyReport``) computed through the
+  same frozen Phase 18 aggregate machinery. It accepts no new observations,
+  no new finals, and no frames; evaluator continuation after a restart
+  (re-feed versus checkpointing) is a future phase, and the Phase 18
+  evaluator remains frozen and opaque.
+- **Delivery never participates.** The module imports nothing from
+  ``smcsignal.delivery`` and no API accepts a delivery record.
+
 ## Guarantees
 
 - **Downstream-only.** Nothing upstream imports ``smcsignal.analytics``; the

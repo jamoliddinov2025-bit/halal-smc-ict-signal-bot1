@@ -70,7 +70,9 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
   downstream observer at the real Phase 17 publication boundary; one OPEN Phase 18
   outcome per published BUY; market-evaluator-only finalization; delivery state is
   never a trade outcome; no double counting; Phase 26B deterministic lifecycle
-  composition (evaluate, observe, finalize) with no new arithmetic.
+  composition (evaluate, observe, finalize) with no new arithmetic; Phase 26C
+  canonical, content-addressed ledger snapshot and restore — bytes only,
+  read-only restored ledgers, evaluator resume deferred.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;

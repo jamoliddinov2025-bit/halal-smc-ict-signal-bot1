@@ -15,8 +15,25 @@ Phase 26B adds ``SignalOutcomeLifecycle``: the deterministic composition that
 observes each published frame, evaluates open outcomes through the unchanged
 Phase 18 analyzer, and records the evaluator's finals into the observer's
 ledger — closing the publication-to-statistics loop without any new arithmetic.
+
+Phase 26C adds the deterministic ledger snapshot and restore layer
+(``LedgerSnapshot``, ``snapshot_ledger``, ``ledger_bytes``,
+``load_ledger_bytes``, ``RestoredAnalyticsLedger``): canonical,
+content-addressed bytes through the existing evidence canon, restored exactly
+through the frozen model constructors. Bytes only — no IO; restored ledgers
+are read-only historical facts, and evaluator continuation is a future phase.
 """
 
+from smcsignal.analytics.ledger import (
+    METHODOLOGY_VERSION as LEDGER_METHODOLOGY_VERSION,
+)
+from smcsignal.analytics.ledger import (
+    LedgerSnapshot,
+    RestoredAnalyticsLedger,
+    ledger_bytes,
+    load_ledger_bytes,
+    snapshot_ledger,
+)
 from smcsignal.analytics.lifecycle import (
     LifecycleStep,
     SignalOutcomeLifecycle,
@@ -34,14 +51,20 @@ from smcsignal.analytics.observer import AnalyticsObserver, ObservedSignalEngine
 
 __all__ = [
     "BREAKEVEN",
+    "LEDGER_METHODOLOGY_VERSION",
     "AnalyticsObserver",
+    "LedgerSnapshot",
     "LifecycleStep",
     "MonthlyReport",
     "MonthlySummary",
     "ObservedSignalEngine",
+    "RestoredAnalyticsLedger",
     "SignalObservation",
     "SignalOutcomeLifecycle",
     "StrategyStats",
+    "ledger_bytes",
+    "load_ledger_bytes",
     "run_lifecycle",
+    "snapshot_ledger",
     "strategy_stats",
 ]

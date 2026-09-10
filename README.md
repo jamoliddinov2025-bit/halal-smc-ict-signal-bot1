@@ -2003,6 +2003,22 @@ loop, delivery integration, fleet orchestration, backtest identity, or new
 outcome semantics, and it is proven equivalent to the manual Phase 26A bridge
 across WIN, LOSS, BREAKEVEN, mixed, and open-only histories.
 
+Phase 26C adds the deterministic ledger snapshot and restore layer
+(``LedgerSnapshot``, ``snapshot_ledger``, ``ledger_bytes``,
+``load_ledger_bytes``, ``RestoredAnalyticsLedger``) in the same
+downstream-only leaf. It projects the observer's public read views into
+canonical, content-addressed bytes through the existing evidence canon (no
+second serialization convention) and restores them through the actual frozen
+model constructors, so load-time validation is the frozen Phase 18/26A
+validation itself. The embedded snapshot identity is always recomputed on
+load and never trusted; tampered, truncated, or malformed bytes are rejected.
+The phase is bytes only — no file, database, network, clock, scheduler, or
+run loop; writing bytes to storage belongs to a future phase. Restored
+ledgers are read-only historical facts: they accept no new observations, no
+new finals, and no frames, and they resume no evaluator; evaluator
+continuation after a restart remains a future phase by design. Delivery state
+never participates.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.

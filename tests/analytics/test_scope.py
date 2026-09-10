@@ -50,7 +50,15 @@ def _dotted(node: ast.AST) -> str:
 
 
 def test_analytics_imports_only_analysis_records_and_stdlib() -> None:
-    stdlib_modules = {"__future__", "collections", "dataclasses", "decimal", "hashlib"}
+    stdlib_modules = {
+        "__future__",
+        "collections",
+        "dataclasses",
+        "datetime",
+        "decimal",
+        "hashlib",
+        "json",
+    }
     for name, tree in _trees():
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):

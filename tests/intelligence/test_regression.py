@@ -269,6 +269,13 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # arithmetic, no evaluation rule, and no statistic of its own, and it
         # adds no persistence, clock, network, delivery, or fleet capability.
         "src/smcsignal/analytics/lifecycle.py",
+        # Phase 26C approved the deterministic ledger snapshot and restore
+        # layer. It projects the observer's public read views into canonical,
+        # content-addressed bytes through the existing evidence canon and
+        # restores them through the frozen model constructors. Bytes only: no
+        # file, database, network, clock, or scheduler; restored ledgers are
+        # read-only historical facts; evaluator resume remains a future phase.
+        "src/smcsignal/analytics/ledger.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed
