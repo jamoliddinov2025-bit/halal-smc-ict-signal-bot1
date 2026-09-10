@@ -1,9 +1,11 @@
-# Phase 26A: analytics connection to the real signal pipeline
+# Analytics connection to the real signal pipeline (Phase 26A/26B)
 
 Phase 26A connects the existing Phase 18 outcome-analytics foundation to the
 real signal publication path. It adds no second pipeline, no demo engine, and
 no new outcome semantics: it attaches a strictly downstream observer at the
-exact point where real signals are already published.
+exact point where real signals are already published. Phase 26B closes the
+loop with a deterministic lifecycle composition; both remain one downstream-only
+leaf (`smcsignal.analytics`) that nothing upstream imports.
 
 ## The real connection point
 
@@ -57,6 +59,43 @@ expire, and contribute only to open counts.
 no API accepting a delivery record, and the test suite pins both facts. A
 ``DELIVERED`` Telegram receipt can therefore never produce a ``WIN`` (or any
 other outcome), and a ``FAILED`` receipt can never produce a ``LOSS``.
+
+## Phase 26B: the deterministic outcome lifecycle
+
+``SignalOutcomeLifecycle`` removes the manual bridge between publication
+observation and market evaluation. It is pure composition of the frozen
+pieces — it owns no outcome arithmetic, no evaluation rule, and no statistic
+of its own. For each real engine frame of one series, in order:
+
+1. ``OutcomeTrackingAnalyzer.update()`` validates and consumes the frame,
+   evaluates open outcomes against the newly closed candle, and finalizes at
+   exactly the horizon (unchanged Phase 18 machinery).
+2. ``AnalyticsObserver.observe()`` records the publication fact and opens the
+   initial OPEN outcome.
+3. Each ``completed`` final is forwarded to ``record_finalized()`` into the
+   single authoritative ledger feeding ``StrategyStats`` and the UTC
+   ``MonthlyReport``.
+
+Evaluate-first ordering is atomic: an out-of-order or replayed frame raises
+inside the frozen Phase 18 evaluator before any ledger state changes, matching
+the Phase 18 "rejected atomically" discipline. Observe-before-finalize stays
+structural: a BUY published at frame ``i`` can finalize no earlier than frame
+``i + horizon_bars`` (``horizon_bars >= 1``), so its publication fact is
+always recorded strictly before any final for it exists. No final ever
+references a candle after the consumed frame — no look-ahead enters through
+the composition. Finals reach the ledger exactly once: Phase 18 finalizes each
+outcome exactly once at the horizon and the observer is idempotent per outcome
+identity.
+
+One lifecycle describes exactly one series: it requires a fresh observer and a
+fresh evaluator sharing one configuration, so its ledger can never mix series
+or inherit untracked finals. Multiple series mean multiple lifecycles composed
+by the caller — no fleet orchestration exists here. The lifecycle adds no
+persistence, clock, network, scheduler, run loop, delivery integration,
+backtest identity, or new outcome semantics. It is proven equivalent to the
+manual Phase 26A bridge (identical OPEN observations, finalized outcomes,
+strategy statistics, and monthly reports) across WIN, LOSS, BREAKEVEN, mixed,
+and open-only histories.
 
 ## Guarantees
 

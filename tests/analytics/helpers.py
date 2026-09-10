@@ -8,6 +8,7 @@ the existing outcome-tracking suite.
 """
 
 from smcsignal.analysis.halal_filter import HalalFilterConfig, analyze_halal
+from smcsignal.analysis.outcome_tracking import OutcomeTrackingAnalyzer, OutcomeTrackingConfig
 from smcsignal.analysis.setup_quality import SetupQualityConfig, analyze_setup_quality
 from smcsignal.analysis.signal_eligibility import (
     SignalEligibilityConfig,
@@ -55,10 +56,32 @@ def buy_frames(frames) -> tuple:
     return tuple(frame for frame in frames if frame.status is SignalStatus.BUY_SIGNAL)
 
 
+def manual_bridge(frames, config=None):
+    """The Phase 26A hand-rolled bridge (reference path A for equivalence).
+
+    Drives the observer and a separate Phase 18 evaluator over the same frames
+    and forwards completed finals by hand — exactly what Phase 26A tests did
+    before Phase 26B composed the loop.
+    """
+
+    settings = config if config is not None else OutcomeTrackingConfig()
+    observer = AnalyticsObserver(settings)
+    tracker = OutcomeTrackingAnalyzer(settings)
+    steps: list = []
+    for frame in frames:
+        observation = observer.observe(frame)
+        snapshot = tracker.update(frame)
+        for record in snapshot.completed:
+            observer.record_finalized(record)
+        steps.append((observation, snapshot))
+    return observer, tracker, tuple(steps)
+
+
 __all__ = [
     "buy_frames",
     "candles_for",
     "eligibility_chain",
+    "manual_bridge",
     "observed_engine",
     "publish",
     "real_engine",

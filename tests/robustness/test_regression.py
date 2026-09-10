@@ -246,6 +246,13 @@ def test_decision_modules_are_unmodified_since_the_phase20_baseline() -> None:
         "src/smcsignal/analytics/__init__.py",
         "src/smcsignal/analytics/models.py",
         "src/smcsignal/analytics/observer.py",
+        # Phase 26B approved the deterministic outcome-lifecycle composition.
+        # It composes the frozen Phase 26A observer with the frozen Phase 18
+        # evaluator: evaluate, observe, then forward completed finals into the
+        # single authoritative publication ledger. It owns no outcome
+        # arithmetic, no evaluation rule, and no statistic of its own, and it
+        # adds no persistence, clock, network, delivery, or fleet capability.
+        "src/smcsignal/analytics/lifecycle.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

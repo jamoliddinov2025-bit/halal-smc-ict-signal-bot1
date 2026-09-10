@@ -69,7 +69,8 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
 - [Analytics connection methodology](analytics-connection-methodology.md): Phase 26A
   downstream observer at the real Phase 17 publication boundary; one OPEN Phase 18
   outcome per published BUY; market-evaluator-only finalization; delivery state is
-  never a trade outcome; no double counting.
+  never a trade outcome; no double counting; Phase 26B deterministic lifecycle
+  composition (evaluate, observe, finalize) with no new arithmetic.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;

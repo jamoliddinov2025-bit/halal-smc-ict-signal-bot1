@@ -1984,6 +1984,25 @@ stays `OPEN` — never flushed, never expired — until a horizon evaluation
 exists. Analytics never alters signal generation, SMC/ICT logic, halal
 filtering, confidence, delivery, or strategy decisions.
 
+Phase 26B closes the outcome loop with `SignalOutcomeLifecycle` and
+`LifecycleStep` in the same downstream-only `smcsignal.analytics` leaf. The
+lifecycle is pure composition of frozen pieces and owns no arithmetic of its
+own: each real engine frame is first consumed by the unchanged Phase 18
+evaluator (so sequence violations raise atomically before any ledger change),
+then its publication fact is observed, and only then are the evaluator's
+`completed` finals recorded into the single authoritative ledger that feeds
+`StrategyStats` and the UTC `MonthlyReport` through the frozen Phase 18
+`aggregate()`. Per-frame order is pinned — evaluate, observe, finalize — which
+makes observe-before-finalize structural: a BUY published at frame `i` can
+finalize no earlier than frame `i + horizon_bars`, and no final ever
+references a candle after the consumed frame. One lifecycle describes exactly
+one series (a fresh observer and a fresh evaluator sharing one
+configuration); multiple series mean multiple lifecycles composed by the
+caller. The lifecycle adds no persistence, clock, network, scheduler, run
+loop, delivery integration, fleet orchestration, backtest identity, or new
+outcome semantics, and it is proven equivalent to the manual Phase 26A bridge
+across WIN, LOSS, BREAKEVEN, mixed, and open-only histories.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.
