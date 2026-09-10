@@ -83,7 +83,11 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
   history by wrapping the frozen Phase 20 replay, prefix-stable and IO-free;
   Phase 26G single-series ledger session (`smcsignal.sessions`) —
   open-or-recover-and-continue over the frozen arc under an explicitly
-  declared configuration, authorized only by complete snapshot equality.
+  declared configuration, authorized only by complete snapshot equality;
+  Phase 26H deterministic offline composition seam (`smcsignal.runs`) — one
+  declared history run end-to-end into a durable verified session, binding
+  frame generation and outcome evaluation to one configuration; offline
+  composition only, never a live runtime.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;

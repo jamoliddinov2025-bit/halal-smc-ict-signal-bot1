@@ -2099,6 +2099,24 @@ introduces no live trading, execution, exchange, websocket, polling,
 Telegram, database, network persistence, candle persistence, or strategy
 change.
 
+Phase 26H adds the deterministic offline composition seam
+(`smcsignal.runs`: `run_declared_history`) — the arc's offline terminus. One
+declared `ReplayDataset` plus one `BacktestConfiguration` run end-to-end into
+a durable, verified `LedgerSession`: the real Phase 17 publication frames are
+regenerated through the frozen Phase 26F seam and the Phase 26G session opens
+under the same declared configuration's `outcome_tracking` settings — frame
+generation and outcome evaluation can never drift apart. It is deterministic
+offline composition only, not a live runtime: no feed, websocket, exchange,
+polling, scheduler, wall clock, candle acquisition, candle persistence,
+retry, concurrency, locking, process lifecycle, restart supervision,
+delivery, monitoring, fleet, or CLI change exists here, and a future
+live-feed or runtime phase must supply frames through a separate boundary.
+The seam owns no `SeriesFrameSource`, no second coordinator, no state
+machine, and no result model; `series` and `sessions` remain unaware of it,
+`analytics` is reached only through the session seam, and all validation,
+verification, atomicity, and persistence semantics belong to the frozen
+26F/26G machinery.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.

@@ -1,4 +1,4 @@
-# Analytics connection to the real signal pipeline (Phase 26A–26G)
+# Analytics connection to the real signal pipeline (Phase 26A–26H)
 
 Phase 26A connects the existing Phase 18 outcome-analytics foundation to the
 real signal publication path. It adds no second pipeline, no demo engine, and
@@ -10,8 +10,10 @@ ledger snapshotable and restorable as canonical, content-addressed bytes; Phase
 26D persists those bytes durably; Phase 26E turns a persisted snapshot plus the
 series' regenerated frame history back into a verified live lifecycle; Phase
 26F supplies the sanctioned production seam for regenerating that frame
-history itself; and Phase 26G composes all of it into the single-series ledger
-session — open-or-recover, continue, checkpoint.
+history itself; Phase 26G composes all of it into the single-series ledger
+session — open-or-recover, continue, checkpoint; and Phase 26H binds the
+declared-history world to the session world through one deterministic
+offline composition seam.
 
 ## The real connection point
 
@@ -287,6 +289,37 @@ continue.
   fleet, delivery, or monitoring capability exists here — its only IO is the
   Phase 26D store it was given. One session describes one series; no run
   loop, application runtime, or service framework.
+
+## Phase 26H: the deterministic offline composition seam
+
+Phase 26H is the arc's offline terminus (``smcsignal.runs``:
+``run_declared_history``): one declared ``ReplayDataset`` plus one
+``BacktestConfiguration`` run end-to-end into a durable, verified
+``LedgerSession``.
+
+- **One configuration, structurally.** The seam regenerates the real Phase 17
+  publication frames through the frozen Phase 26F seam and opens the Phase
+  26G session under the same declared configuration's ``outcome_tracking``
+  settings. Frame generation and outcome evaluation therefore come from one
+  declared ``BacktestConfiguration`` by construction — the consistency that
+  was previously caller convention is now structure.
+- **Composition, not live infrastructure.** Nothing here is a live runtime:
+  no feed, websocket, exchange, polling, scheduler, wall clock, candle
+  acquisition, candle persistence, retry, concurrency, lock, process
+  lifecycle, or restart supervision. A future live-feed or runtime phase must
+  supply frames through a separate boundary; this package is deliberately not
+  that boundary.
+- **Owns nothing.** The seam owns no ``SeriesFrameSource`` (26F remains a
+  free-standing leaf composed as a value producer), no second coordinator, no
+  state machine, and no result or state model: it returns the Phase 26G
+  session with all provenance and continuation machinery intact. ``series``
+  and ``sessions`` remain unaware of it; ``analytics`` is reached only
+  through the session seam; no cycle exists.
+- **Inherited semantics.** All validation, verification, atomicity, and
+  persistence behavior belongs to the frozen 26F/26G machinery: fresh
+  bootstrap or verified recovery, no store write before successful
+  verification, deterministic repeatable runs. One run describes one series;
+  multiple series mean multiple runs composed by the caller.
 
 ## Guarantees
 

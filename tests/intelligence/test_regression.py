@@ -311,6 +311,14 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # machine, and no IO beyond the store it is given.
         "src/smcsignal/sessions/__init__.py",
         "src/smcsignal/sessions/ledger_session.py",
+        # Phase 26H approved the deterministic offline composition seam: one
+        # function binding the frozen Phase 26F frame-regeneration seam to
+        # the frozen Phase 26G session under one declared configuration, so
+        # frame generation and outcome evaluation can never drift apart. It
+        # is deterministic offline composition only — not a live runtime —
+        # and it owns no frame source, coordinator, state machine, or model.
+        "src/smcsignal/runs/__init__.py",
+        "src/smcsignal/runs/series_run.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed
