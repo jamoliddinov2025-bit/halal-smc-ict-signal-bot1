@@ -2132,6 +2132,24 @@ delivery, or CLI, and never composes a run: restored datasets feed
 `run_declared_history` unchanged, making the offline arc durable
 end-to-end.
 
+Phase 28 makes the declared configuration itself durable
+(`smcsignal.configurations`: `ConfigurationStore`,
+`MemoryConfigurationStore`, `FileConfigurationStore`). The Phase 26E–26H
+restart story still assumed the caller could re-supply the exact
+`BacktestConfiguration` every run — the one declared input that lived only
+in caller memory, TOML examples, or Phase 20 loader calls. Declared
+configurations now persist and restore exactly — serialized through the
+existing evidence canon as the mirror of the frozen Phase 20 configuration
+artifact (every nested pipeline table and the role declarations included),
+reconstructed exclusively through the frozen Phase 3–19 configuration
+constructors, with the embedded content digest recomputed and never
+trusted, under the same key-safety and atomic `os.replace` discipline as
+the Phase 26D/27 stores. The boundary fetches no candle, persists no
+dataset or ledger, binds no keys together, wires no runtime, scheduler,
+monitoring, delivery, or CLI, and never composes a run: restored
+configurations feed `run_declared_history` unchanged, making every input
+of the declared offline run durable.
+
 ## Phase boundary
 
 No session strategy, SELL/SHORT trades, charts, or Telegram is implemented.

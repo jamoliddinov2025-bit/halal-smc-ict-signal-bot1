@@ -327,6 +327,14 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # no configuration, and never composes a run itself.
         "src/smcsignal/datasets/__init__.py",
         "src/smcsignal/datasets/dataset_store.py",
+        # Phase 28 approved the durable declared-configuration store: frozen
+        # BacktestConfiguration values persist and restore through the
+        # existing evidence canon and the frozen configuration constructors,
+        # under the same key-safety and atomicity discipline as Phases 26D/27.
+        # It persists no dataset or ledger, binds no keys together, wires no
+        # runtime, monitoring, delivery, or CLI, and never composes a run.
+        "src/smcsignal/configurations/__init__.py",
+        "src/smcsignal/configurations/configuration_store.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

@@ -93,6 +93,11 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
   canon and the frozen constructors, under the Phase 26D key-safety and
   atomicity discipline; the boundary fetches nothing, persists no
   configuration, and wires no runtime.
+  Phase 28 durable declared-configuration store (`smcsignal.configurations`)
+  — frozen `BacktestConfiguration` values persist and restore exactly
+  through the evidence canon and the frozen configuration constructors,
+  under the same key-safety and atomicity discipline; the boundary persists
+  no dataset or ledger, binds no keys together, and wires no runtime.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;
