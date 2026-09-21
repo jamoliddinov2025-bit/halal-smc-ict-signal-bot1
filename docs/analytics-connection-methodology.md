@@ -346,6 +346,38 @@ this leaf makes durable.
   canon. They do not import analytics, persistence, series, sessions, runs,
   datasets, configurations, delivery, monitoring, data providers, or CLI.
 
+## Phase 30: verified declared-run input materialization
+
+Phase 30 is the input-resolution boundary (`smcsignal.materialization`:
+`materialize_declared_inputs`, `VerifiedRunInputs`). Given a Phase 29 binding
+key and the existing `RunBindingStore`, `DatasetStore`, and
+`ConfigurationStore`, it returns the declared dataset and configuration only
+after verifying that they are still the values the binding declared.
+
+- **Verification, not execution.** The binding is restored through the Phase
+  29 store; the dataset and configuration are loaded through the Phase 27/28
+  stores by the recorded keys; each restored value's canonical identity is read
+  from the document the frozen Phase 27/28 public canon produces for it
+  (`dataset_bytes` → `content_digest`, `configuration_bytes` →
+  `configuration_digest`) and compared with the binding's `dataset_digest` and
+  `configuration_digest`. Phase 30 computes no digest of its own and defines no
+  second identity format.
+- **Fail closed.** A missing binding key, an unrestorable or tampered binding,
+  a missing or corrupt dataset or configuration, a value replaced under its
+  key, or any identity that differs from the binding raises
+  `AnalysisInputError`; nothing partially verified is returned, and a
+  `VerifiedRunInputs` value cannot be constructed around mismatched inputs.
+- **Zero writes.** Materialization only reads the three stores: no document,
+  snapshot, cache, temporary file, `os.replace`, or store `save`. Repeated and
+  restart-equivalent materializations over the same store contents yield equal
+  values and the same identities. Key safety is the existing stores' — keys
+  reach them unmodified.
+- **The caller composes.** The value carries `binding`, `dataset`,
+  `configuration`, and `ledger_key`; the caller passes the last three to the
+  frozen Phase 26H API. Materialization never imports or calls that seam, and
+  it never imports analytics, persistence, series, sessions, runs, delivery,
+  monitoring, data providers, or CLI. Phases 27–29 remain unaware of it.
+
 ## Guarantees
 
 - **Downstream-only.** Nothing upstream imports ``smcsignal.analytics``; the

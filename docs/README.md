@@ -103,6 +103,12 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
   configuration key, and a ledger key, recording the Phase 27 dataset
   `content_digest` and Phase 28 `configuration_digest` at save time; the
   boundary does not execute a run, load the other stores, or wire runtime.
+  Phase 30 verified declared-run input materialization
+  (`smcsignal.materialization`) — one read-only step restores a Phase 29
+  binding, loads the declared dataset and configuration through the existing
+  Phase 27/28 stores, verifies their canonical identities against the
+  binding's pins, and returns one frozen `VerifiedRunInputs`; it writes
+  nothing, defines no document or digest, and never calls the Phase 26H seam.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;

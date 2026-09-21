@@ -344,6 +344,15 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # or executes a run.
         "src/smcsignal/declarations/__init__.py",
         "src/smcsignal/declarations/run_binding.py",
+        # Phase 30 approved verified declared-run input materialization: a
+        # read-only leaf that restores a Phase 29 binding, loads the declared
+        # dataset and configuration through the existing Phase 27/28 stores,
+        # verifies their canonical identities against the binding's pins, and
+        # returns one frozen value. It writes nothing, defines no document or
+        # digest, wires no runtime, monitoring, delivery, or CLI, and never
+        # imports or calls the Phase 26H seam — the caller composes the run.
+        "src/smcsignal/materialization/__init__.py",
+        "src/smcsignal/materialization/declared_inputs.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

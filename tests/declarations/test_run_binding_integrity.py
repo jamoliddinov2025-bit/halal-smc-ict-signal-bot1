@@ -300,8 +300,12 @@ def test_declarations_leaf_imports_only_sanctioned_modules() -> None:
 
 def test_nothing_outside_declarations_imports_declarations() -> None:
     source_root = Path(__file__).resolve().parents[2] / "src" / "smcsignal"
+    # Phase 30 approved exactly one downstream consumer: the read-only
+    # materialization leaf restores a binding and verifies the declared
+    # dataset and configuration against its pins; it never saves a binding.
+    approved_consumer = source_root / "materialization" / "declared_inputs.py"
     for path in sorted(source_root.rglob("*.py")):
-        if path.is_relative_to(DECLARATIONS_ROOT):
+        if path.is_relative_to(DECLARATIONS_ROOT) or path == approved_consumer:
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
