@@ -347,6 +347,33 @@ def test_decision_modules_are_unmodified_since_the_phase20_baseline() -> None:
         # or CLI.
         "src/smcsignal/composition/__init__.py",
         "src/smcsignal/composition/verified_run.py",
+        # Phase 33 approved the live signal-service boundary: a polling
+        # coordinator that wraps the existing public Binance provider, composes
+        # the frozen Phase 3-17 public analyzers in the replay order, and hands
+        # each published SignalSnapshot to the existing downstream seams (the
+        # Phase 26G ledger session and the Phase 24 Telegram delivery
+        # integration). It adds no analyzer, threshold, renderer, transport,
+        # ledger, or trading/execution surface and never touches the offline
+        # replay path (Phase 20 replay, 26F, 26H, 27-31 remain unaware of it).
+        "src/smcsignal/live/__init__.py",
+        "src/smcsignal/live/config.py",
+        "src/smcsignal/live/configuration_binding.py",  # Phase 35B
+        "src/smcsignal/live/gap.py",  # Phase 35C
+        "src/smcsignal/live/gap_aware_feed.py",  # Phase 35C
+        "src/smcsignal/live/gap_aware_service.py",  # Phase 35C
+        "src/smcsignal/live/market_feed.py",
+        "src/smcsignal/live/poll_loop_retry_after.py",  # Phase 35C remediation
+        "src/smcsignal/live/retry_after.py",  # Phase 35C
+        "src/smcsignal/live/runtime.py",
+        "src/smcsignal/live/service.py",
+        # Phase 35A approved the operator-grade poll loop above the Phase 33
+        # service: a clock-driven candle-boundary scheduler with bounded jitter,
+        # capped exponential backoff for recoverable feed/provider failures,
+        # fatal stop-and-surface for everything else, and an interruptible
+        # stop request. It calls only the public LiveService.run_cycle(), owns
+        # no analyzer, ledger, persistence, transport, or trading/execution
+        # surface, and leaves every frozen module and the offline path untouched.
+        "src/smcsignal/live/poll_loop.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed
