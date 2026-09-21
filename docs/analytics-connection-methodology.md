@@ -378,6 +378,37 @@ after verifying that they are still the values the binding declared.
   it never imports analytics, persistence, series, sessions, runs, delivery,
   monitoring, data providers, or CLI. Phases 27–29 remain unaware of it.
 
+## Phase 31: the verified-run composition boundary
+
+Phase 31 is the thin composition boundary between Phase 30's verified value
+and Phase 26H's call (`smcsignal.composition`: `execute_verified_run`). Given
+an already-verified `VerifiedRunInputs` and a caller-supplied existing
+`LedgerStore`, it calls `run_declared_history(inputs.dataset,
+inputs.configuration, store, inputs.ledger_key)` exactly once and returns the
+resulting `LedgerSession` unchanged.
+
+- **Delegation, not execution machinery.** Frame regeneration, session
+  opening, fresh bootstrap, verified recovery, atomicity, and the one approved
+  open-time persistence write remain the frozen Phase 26F/26G machinery's,
+  reached only through the unchanged Phase 26H seam. Nothing is duplicated,
+  retried, defaulted, or wrapped, and every exception the seam raises
+  propagates unchanged.
+- **Phase 30 stays authoritative.** The adapter refuses anything that is not a
+  `VerifiedRunInputs` before the seam is reached, and it derives no identity of
+  its own: the Phase 30 constructor is the verification, so the only values
+  that can execute here are ones whose dataset and configuration matched their
+  binding's pins.
+- **Nothing reloaded, nothing written.** The Phase 27/28/29 stores are never
+  touched, so nothing can be substituted between verification and execution;
+  the only IO in the whole call is the caller's Phase 26D store, exactly as
+  Phase 26H already channels it. No document, format, digest, key scheme,
+  temporary file, cache, or store is introduced.
+- **One-way direction.** `composition` imports only `materialization`, `runs`,
+  the `persistence` store protocol, the `sessions` result type, and the
+  analysis errors. Nothing imports it back; Phases 26H and 27–30 remain
+  unaware of it; no runtime, scheduler, delivery, monitoring, CLI, exchange, or
+  trading capability exists here.
+
 ## Guarantees
 
 - **Downstream-only.** Nothing upstream imports ``smcsignal.analytics``; the

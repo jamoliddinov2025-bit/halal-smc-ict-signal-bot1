@@ -109,6 +109,13 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
   Phase 27/28 stores, verifies their canonical identities against the
   binding's pins, and returns one frozen `VerifiedRunInputs`; it writes
   nothing, defines no document or digest, and never calls the Phase 26H seam.
+  Phase 31 verified-run composition boundary (`smcsignal.composition`) — one
+  explicit adapter, `execute_verified_run`, accepts an already-verified
+  `VerifiedRunInputs` and a caller-supplied existing `LedgerStore` and calls
+  the frozen Phase 26H seam exactly once with the verified dataset,
+  configuration, and declared ledger key, returning its `LedgerSession`
+  unchanged; it reloads nothing, re-verifies nothing, duplicates nothing,
+  writes nothing itself, and wires no runtime.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;

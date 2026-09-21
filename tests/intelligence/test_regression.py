@@ -353,6 +353,16 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # imports or calls the Phase 26H seam — the caller composes the run.
         "src/smcsignal/materialization/__init__.py",
         "src/smcsignal/materialization/declared_inputs.py",
+        # Phase 31 approved the verified-run composition boundary: one adapter
+        # that accepts an already-verified Phase 30 VerifiedRunInputs and a
+        # caller-supplied existing LedgerStore and calls the frozen Phase 26H
+        # seam exactly once with the verified dataset, configuration, and
+        # declared ledger key, returning its session unchanged. It reloads
+        # nothing, re-verifies nothing, duplicates no 26F/26G/26H machinery,
+        # writes nothing itself, and wires no runtime, monitoring, delivery,
+        # or CLI.
+        "src/smcsignal/composition/__init__.py",
+        "src/smcsignal/composition/verified_run.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

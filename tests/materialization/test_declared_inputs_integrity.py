@@ -795,8 +795,13 @@ def test_production_phase30_defines_no_persistence_format() -> None:
 
 
 def test_nothing_outside_materialization_imports_materialization() -> None:
+    # Phase 31 approved exactly one downstream consumer: the composition
+    # adapter accepts an already-verified ``VerifiedRunInputs`` and hands its
+    # dataset, configuration, and ledger key to the frozen Phase 26H seam; it
+    # never materializes, reloads, or re-verifies anything itself.
+    approved_consumer = SRC_ROOT / "composition" / "verified_run.py"
     for path in sorted(SRC_ROOT.rglob("*.py")):
-        if path.is_relative_to(MATERIALIZATION_ROOT):
+        if path.is_relative_to(MATERIALIZATION_ROOT) or path == approved_consumer:
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for module in _imports(tree):
