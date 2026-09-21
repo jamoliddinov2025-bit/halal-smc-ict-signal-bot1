@@ -210,6 +210,7 @@ def test_live_modules_exist_and_offline_seams_do_not_import_them() -> None:
         "gap_aware_service.py",  # Phase 35C: gap-aware service
         "market_feed.py",
         "poll_loop.py",
+        "poll_loop_retry_after.py",  # Phase 35C remediation: Retry-After outside frozen loop
         "retry_after.py",  # Phase 35C: Retry-After parsing
         "runtime.py",
         "service.py",

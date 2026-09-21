@@ -1,11 +1,18 @@
-"""Phase 35C: poll loop Retry-After integration."""
+"""Phase 35C: poll loop Retry-After integration.
+
+After remediation, Retry-After handling lives outside frozen poll_loop.py
+in poll_loop_retry_after.py via RetryAfterAwareLivePollLoop.
+"""
 
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from smcsignal.live import LiveFeedError, LivePollLoop, LivePollLoopConfig
+from smcsignal.live import LiveFeedError, LivePollLoopConfig
+from smcsignal.live.poll_loop_retry_after import RetryAfterAwareLivePollLoop
 from smcsignal.live.retry_after import RateLimitedFeedError
+
+LivePollLoop = RetryAfterAwareLivePollLoop  # alias for additive wrapper
 
 
 class FakeClock:

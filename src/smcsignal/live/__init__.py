@@ -79,6 +79,10 @@ from smcsignal.live.poll_loop import (
     load_poll_loop_config,
     next_poll_time,
 )
+from smcsignal.live.poll_loop_retry_after import (
+    RetryAfterAwareLivePollLoop,
+    RetryAfterAwarePollLoopConfig,
+)
 from smcsignal.live.retry_after import (
     MAX_RETRY_AFTER_SECONDS,
     RateLimitedFeedError,
@@ -131,6 +135,8 @@ __all__ = [
     "PollOutcome",
     "RateLimitedFeedError",
     "RECOVERABLE_ERRORS",
+    "RetryAfterAwareLivePollLoop",
+    "RetryAfterAwarePollLoopConfig",
     "CycleReport",
     "CycleRunner",
     "bind_live_configuration",

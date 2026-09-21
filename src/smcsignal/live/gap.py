@@ -77,9 +77,7 @@ def expected_next_timestamp(last_seen: datetime, timeframe: str) -> datetime:
     return last_seen + timedelta(seconds=interval)
 
 
-def _compute_missing(
-    expected: datetime, actual: datetime, interval_seconds: int
-) -> int:
+def _compute_missing(expected: datetime, actual: datetime, interval_seconds: int) -> int:
     delta = (actual - expected).total_seconds()
     if delta <= 0:
         return 0

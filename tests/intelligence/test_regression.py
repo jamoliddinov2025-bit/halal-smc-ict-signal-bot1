@@ -378,6 +378,7 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         "src/smcsignal/live/gap_aware_feed.py",  # Phase 35C
         "src/smcsignal/live/gap_aware_service.py",  # Phase 35C
         "src/smcsignal/live/market_feed.py",
+        "src/smcsignal/live/poll_loop_retry_after.py",  # Phase 35C remediation
         "src/smcsignal/live/retry_after.py",  # Phase 35C
         "src/smcsignal/live/runtime.py",
         "src/smcsignal/live/service.py",
