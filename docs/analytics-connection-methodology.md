@@ -321,6 +321,31 @@ Phase 26H is the arc's offline terminus (``smcsignal.runs``:
   verification, deterministic repeatable runs. One run describes one series;
   multiple series mean multiple runs composed by the caller.
 
+## Phase 29: the durable declared-run binding
+
+Phase 29 is the run-identity persistence boundary (`smcsignal.declarations`:
+`DeclaredRunBinding`, `RunBindingStore`). Phases 26D, 27, and 28 independently
+persist a ledger, a declared dataset, and a declared configuration; the
+association of those three opaque keys as one declared historical run is what
+this leaf makes durable.
+
+- **References, not copies.** The binding records `dataset_key`,
+  `configuration_key`, and `ledger_key`. It also records the canonical Phase 27
+  dataset identity (`content_digest`, prefix `dataset:`) and the canonical
+  Phase 28 configuration identity (`configuration_digest`, prefix
+  `configuration:`) captured at save time. The ledger identity in the binding
+  *is* the ledger key — Phase 26D remains the sole writer of ledger documents.
+- **No execution.** The leaf does not create a run, session, or lifecycle, and
+  it never calls `run_declared_history`. The caller restores the binding, loads
+  the three existing stores by the recorded keys, and composes through the
+  frozen Phase 26H API.
+- **One canon, same key safety.** Bytes go through the existing evidence canon;
+  the embedded digest is recomputed and never trusted. File writes use sibling
+  temporaries and `os.replace`. Keys follow the closed 26D/27/28 charset.
+- **Leaf isolation.** Declarations import only analysis errors and the evidence
+  canon. They do not import analytics, persistence, series, sessions, runs,
+  datasets, configurations, delivery, monitoring, data providers, or CLI.
+
 ## Guarantees
 
 - **Downstream-only.** Nothing upstream imports ``smcsignal.analytics``; the

@@ -98,6 +98,11 @@ Current scope: **Phase 22 — deterministic strategy-intelligence research repor
   through the evidence canon and the frozen configuration constructors,
   under the same key-safety and atomicity discipline; the boundary persists
   no dataset or ledger, binds no keys together, and wires no runtime.
+  Phase 29 durable declared-run binding (`smcsignal.declarations`) — one
+  frozen `DeclaredRunBinding` durably associates a dataset key, a
+  configuration key, and a ledger key, recording the Phase 27 dataset
+  `content_digest` and Phase 28 `configuration_digest` at save time; the
+  boundary does not execute a run, load the other stores, or wire runtime.
 - [Evidence provenance contract](evidence-provenance-contract.md): approved shared contracts
   now used by actual liquidity/sweep producers; Phase 17 publishes spot
   `BUY_SIGNAL` facts over existing eligibility without SELL, SHORT, or orders;

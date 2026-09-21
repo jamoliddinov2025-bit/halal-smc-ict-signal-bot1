@@ -335,6 +335,15 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # runtime, monitoring, delivery, or CLI, and never composes a run.
         "src/smcsignal/configurations/__init__.py",
         "src/smcsignal/configurations/configuration_store.py",
+        # Phase 29 approved the durable declared-run binding store: one frozen
+        # DeclaredRunBinding records the dataset, configuration, and ledger
+        # keys of a declared historical run plus the Phase 27/28 content
+        # identities captured at save time. It persists no dataset,
+        # configuration table, or ledger bytes, loads none of those stores,
+        # wires no runtime, monitoring, delivery, or CLI, and never composes
+        # or executes a run.
+        "src/smcsignal/declarations/__init__.py",
+        "src/smcsignal/declarations/run_binding.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed
