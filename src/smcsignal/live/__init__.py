@@ -42,6 +42,16 @@ from smcsignal.live.configuration_binding import (
     live_configuration_key,
     live_window_key,
 )
+from smcsignal.live.gap import (
+    GapInfo,
+    LiveGapError,
+    detect_continuity_gap,
+    detect_internal_gap,
+    expected_next_timestamp,
+    validate_batch_contiguity,
+)
+from smcsignal.live.gap_aware_feed import GapAwareLiveMarketFeed
+from smcsignal.live.gap_aware_service import GapAwareLiveService, start_gap_aware_live_service
 from smcsignal.live.market_feed import (
     DEFAULT_RETRY_ATTEMPTS,
     DEFAULT_RETRY_BACKOFF_SECONDS,
@@ -69,6 +79,11 @@ from smcsignal.live.poll_loop import (
     load_poll_loop_config,
     next_poll_time,
 )
+from smcsignal.live.retry_after import (
+    MAX_RETRY_AFTER_SECONDS,
+    RateLimitedFeedError,
+    parse_retry_after,
+)
 from smcsignal.live.runtime import LiveRuntime
 from smcsignal.live.service import (
     DESTINATION_ID,
@@ -93,29 +108,38 @@ __all__ = [
     "DEFAULT_RETRY_ATTEMPTS",
     "DEFAULT_RETRY_BACKOFF_SECONDS",
     "DESTINATION_ID",
+    "GapInfo",
+    "GapAwareLiveMarketFeed",
+    "GapAwareLiveService",
     "LIVE_CONFIGURATION_KEY_PREFIX",
     "LIVE_DATASET_ID",
     "LIVE_VENUE",
     "LIVE_WINDOW_KEY_PREFIX",
-    "RECOVERABLE_ERRORS",
-    "CycleReport",
-    "CycleRunner",
     "LiveConfigurationBinding",
     "LiveConfigurationError",
     "LiveFeedError",
     "LiveFeedUpdate",
+    "LiveGapError",
     "LiveMarketFeed",
     "LivePollLoop",
     "LivePollLoopConfig",
     "LiveRuntime",
     "LiveService",
     "LiveServiceConfig",
+    "MAX_RETRY_AFTER_SECONDS",
     "PollCycleResult",
     "PollOutcome",
+    "RateLimitedFeedError",
+    "RECOVERABLE_ERRORS",
+    "CycleReport",
+    "CycleRunner",
     "bind_live_configuration",
     "build_telegram_delivery",
     "classify_failure",
     "configuration_identity",
+    "detect_continuity_gap",
+    "detect_internal_gap",
+    "expected_next_timestamp",
     "first_new",
     "install_stop_signal_handlers",
     "interval_of",
@@ -124,5 +148,8 @@ __all__ = [
     "load_live_config",
     "load_poll_loop_config",
     "next_poll_time",
+    "parse_retry_after",
+    "start_gap_aware_live_service",
     "start_live_service",
+    "validate_batch_contiguity",
 ]

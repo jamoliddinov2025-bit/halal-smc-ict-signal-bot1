@@ -446,19 +446,22 @@ def test_live_feed_error_is_recoverable_with_exponential_backoff() -> None:
 
 
 @pytest.mark.parametrize(
-    "error",
+    ("error", "expected_backoff"),
     [
-        DataProviderError("transport failed"),
-        ProviderHTTPError(503),
-        RateLimitError(429, "3"),
+        (DataProviderError("transport failed"), 1.0),
+        (ProviderHTTPError(503), 1.0),
+        (
+            RateLimitError(429, "3"),
+            3.0,
+        ),  # Phase 35C: Retry-After respected → max(backoff, retry_after)
     ],
 )
-def test_data_provider_errors_are_recoverable(error: Exception) -> None:
+def test_data_provider_errors_are_recoverable(error: Exception, expected_backoff: float) -> None:
     loop, clock, _ = make_loop([error, report()])
     loop.run(max_cycles=2)
     assert loop.history[0].outcome is PollOutcome.RECOVERABLE_FAILURE
     assert loop.history[1].outcome is PollOutcome.SUCCESS
-    assert clock.sleeps == [898.0, 1.0]
+    assert clock.sleeps == [898.0, expected_backoff]
 
 
 def test_data_validation_error_is_recoverable_at_the_loop_layer() -> None:
@@ -1081,6 +1084,7 @@ def test_poll_loop_imports_only_stdlib_and_sanctioned_public_seams() -> None:
         "smcsignal.data.errors",
         "smcsignal.live.config",
         "smcsignal.live.market_feed",
+        "smcsignal.live.retry_after",
         "smcsignal.live.service",
     }
     for name in imports - project:

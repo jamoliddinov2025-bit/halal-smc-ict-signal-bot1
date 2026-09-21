@@ -71,6 +71,12 @@ from smcsignal.live.config import LiveConfigurationError
 from smcsignal.live.market_feed import LiveFeedError
 from smcsignal.live.service import CycleReport
 
+# Phase 35C: Retry-After support — additive import, no cycle
+try:
+    from smcsignal.live.retry_after import parse_retry_after as _parse_retry_after
+except ImportError:  # pragma: no cover — fallback if module not yet loaded in tests
+    _parse_retry_after = None  # type: ignore[assignment]
+
 DEFAULT_POLL_JITTER_MIN_SECONDS = 1.0
 DEFAULT_POLL_JITTER_MAX_SECONDS = 5.0
 DEFAULT_POLL_BACKOFF_BASE_SECONDS = 1.0
@@ -325,6 +331,62 @@ def _describe(error: BaseException) -> str:
     return f"{type(error).__name__}: {error}"
 
 
+def _extract_retry_after_delay(
+    error: BaseException, *, now: datetime | None = None
+) -> float | None:
+    """Extract server-directed retry delay from exception chain.
+
+    Looks for:
+    - retry_after_seconds: float (already parsed, e.g., RateLimitedFeedError)
+    - retry_after: str (raw header, e.g., ProviderHTTPError/RateLimitError)
+
+    Returns parsed float in [0, MAX] or None if absent/invalid.
+    Never raises — malformed headers are treated as absent.
+
+    Phase 35C: additive helper to honor Retry-After without changing provider
+    semantics; effective delay is max(backoff, retry_after) for rate-limit.
+    """
+
+    seen: set[int] = set()
+    stack: list[BaseException] = [error]
+    while stack:
+        exc = stack.pop()
+        if id(exc) in seen:
+            continue
+        seen.add(id(exc))
+
+        retry_after_seconds = getattr(exc, "retry_after_seconds", None)
+        if isinstance(retry_after_seconds, (int, float)) and not isinstance(
+            retry_after_seconds, bool
+        ):
+            try:
+                val = float(retry_after_seconds)
+                if math.isfinite(val) and val >= 0:
+                    from smcsignal.live.retry_after import MAX_RETRY_AFTER_SECONDS
+
+                    return min(val, float(MAX_RETRY_AFTER_SECONDS))
+            except (ValueError, TypeError):
+                pass
+
+        retry_after_raw = getattr(exc, "retry_after", None)
+        if isinstance(retry_after_raw, str) and _parse_retry_after is not None:
+            try:
+                parsed = _parse_retry_after(retry_after_raw, now=now)
+                if parsed is not None:
+                    return parsed
+            except Exception:
+                pass
+
+        cause = getattr(exc, "__cause__", None)
+        context = getattr(exc, "__context__", None)
+        if isinstance(cause, BaseException):
+            stack.append(cause)
+        if isinstance(context, BaseException):
+            stack.append(context)
+
+    return None
+
+
 def _utc_now() -> datetime:
     return datetime.now(UTC)
 
@@ -370,6 +432,8 @@ class LivePollLoop:
         self._cycles = 0
         self._consecutive_failures = 0
         self._next_poll_at: datetime | None = None
+        # Phase 35C: last server-directed retry delay (Retry-After) if any
+        self._last_retry_after: float | None = None
 
     # -- state exposed for operators and tests ------------------------------------
 
@@ -472,9 +536,16 @@ class LivePollLoop:
                 if failure is None:
                     outcome = PollOutcome.SUCCESS
                     self._consecutive_failures = 0
+                    # Phase 35C: reset server-directed delay on success
+                    self._last_retry_after = None
                 else:
                     outcome = classify_failure(failure)
                     error = _describe(failure)
+                    # Phase 35C: extract Retry-After for rate-limit handling
+                    try:
+                        self._last_retry_after = _extract_retry_after_delay(failure, now=finished)
+                    except Exception:
+                        self._last_retry_after = None
                     if outcome is PollOutcome.RECOVERABLE_FAILURE:
                         self._consecutive_failures += 1
                         budget = self._config.max_consecutive_failures
@@ -547,8 +618,19 @@ class LivePollLoop:
         return target
 
     def _schedule_backoff(self) -> datetime:
-        delay = self._config.backoff_seconds(self._consecutive_failures)
-        target = self._clock() + timedelta(seconds=delay)
+        # Phase 35C: honor server-directed Retry-After as lower bound
+        backoff = self._config.backoff_seconds(self._consecutive_failures)
+        effective = backoff
+        retry_after = getattr(self, "_last_retry_after", None)
+        if isinstance(retry_after, (int, float)) and not isinstance(retry_after, bool):
+            try:
+                ra = float(retry_after)
+                if math.isfinite(ra) and ra >= 0:
+                    # No jitter added to Retry-After wait; effective is max
+                    effective = max(backoff, ra)
+            except (ValueError, TypeError):
+                pass
+        target = self._clock() + timedelta(seconds=effective)
         self._next_poll_at = target
         return target
 

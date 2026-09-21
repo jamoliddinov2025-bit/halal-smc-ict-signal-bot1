@@ -135,10 +135,13 @@ def test_only_the_live_service_consumes_the_dataset_store() -> None:
     runtime, and the Phase 35A poll loop stay persistence-free.
     Phase 35B adds ``configuration_binding.py`` as an approved consumer: it
     checks for the persisted live window without persisting one itself.
+    Phase 35C adds ``gap_aware_service.py`` as an approved consumer: it
+    persists the window exactly like the frozen service, but with gap checks.
     """
 
     # Phase 35B: configuration_binding.py is an approved DatasetStore consumer.
-    approved = {"service.py", "configuration_binding.py"}
+    # Phase 35C: gap_aware_service.py is an approved DatasetStore consumer.
+    approved = {"service.py", "configuration_binding.py", "gap_aware_service.py"}
     offenders: list[str] = []
     for path in python_files(LIVE):
         if path.name in approved:
@@ -195,14 +198,19 @@ def test_live_introduces_no_second_telegram_transport() -> None:
 
 
 def test_live_modules_exist_and_offline_seams_do_not_import_them() -> None:
-    # The exact Phase 33 module set plus the Phase 35A poll loop and the
-    # Phase 35B configuration binding exists; nothing else was added under live/.
+    # The exact Phase 33 module set plus the Phase 35A poll loop, the Phase 35B
+    # configuration binding, and the Phase 35C gap + Retry-After seams exists;
+    # nothing else was added under live/.
     expected = {
         "__init__.py",
         "config.py",
         "configuration_binding.py",  # Phase 35B: declared-configuration binding
+        "gap.py",  # Phase 35C: gap detection
+        "gap_aware_feed.py",  # Phase 35C: gap-aware feed
+        "gap_aware_service.py",  # Phase 35C: gap-aware service
         "market_feed.py",
         "poll_loop.py",
+        "retry_after.py",  # Phase 35C: Retry-After parsing
         "runtime.py",
         "service.py",
     }

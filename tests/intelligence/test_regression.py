@@ -374,7 +374,11 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         "src/smcsignal/live/__init__.py",
         "src/smcsignal/live/config.py",
         "src/smcsignal/live/configuration_binding.py",  # Phase 35B
+        "src/smcsignal/live/gap.py",  # Phase 35C
+        "src/smcsignal/live/gap_aware_feed.py",  # Phase 35C
+        "src/smcsignal/live/gap_aware_service.py",  # Phase 35C
         "src/smcsignal/live/market_feed.py",
+        "src/smcsignal/live/retry_after.py",  # Phase 35C
         "src/smcsignal/live/runtime.py",
         "src/smcsignal/live/service.py",
         # Phase 35A approved the operator-grade poll loop above the Phase 33
