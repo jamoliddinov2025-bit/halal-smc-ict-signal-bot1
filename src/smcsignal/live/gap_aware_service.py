@@ -46,6 +46,7 @@ from smcsignal.live.gap import (
 from smcsignal.live.gap_aware_feed import GapAwareLiveMarketFeed
 from smcsignal.live.market_feed import LiveMarketFeed
 from smcsignal.live.runtime import LiveRuntime
+from smcsignal.live.service import CycleReport
 from smcsignal.persistence import LedgerStore
 from smcsignal.sessions import LedgerSession, open_ledger_session
 
@@ -156,7 +157,7 @@ class GapAwareLiveService:
     def primary_window(self) -> tuple[OHLCV, ...]:
         return tuple(self._primary_window)
 
-    def run_cycle(self):
+    def run_cycle(self) -> CycleReport:
         """Poll, validate gaps, then extend chain — fail closed on gap."""
 
         # Poll — feed itself may raise LiveGapError or RateLimitedFeedError
@@ -272,7 +273,7 @@ def build_telegram_delivery(
     transport: HttpTransport | None = None,
     sleep_fn: Callable[[float], None] | None = None,
     now_fn: Callable[[], float] | None = None,
-):
+) -> TelegramDeliveryIntegration:
     """Reuse frozen build_telegram_delivery from service.py to avoid duplication."""
 
     from smcsignal.live.service import build_telegram_delivery as frozen_build

@@ -19,8 +19,10 @@ The feed remains deterministic and IO-free aside from the injected transport.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from datetime import datetime
 
+from smcsignal.data.binance import BinancePublicDataProvider, JsonTransport
 from smcsignal.data.config import MarketDataConfig
 from smcsignal.data.errors import (
     DataProviderError,
@@ -28,7 +30,7 @@ from smcsignal.data.errors import (
     ProviderHTTPError,
     RateLimitError,
 )
-from smcsignal.data.models import OHLCVBatch
+from smcsignal.data.models import OHLCV, OHLCVBatch
 from smcsignal.live.gap import LiveGapError, detect_continuity_gap, detect_internal_gap
 from smcsignal.live.market_feed import LiveMarketFeed
 from smcsignal.live.retry_after import RateLimitedFeedError, parse_retry_after
@@ -50,9 +52,9 @@ class GapAwareLiveMarketFeed(LiveMarketFeed):
         config: MarketDataConfig,
         *,
         higher_timeframes: Sequence[str] = (),
-        transport=None,
-        clock=None,
-        sleep_fn=None,
+        transport: JsonTransport | None = None,
+        clock: Callable[[], datetime] | None = None,
+        sleep_fn: Callable[[float], None] | None = None,
         retry_attempts: int = 3,
         retry_backoff_seconds: float = 1.0,
     ) -> None:
@@ -66,7 +68,7 @@ class GapAwareLiveMarketFeed(LiveMarketFeed):
             retry_backoff_seconds=retry_backoff_seconds,
         )
 
-    def _fetch_with_retry(self, provider) -> OHLCVBatch:
+    def _fetch_with_retry(self, provider: BinancePublicDataProvider) -> OHLCVBatch:
         """Override to preserve Retry-After and not retry rate-limit errors."""
 
         last: Exception | None = None
@@ -141,7 +143,7 @@ class GapAwareLiveMarketFeed(LiveMarketFeed):
             f"market data provider failed after {self._retry_attempts} attempts: {last}"
         ) from last
 
-    def _fetch_new(self, timeframe: str):
+    def _fetch_new(self, timeframe: str) -> tuple[OHLCV, ...]:
         """Override to add gap detection after cursor filtering."""
 
         cursor = self._cursors[timeframe]

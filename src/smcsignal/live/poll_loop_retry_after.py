@@ -30,13 +30,18 @@ from smcsignal.live.poll_loop import (
     CycleRunner,
     LivePollLoop,
     LivePollLoopConfig,
+    PollCycleResult,
 )
 from smcsignal.live.retry_after import (
     MAX_RETRY_AFTER_SECONDS,
     parse_retry_after,
 )
+from smcsignal.live.service import CycleReport
 
 Clock = Callable[[], datetime]
+SleepFn = Callable[[float], None]
+RandomSource = Callable[[], float]
+OnCycle = Callable[[PollCycleResult], None]
 
 
 def _extract_retry_after_delay(
@@ -94,7 +99,7 @@ class RetryAfterAwarePollLoopConfig(LivePollLoopConfig):
     backoff_seconds returns max(base, holder[0]) when holder contains valid delay.
     """
 
-    _retry_after_holder: list = field(
+    _retry_after_holder: list[float | None] = field(
         default_factory=lambda: [None], init=False, repr=False, compare=False
     )
 
@@ -131,14 +136,14 @@ class RetryAfterAwareRunner:
     def __init__(
         self,
         runner: CycleRunner,
-        holder: list,
+        holder: list[float | None],
         clock: Clock | None = None,
     ) -> None:
         self._runner = runner
         self._holder = holder
         self._clock = clock
 
-    def run_cycle(self):
+    def run_cycle(self) -> CycleReport:
         try:
             result = self._runner.run_cycle()
             # success → clear holder
@@ -187,12 +192,12 @@ class RetryAfterAwareLivePollLoop(LivePollLoop):
         config: LivePollLoopConfig,
         *,
         clock: Clock | None = None,
-        sleep_fn=None,
-        random_source=None,
-        on_cycle=None,
+        sleep_fn: SleepFn | None = None,
+        random_source: RandomSource | None = None,
+        on_cycle: OnCycle | None = None,
         history_limit: int = 256,
     ) -> None:
-        holder: list = [None]
+        holder: list[float | None] = [None]
 
         # Build retry-aware config from base config values
         # Preserve all validated fields, add holder
