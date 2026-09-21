@@ -132,7 +132,7 @@ def test_only_the_live_service_consumes_the_dataset_store() -> None:
 
     Inside the live package, only ``service.py`` may touch the Phase 27
     dataset store (the candle-window persistence boundary); the feed, config,
-    and runtime stay persistence-free.
+    runtime, and the Phase 35A poll loop stay persistence-free.
     """
 
     offenders: list[str] = []
@@ -191,11 +191,13 @@ def test_live_introduces_no_second_telegram_transport() -> None:
 
 
 def test_live_modules_exist_and_offline_seams_do_not_import_them() -> None:
-    # The exact Phase 33 module set exists; nothing else was added under live/.
+    # The exact Phase 33 module set plus the Phase 35A poll loop exists; nothing
+    # else was added under live/.
     expected = {
         "__init__.py",
         "config.py",
         "market_feed.py",
+        "poll_loop.py",
         "runtime.py",
         "service.py",
     }

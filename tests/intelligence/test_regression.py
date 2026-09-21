@@ -376,6 +376,14 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         "src/smcsignal/live/market_feed.py",
         "src/smcsignal/live/runtime.py",
         "src/smcsignal/live/service.py",
+        # Phase 35A approved the operator-grade poll loop above the Phase 33
+        # service: a clock-driven candle-boundary scheduler with bounded jitter,
+        # capped exponential backoff for recoverable feed/provider failures,
+        # fatal stop-and-surface for everything else, and an interruptible
+        # stop request. It calls only the public LiveService.run_cycle(), owns
+        # no analyzer, ledger, persistence, transport, or trading/execution
+        # surface, and leaves every frozen module and the offline path untouched.
+        "src/smcsignal/live/poll_loop.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

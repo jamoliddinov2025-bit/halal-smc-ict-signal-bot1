@@ -1,4 +1,4 @@
-"""Phase 33 public API: the live signal service boundary (delivery-only, additive).
+"""Phase 33/35A public API: the live signal service boundary (delivery-only, additive).
 
 The live package composes existing frozen seams into one polling service:
 
@@ -8,11 +8,21 @@ The live package composes existing frozen seams into one polling service:
                 ├→ LedgerSession (existing Phase 26B/26G/26D outcome path)
                 └→ TelegramDeliveryIntegration (existing Phase 24 delivery)
 
+Phase 35A adds the operator-grade driver above that service — nothing inside it:
+
+    LivePollLoop: clock → candle-boundary scheduler → bounded jitter
+        → LiveService.run_cycle()
+            success     → next absolute candle boundary
+            recoverable → capped exponential backoff
+            fatal       → stop and surface
+        stop request → finish the current synchronous operation → exit cleanly
+
 It introduces no trading, order, position, sizing, broker, or execution
 capability; it does not modify the offline research path (``HistoricalReplay``,
 Phase 26H, Phase 24, or any analysis module); it never imports a private
 offline helper. Importing this package performs no IO, network call, signal
-generation, or delivery — construction and explicit ``run_cycle`` calls do.
+generation, or delivery — construction and explicit ``run_cycle``/``run``
+calls do.
 """
 
 from smcsignal.live.config import (
@@ -32,6 +42,24 @@ from smcsignal.live.market_feed import (
     first_new,
     interval_of,
 )
+from smcsignal.live.poll_loop import (
+    DEFAULT_POLL_BACKOFF_BASE_SECONDS,
+    DEFAULT_POLL_BACKOFF_MAX_SECONDS,
+    DEFAULT_POLL_HISTORY_LIMIT,
+    DEFAULT_POLL_JITTER_MAX_SECONDS,
+    DEFAULT_POLL_JITTER_MIN_SECONDS,
+    DEFAULT_POLL_WAIT_CHUNK_SECONDS,
+    RECOVERABLE_ERRORS,
+    CycleRunner,
+    LivePollLoop,
+    LivePollLoopConfig,
+    PollCycleResult,
+    PollOutcome,
+    classify_failure,
+    install_stop_signal_handlers,
+    load_poll_loop_config,
+    next_poll_time,
+)
 from smcsignal.live.runtime import LiveRuntime
 from smcsignal.live.service import (
     DESTINATION_ID,
@@ -46,23 +74,39 @@ from smcsignal.live.service import (
 __all__ = [
     "DEFAULT_HISTORY_LIMIT",
     "DEFAULT_HIGHER_TIMEFRAMES",
+    "DEFAULT_POLL_BACKOFF_BASE_SECONDS",
+    "DEFAULT_POLL_BACKOFF_MAX_SECONDS",
+    "DEFAULT_POLL_HISTORY_LIMIT",
+    "DEFAULT_POLL_JITTER_MAX_SECONDS",
+    "DEFAULT_POLL_JITTER_MIN_SECONDS",
+    "DEFAULT_POLL_WAIT_CHUNK_SECONDS",
     "DEFAULT_PROVIDER",
     "DEFAULT_RETRY_ATTEMPTS",
     "DEFAULT_RETRY_BACKOFF_SECONDS",
     "DESTINATION_ID",
     "LIVE_DATASET_ID",
     "LIVE_VENUE",
+    "RECOVERABLE_ERRORS",
     "CycleReport",
+    "CycleRunner",
     "LiveConfigurationError",
     "LiveFeedError",
     "LiveFeedUpdate",
     "LiveMarketFeed",
+    "LivePollLoop",
+    "LivePollLoopConfig",
     "LiveRuntime",
     "LiveService",
     "LiveServiceConfig",
+    "PollCycleResult",
+    "PollOutcome",
     "build_telegram_delivery",
+    "classify_failure",
     "first_new",
+    "install_stop_signal_handlers",
     "interval_of",
     "load_live_config",
+    "load_poll_loop_config",
+    "next_poll_time",
     "start_live_service",
 ]
