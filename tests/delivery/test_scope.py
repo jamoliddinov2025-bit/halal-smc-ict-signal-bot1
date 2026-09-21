@@ -84,9 +84,14 @@ def test_delivery_public_api_has_no_trading_or_governance_surface() -> None:
 
 
 def test_no_earlier_phase_module_imports_delivery() -> None:
+    # Phase 33 approved exactly one downstream consumer outside this package:
+    # the live service boundary (smcsignal.live), which exists to hand
+    # already-published signal frames to the delivery layer. Every
+    # earlier-phase module stays delivery-free.
+    live_root = SRC / "live"
     offenders: list[str] = []
     for path in SRC.rglob("*.py"):
-        if DELIVERY in path.parents:
+        if DELIVERY in path.parents or live_root in path.parents:
             continue
         for dotted in _module_imports(path):
             if dotted == "smcsignal.delivery" or dotted.startswith("smcsignal.delivery."):

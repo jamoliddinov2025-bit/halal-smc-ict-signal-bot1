@@ -283,12 +283,18 @@ def test_datasets_leaf_imports_only_sanctioned_modules() -> None:
 
 def test_nothing_outside_datasets_imports_datasets() -> None:
     source_root = Path(__file__).resolve().parents[2] / "src" / "smcsignal"
-    # Phase 30 approved exactly one downstream consumer: the read-only
-    # materialization leaf loads declared datasets by the key a Phase 29
-    # binding records and verifies their identity; it never saves one.
-    approved_consumer = source_root / "materialization" / "declared_inputs.py"
+    # Phase 30 approved the read-only materialization leaf: it loads declared
+    # datasets by the key a Phase 29 binding records and verifies their
+    # identity; it never saves one.
+    # Phase 33 approved the live service boundary: it persists and restores
+    # its own candle window as an exact ReplayDataset under a live key so a
+    # restart reconstructs the identical deterministic analysis state.
+    approved_consumers = {
+        source_root / "materialization" / "declared_inputs.py",
+        source_root / "live" / "service.py",
+    }
     for path in sorted(source_root.rglob("*.py")):
-        if path.is_relative_to(DATASETS_ROOT) or path == approved_consumer:
+        if path.is_relative_to(DATASETS_ROOT) or path in approved_consumers:
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):

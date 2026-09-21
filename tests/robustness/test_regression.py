@@ -347,6 +347,19 @@ def test_decision_modules_are_unmodified_since_the_phase20_baseline() -> None:
         # or CLI.
         "src/smcsignal/composition/__init__.py",
         "src/smcsignal/composition/verified_run.py",
+        # Phase 33 approved the live signal-service boundary: a polling
+        # coordinator that wraps the existing public Binance provider, composes
+        # the frozen Phase 3-17 public analyzers in the replay order, and hands
+        # each published SignalSnapshot to the existing downstream seams (the
+        # Phase 26G ledger session and the Phase 24 Telegram delivery
+        # integration). It adds no analyzer, threshold, renderer, transport,
+        # ledger, or trading/execution surface and never touches the offline
+        # replay path (Phase 20 replay, 26F, 26H, 27-31 remain unaware of it).
+        "src/smcsignal/live/__init__.py",
+        "src/smcsignal/live/config.py",
+        "src/smcsignal/live/market_feed.py",
+        "src/smcsignal/live/runtime.py",
+        "src/smcsignal/live/service.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed
