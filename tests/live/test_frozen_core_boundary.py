@@ -196,6 +196,7 @@ def test_live_modules_exist_and_offline_seams_do_not_import_them() -> None:
         "__init__.py",
         "config.py",
         "market_feed.py",
+        "poll_loop.py",  # Phase 35A: operator-grade scheduling over run_cycle()
         "runtime.py",
         "service.py",
     }

@@ -376,6 +376,12 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         "src/smcsignal/live/market_feed.py",
         "src/smcsignal/live/runtime.py",
         "src/smcsignal/live/service.py",
+        # Phase 35A approved the operator-grade poll loop: a scheduling-only
+        # module that aligns run_cycle() calls to absolute candle boundaries
+        # with bounded jitter and capped exponential backoff. It imports no
+        # analysis engine, no Telegram transport, and no network client, holds
+        # no persistent state, and adds no trading/execution surface.
+        "src/smcsignal/live/poll_loop.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed

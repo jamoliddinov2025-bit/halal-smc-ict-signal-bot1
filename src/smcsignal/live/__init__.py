@@ -32,6 +32,20 @@ from smcsignal.live.market_feed import (
     first_new,
     interval_of,
 )
+from smcsignal.live.poll_loop import (
+    DEFAULT_BACKOFF_BASE_SECONDS,
+    DEFAULT_BACKOFF_MAX_SECONDS,
+    DEFAULT_POLL_JITTER_SECONDS,
+    DEFAULT_SLEEP_CHUNK_SECONDS,
+    LivePollLoop,
+    LivePollLoopConfig,
+    LivePollLoopError,
+    PollCycleResult,
+    PollOutcome,
+    load_poll_loop_config,
+    next_poll_time,
+    request_stop_on_signals,
+)
 from smcsignal.live.runtime import LiveRuntime
 from smcsignal.live.service import (
     DESTINATION_ID,
@@ -44,11 +58,15 @@ from smcsignal.live.service import (
 )
 
 __all__ = [
+    "DEFAULT_BACKOFF_BASE_SECONDS",
+    "DEFAULT_BACKOFF_MAX_SECONDS",
     "DEFAULT_HISTORY_LIMIT",
     "DEFAULT_HIGHER_TIMEFRAMES",
+    "DEFAULT_POLL_JITTER_SECONDS",
     "DEFAULT_PROVIDER",
     "DEFAULT_RETRY_ATTEMPTS",
     "DEFAULT_RETRY_BACKOFF_SECONDS",
+    "DEFAULT_SLEEP_CHUNK_SECONDS",
     "DESTINATION_ID",
     "LIVE_DATASET_ID",
     "LIVE_VENUE",
@@ -57,12 +75,20 @@ __all__ = [
     "LiveFeedError",
     "LiveFeedUpdate",
     "LiveMarketFeed",
+    "LivePollLoop",
+    "LivePollLoopConfig",
+    "LivePollLoopError",
     "LiveRuntime",
     "LiveService",
     "LiveServiceConfig",
+    "PollCycleResult",
+    "PollOutcome",
     "build_telegram_delivery",
     "first_new",
     "interval_of",
     "load_live_config",
+    "load_poll_loop_config",
+    "next_poll_time",
+    "request_stop_on_signals",
     "start_live_service",
 ]
