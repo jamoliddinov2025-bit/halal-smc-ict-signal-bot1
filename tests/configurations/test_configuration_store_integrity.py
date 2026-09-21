@@ -419,9 +419,16 @@ def test_nothing_outside_configurations_imports_configurations() -> None:
     # Phase 30 approved exactly one downstream consumer: the read-only
     # materialization leaf loads declared configurations by the key a Phase
     # 29 binding records and verifies their identity; it never saves one.
-    approved_consumer = source_root / "materialization" / "declared_inputs.py"
+    # Phase 35B approved the live configuration-binding seam: it binds the
+    # persisted live window to the exact declared BacktestConfiguration
+    # identity using the existing Phase 28 store — no second canon, no second
+    # store, no new format.
+    approved_consumers = {
+        source_root / "materialization" / "declared_inputs.py",
+        source_root / "live" / "configuration_binding.py",  # Phase 35B
+    }
     for path in sorted(source_root.rglob("*.py")):
-        if path.is_relative_to(CONFIGURATIONS_ROOT) or path == approved_consumer:
+        if path.is_relative_to(CONFIGURATIONS_ROOT) or path in approved_consumers:
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):

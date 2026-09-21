@@ -133,11 +133,15 @@ def test_only_the_live_service_consumes_the_dataset_store() -> None:
     Inside the live package, only ``service.py`` may touch the Phase 27
     dataset store (the candle-window persistence boundary); the feed, config,
     runtime, and the Phase 35A poll loop stay persistence-free.
+    Phase 35B adds ``configuration_binding.py`` as an approved consumer: it
+    checks for the persisted live window without persisting one itself.
     """
 
+    # Phase 35B: configuration_binding.py is an approved DatasetStore consumer.
+    approved = {"service.py", "configuration_binding.py"}
     offenders: list[str] = []
     for path in python_files(LIVE):
-        if path.name == "service.py":
+        if path.name in approved:
             continue
         for dotted in module_imports(path):
             if dotted.startswith("smcsignal.datasets"):
@@ -191,11 +195,12 @@ def test_live_introduces_no_second_telegram_transport() -> None:
 
 
 def test_live_modules_exist_and_offline_seams_do_not_import_them() -> None:
-    # The exact Phase 33 module set plus the Phase 35A poll loop exists; nothing
-    # else was added under live/.
+    # The exact Phase 33 module set plus the Phase 35A poll loop and the
+    # Phase 35B configuration binding exists; nothing else was added under live/.
     expected = {
         "__init__.py",
         "config.py",
+        "configuration_binding.py",  # Phase 35B: declared-configuration binding
         "market_feed.py",
         "poll_loop.py",
         "runtime.py",

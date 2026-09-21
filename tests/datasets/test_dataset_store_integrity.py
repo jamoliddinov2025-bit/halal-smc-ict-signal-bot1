@@ -289,9 +289,12 @@ def test_nothing_outside_datasets_imports_datasets() -> None:
     # Phase 33 approved the live service boundary: it persists and restores
     # its own candle window as an exact ReplayDataset under a live key so a
     # restart reconstructs the identical deterministic analysis state.
+    # Phase 35B approved the live configuration-binding seam: it checks for
+    # the persisted live window without persisting one itself.
     approved_consumers = {
         source_root / "materialization" / "declared_inputs.py",
         source_root / "live" / "service.py",
+        source_root / "live" / "configuration_binding.py",  # Phase 35B
     }
     for path in sorted(source_root.rglob("*.py")):
         if path.is_relative_to(DATASETS_ROOT) or path in approved_consumers:

@@ -373,6 +373,7 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # replay path (Phase 20 replay, 26F, 26H, 27-31 remain unaware of it).
         "src/smcsignal/live/__init__.py",
         "src/smcsignal/live/config.py",
+        "src/smcsignal/live/configuration_binding.py",  # Phase 35B
         "src/smcsignal/live/market_feed.py",
         "src/smcsignal/live/runtime.py",
         "src/smcsignal/live/service.py",
