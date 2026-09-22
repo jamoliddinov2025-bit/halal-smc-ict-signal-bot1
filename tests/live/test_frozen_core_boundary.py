@@ -141,7 +141,14 @@ def test_only_the_live_service_consumes_the_dataset_store() -> None:
 
     # Phase 35B: configuration_binding.py is an approved DatasetStore consumer.
     # Phase 35C: gap_aware_service.py is an approved DatasetStore consumer.
-    approved = {"service.py", "configuration_binding.py", "gap_aware_service.py"}
+    # Phase 35D: outbox_wiring.py is an approved DatasetStore consumer (its
+    # mirrored gap-aware startup restores the durable candle window).
+    approved = {
+        "service.py",
+        "configuration_binding.py",
+        "gap_aware_service.py",
+        "outbox_wiring.py",
+    }
     offenders: list[str] = []
     for path in python_files(LIVE):
         if path.name in approved:
@@ -209,6 +216,7 @@ def test_live_modules_exist_and_offline_seams_do_not_import_them() -> None:
         "gap_aware_feed.py",  # Phase 35C: gap-aware feed
         "gap_aware_service.py",  # Phase 35C: gap-aware service
         "market_feed.py",
+        "outbox_wiring.py",  # Phase 35D: durable delivery outbox wiring
         "poll_loop.py",
         "poll_loop_retry_after.py",  # Phase 35C remediation: Retry-After outside frozen loop
         "retry_after.py",  # Phase 35C: Retry-After parsing

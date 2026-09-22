@@ -11,6 +11,17 @@ from smcsignal.delivery import __all__ as delivery_public
 
 SRC = Path(smcsignal.__file__).resolve().parent
 DELIVERY = SRC / "delivery"
+OUTBOX = DELIVERY / "outbox"  # Phase 35D: durable delivery outbox core
+
+
+def _scoped_delivery_files() -> list[Path]:
+    """Top-level delivery modules plus the Phase 35D outbox subpackage.
+
+    The transport subpackage stays excluded here exactly as before; the
+    outbox core is held to the same offline guarantees as the top level.
+    """
+    return sorted([*DELIVERY.glob("*.py"), *OUTBOX.glob("*.py")])
+
 
 FORBIDDEN_TOKENS = (
     "telegram",
@@ -43,7 +54,7 @@ def _module_imports(path: Path) -> set[str]:
 
 def test_delivery_imports_only_stdlib_and_smcsignal() -> None:
     allowed = set(sys.stdlib_module_names) | {"smcsignal"}
-    for path in DELIVERY.glob("*.py"):
+    for path in _scoped_delivery_files():
         for dotted in _module_imports(path):
             top = dotted.split(".")[0]
             assert top in allowed, f"{path.name} imports {dotted}"
@@ -51,20 +62,20 @@ def test_delivery_imports_only_stdlib_and_smcsignal() -> None:
 
 def test_delivery_never_imports_network_trading_or_telegram() -> None:
     banned = {"socket", "http", "requests", "httpx", "aiohttp", "urllib", "ccxt"}
-    for path in DELIVERY.glob("*.py"):
+    for path in _scoped_delivery_files():
         tops = {item.split(".")[0] for item in _module_imports(path)}
         assert not tops & banned, f"{path.name}: {tops & banned}"
 
 
 def test_delivery_contains_no_forbidden_surface_tokens() -> None:
-    for path in DELIVERY.glob("*.py"):
+    for path in _scoped_delivery_files():
         text = path.read_text(encoding="utf-8").lower()
         for token in FORBIDDEN_TOKENS:
             assert token.lower() not in text, f"{path.name} mentions {token}"
 
 
 def test_delivery_has_no_not_halal_status_value() -> None:
-    for path in DELIVERY.glob("*.py"):
+    for path in _scoped_delivery_files():
         text = path.read_text(encoding="utf-8")
         assert "NOT_HALAL" not in text, f"{path.name} introduces NOT_HALAL"
 

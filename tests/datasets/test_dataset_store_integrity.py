@@ -291,11 +291,14 @@ def test_nothing_outside_datasets_imports_datasets() -> None:
     # restart reconstructs the identical deterministic analysis state.
     # Phase 35B approved the live configuration-binding seam: it checks for
     # the persisted live window without persisting one itself.
+    # Phase 35D approved the outbox wiring: its mirrored gap-aware startup
+    # restores the persisted candle window exactly like the frozen services.
     approved_consumers = {
         source_root / "materialization" / "declared_inputs.py",
         source_root / "live" / "service.py",
         source_root / "live" / "configuration_binding.py",  # Phase 35B
         source_root / "live" / "gap_aware_service.py",  # Phase 35C
+        source_root / "live" / "outbox_wiring.py",  # Phase 35D
     }
     for path in sorted(source_root.rglob("*.py")):
         if path.is_relative_to(DATASETS_ROOT) or path in approved_consumers:
