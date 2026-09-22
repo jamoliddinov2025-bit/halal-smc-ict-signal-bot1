@@ -35,7 +35,9 @@ def restart_sink(store: FileOutboxStore, inner: ScriptedInnerSink, clock: FakeCl
     return OutboxPayloadSink(store, inner, config=ZERO_COOLDOWN, clock=clock)
 
 
-def crash_1_intent_never_created_window_survives(tmp_path: Path, signal_frames_fixture) -> None:
+def test_crash_1_intent_never_created_window_survives(
+    tmp_path: Path, signal_frames_fixture
+) -> None:
     """Crash after ledger/window persistence, before any outbox intent.
 
     The durable window regeneration feeds reconciliation, which recreates the
@@ -61,7 +63,7 @@ def crash_1_intent_never_created_window_survives(tmp_path: Path, signal_frames_f
     assert inner.calls == 1
 
 
-def crash_2_after_queued_before_any_attempt(tmp_path: Path, buy_snapshot) -> None:
+def test_crash_2_after_queued_before_any_attempt(tmp_path: Path, buy_snapshot) -> None:
     """Crash right after the QUEUED intent write: zero attempts occurred."""
     store = FileOutboxStore(tmp_path / "outbox")
     store.save_record(queued_record(buy_snapshot, now=MOMENT))
@@ -76,7 +78,7 @@ def crash_2_after_queued_before_any_attempt(tmp_path: Path, buy_snapshot) -> Non
     assert record.possibly_duplicated is False
 
 
-def crash_3_after_in_flight_before_transport_call(tmp_path: Path, buy_snapshot) -> None:
+def test_crash_3_after_in_flight_before_transport_call(tmp_path: Path, buy_snapshot) -> None:
     """Crash after IN_FLIGHT but before the transport call.
 
     Restart must treat the started attempt as ambiguous (it *might* have
@@ -98,7 +100,7 @@ def crash_3_after_in_flight_before_transport_call(tmp_path: Path, buy_snapshot) 
     assert inner.calls == 1  # exactly one new send
 
 
-def crash_4_during_transport_call_unknown(tmp_path: Path, buy_snapshot) -> None:
+def test_crash_4_during_transport_call_unknown(tmp_path: Path, buy_snapshot) -> None:
     """Crash mid-call is indistinguishable from crash 3; identical recovery.
 
     The eventual success after an ambiguous attempt carries the durable
@@ -123,7 +125,7 @@ def crash_4_during_transport_call_unknown(tmp_path: Path, buy_snapshot) -> None:
     ]
 
 
-def crash_5_after_transport_success_before_receipt_write(tmp_path: Path, buy_snapshot) -> None:
+def test_crash_5_after_transport_success_before_receipt_write(tmp_path: Path, buy_snapshot) -> None:
     """The one unavoidable duplicate window: the transport accepted, the
     receipt was never persisted. Restart recovers as ambiguous, retries, and
     the remote message may be duplicated — durably flagged."""
@@ -140,7 +142,7 @@ def crash_5_after_transport_success_before_receipt_write(tmp_path: Path, buy_sna
     assert inner.calls == 1
 
 
-def crash_6_after_receipt_persistence(tmp_path: Path, buy_snapshot) -> None:
+def test_crash_6_after_receipt_persistence(tmp_path: Path, buy_snapshot) -> None:
     """A persisted terminal receipt survives untouched; nothing re-sends."""
     from tests.delivery.outbox.helpers import delivered
 
@@ -159,7 +161,7 @@ def crash_6_after_receipt_persistence(tmp_path: Path, buy_snapshot) -> None:
     assert final.attempts_used == 1
 
 
-def crash_7_during_reconciliation(tmp_path: Path, signal_frames_fixture) -> None:
+def test_crash_7_during_reconciliation(tmp_path: Path, signal_frames_fixture) -> None:
     """An interrupted reconciliation completes deterministically on restart."""
     from smcsignal.analysis.signal_engine.models import SignalStatus
 
@@ -179,7 +181,7 @@ def crash_7_during_reconciliation(tmp_path: Path, signal_frames_fixture) -> None
     assert len({record.delivery_id for record in records}) == len(buys)
 
 
-def crash_8_during_drain_retry(tmp_path: Path, buy_snapshot) -> None:
+def test_crash_8_during_drain_retry(tmp_path: Path, buy_snapshot) -> None:
     """Crash during a drain attempt: IN_FLIGHT with attempts=2, budget kept."""
     store = FileOutboxStore(tmp_path / "outbox")
     record = queued_record(buy_snapshot, now=MOMENT, max_attempts=5)
@@ -199,7 +201,7 @@ def crash_8_during_drain_retry(tmp_path: Path, buy_snapshot) -> None:
     assert final.possibly_duplicated is True
 
 
-def crash_9_corrupted_record_recreated_with_ambiguity(tmp_path: Path, buy_snapshot) -> None:
+def test_crash_9_corrupted_record_recreated_with_ambiguity(tmp_path: Path, buy_snapshot) -> None:
     """A corrupted record is quarantined; reconciliation recreates the intent
     with the ambiguity flag (prior history unknowable)."""
 
@@ -223,7 +225,7 @@ def crash_9_corrupted_record_recreated_with_ambiguity(tmp_path: Path, buy_snapsh
     assert record.state is OutboxState.QUEUED
 
 
-def crash_10_stale_partial_and_incomplete_records(tmp_path: Path, buy_snapshot) -> None:
+def test_crash_10_stale_partial_and_incomplete_records(tmp_path: Path, buy_snapshot) -> None:
     """Leftover partials are swept; an unknown-version record is quarantined."""
     store_dir = tmp_path / "outbox"
     (store_dir / "records").mkdir(parents=True)
@@ -247,7 +249,9 @@ def crash_10_stale_partial_and_incomplete_records(tmp_path: Path, buy_snapshot) 
     assert sink.drain(MOMENT) == 0
 
 
-def crash_budget_consumed_in_flight_is_terminal_ambiguous(tmp_path: Path, buy_snapshot) -> None:
+def test_crash_budget_consumed_in_flight_is_terminal_ambiguous(
+    tmp_path: Path, buy_snapshot
+) -> None:
     """IN_FLIGHT at the budget edge restarts as terminal AMBIGUOUS."""
     store = FileOutboxStore(tmp_path / "outbox")
     record = queued_record(buy_snapshot, now=MOMENT, max_attempts=2)
