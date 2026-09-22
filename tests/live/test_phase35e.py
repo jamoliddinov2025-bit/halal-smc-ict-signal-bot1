@@ -202,6 +202,19 @@ def test_checkpoint_restart_matches_uninterrupted_run() -> None:
         f.signal_id for f in full[16:17] if f.status is SignalStatus.BUY_SIGNAL
     ]
 
+    # Not only the final frame: the ordered publication sequence across the
+    # whole restarted run must equal the uninterrupted reference. The warm-up
+    # BUY (index 4) is recorded but never broadcast, so delivery starts at
+    # index 8. (The frame-by-frame sequence comparison over twelve frames is
+    # in ``tests/live/test_phase35e_audit.py``.)
+    reference_buy_ids = [f.signal_id for f in full if f.status is SignalStatus.BUY_SIGNAL]
+    assert len(reference_buy_ids) == 4
+    delivered_ids = [payload.signal_id for payload in delivery.bridge.sink.seen]
+    assert delivered_ids == reference_buy_ids[1:]
+    ledger_snapshot = restarted.session.store.load(restarted.ledger_key)
+    assert ledger_snapshot is not None
+    assert [o.signal_id for o in ledger_snapshot.observations] == reference_buy_ids
+
 
 def test_restart_does_not_republish_an_already_published_signal() -> None:
     checkpoints = MemoryCheckpointStore()
@@ -348,13 +361,19 @@ def test_primary_sequence_duplicate_and_stale_candles_are_ignored() -> None:
 # -- identity rejection --------------------------------------------------------
 
 
-def test_wrong_symbol_checkpoint_is_rejected(tmp_path: Path) -> None:
-    checkpoints = FileCheckpointStore(tmp_path)
+def test_checkpoint_keys_are_separated_per_symbol() -> None:
+    """Checkpoint keys are per-symbol, so two series never share a file.
+
+    Renamed from ``test_wrong_symbol_checkpoint_is_rejected``: this asserts
+    key separation only. The *rejection* of a checkpoint that genuinely
+    belongs to another declaration (symbol, timeframe, higher timeframes,
+    series) is covered by the true rejection tests in
+    ``tests/live/test_phase35e_audit.py``.
+    """
+
+    checkpoints = MemoryCheckpointStore()
     service = scripted_service((6, 9), checkpoint_store=checkpoints)
     service.run_cycle()
-    # A checkpoint written for another symbol must not load under this key —
-    # simulate by starting with a different declared symbol against the same
-    # store key namespace (key includes symbol, so craft a colliding file).
     other = scripted_service(
         (6, 9),
         checkpoint_store=checkpoints,
@@ -362,6 +381,11 @@ def test_wrong_symbol_checkpoint_is_rejected(tmp_path: Path) -> None:
     )
     # Different symbol → different key → no checkpoint cross-talk.
     assert other.checkpoint_key != service.checkpoint_key
+    assert other.checkpoint_key == live_checkpoint_key("ETHUSDT", "15m")
+    eth = checkpoints.load(other.checkpoint_key)
+    btc = checkpoints.load(service.checkpoint_key)
+    assert eth is not None and eth.symbol == "ETHUSDT"
+    assert btc is not None and btc.symbol == "BTCUSDT"
 
 
 def test_wrong_configuration_checkpoint_is_rejected() -> None:

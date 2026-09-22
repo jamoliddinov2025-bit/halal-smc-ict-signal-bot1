@@ -104,6 +104,44 @@ def test_unsupported_schema_version_is_rejected() -> None:
         load_checkpoint_bytes(canonical_bytes(document))
 
 
+def test_every_unsupported_schema_version_shape_is_rejected() -> None:
+    """C1 at the format boundary: older, newer, and non-integer versions fail."""
+
+    cp = sample_checkpoint()
+    for bad_version in (CHECKPOINT_SCHEMA_VERSION - 1, CHECKPOINT_SCHEMA_VERSION + 1, 0, 99, "1"):
+        document = json.loads(checkpoint_bytes(cp))
+        document["schema_version"] = bad_version
+        # Re-embed a valid digest so the failure can only be the schema gate.
+        content = {k: v for k, v in document.items() if k != "content_digest"}
+        document["content_digest"] = "checkpoint:" + digest(content)
+        with pytest.raises(LiveCheckpointError, match="schema_version"):
+            load_checkpoint_bytes(canonical_bytes(document))
+
+
+def test_live_checkpoint_constructor_refuses_any_other_schema_version() -> None:
+    """C1 at the model boundary: the dataclass itself is version-locked."""
+
+    cp = sample_checkpoint()
+    for bad_version in (CHECKPOINT_SCHEMA_VERSION - 1, CHECKPOINT_SCHEMA_VERSION + 1, 0, "1"):
+        with pytest.raises(LiveCheckpointError, match="schema_version"):
+            LiveCheckpoint(
+                configuration_identity=cp.configuration_identity,
+                symbol=cp.symbol,
+                primary_timeframe=cp.primary_timeframe,
+                higher_timeframes=cp.higher_timeframes,
+                series=cp.series,
+                last_primary=cp.last_primary,
+                last_higher=dict(cp.last_higher),
+                frame_count=cp.frame_count,
+                retention_local_bound=cp.retention_local_bound,
+                primary_candles=cp.primary_candles,
+                higher_candles=dict(cp.higher_candles),
+                published_setups=cp.published_setups,
+                latest_signal_id=cp.latest_signal_id,
+                schema_version=bad_version,  # type: ignore[arg-type]
+            )
+
+
 def test_identity_mismatch_fails_closed() -> None:
     cp = sample_checkpoint()
     other = LiveCheckpoint(

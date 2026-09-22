@@ -41,6 +41,52 @@ Two durable inputs, one deterministic restart:
    the window is bounded to the configuration-derived local context and the
    checkpoint is the recovery source.
 
+Lost checkpoint with a bounded window (audit C4 — documented, not redesigned)
+----------------------------------------------------------------------------
+
+Exact code path, in ``start_live_service``:
+
+    checkpoint_store is not None
+        → checkpoint = checkpoint_store.load(checkpoint_key)
+        → returns None (absent, deleted, or never written)
+        → checkpoint is None, so the identity block above is skipped entirely
+        → falls through to the ``else:`` branch
+        → window = window_store.load(window_key)
+        → runtime = LiveRuntime(pipeline, series, higher_candles=window.higher_candles)
+        → frames = runtime.warm_up(window.candles)   # ONLY the bounded suffix
+        → session = open_ledger_session(store, ledger_key, outcome_tracking, frames)
+
+Because ``_apply_retention`` trims the *persisted* window to
+``RetentionPolicy.local_context_bound`` after every successful checkpoint
+write — and because ``run_cycle`` persists the window *before* it applies
+retention — the window that survives a checkpoint loss holds the previous
+cycle's bounded suffix plus the newest cycle's candles. Warm-up therefore
+replays a truncated history, and the regenerated analyzer state is not, in
+general, the state an uninterrupted run would hold.
+
+Fail-closed status under the existing invariants — measured, not assumed
+(``tests/live/test_phase35e_audit.py``):
+
+* **Fail closed when the persisted ledger is non-empty** (the normal case —
+  any published BUY leaves an observation). ``open_ledger_session`` is the
+  Phase 26G *verified* open: it replays the supplied history and authorizes
+  only on complete ``LedgerSnapshot`` equality. A truncated warm-up cannot
+  reproduce the stored observations, so the open raises
+  ``AnalysisInputError`` before any session exists, ``store.save`` is never
+  reached, and the stored ledger bytes stay untouched. The service does not
+  start.
+* **Not detectable when the persisted ledger is still empty** (no BUY has
+  ever been published). The verified open compares an empty fresh lifecycle
+  against the empty stored snapshot and is satisfied before replaying a
+  single frame, so a truncated warm-up is accepted and the runtime silently
+  resumes from the persisted bounded window instead of the full history
+  (measured in the fixture: 7 of 17 candles, and a different ``signal_id``
+  for the same candle). This is a real residual gap; it is a property of the
+  frozen Phase 26G verification seam, which authorizes on ledger content and
+  therefore has nothing to compare when there is none. Closing it would
+  require either an unbounded window or a checkpoint-presence invariant —
+  both are C4 redesigns and are deliberately out of scope for this phase.
+
 Cycle ordering (unchanged safety relationship, Phase 35E insertion):
 
     analysis → ledger persistence → window/checkpoint persistence → delivery
@@ -95,6 +141,7 @@ from smcsignal.delivery.telegram.integration import TelegramDeliveryIntegration
 from smcsignal.delivery.telegram.sink import TelegramSink
 from smcsignal.delivery.transport import OfflinePayloadSink, PayloadSink
 from smcsignal.live.checkpoint import (
+    CHECKPOINT_SCHEMA_VERSION,
     CheckpointStore,
     LiveCheckpoint,
     LiveCheckpointError,
@@ -103,7 +150,7 @@ from smcsignal.live.checkpoint import (
 from smcsignal.live.config import LiveConfigurationError, LiveServiceConfig
 from smcsignal.live.configuration_binding import configuration_identity
 from smcsignal.live.market_feed import LiveMarketFeed
-from smcsignal.live.retention import RetentionPolicy
+from smcsignal.live.retention import FVG_FRAME_WINDOW, RetentionPolicy
 from smcsignal.live.runtime import LiveRuntime
 from smcsignal.persistence import LedgerStore
 from smcsignal.sessions import LedgerSession, open_ledger_session
@@ -348,7 +395,9 @@ class LiveService:
         if self._checkpoint_store is None or self._checkpoint_key is None:
             return False
         state = self._runtime.export_checkpoint_state()
-        retention_bound = self._retention.local_context_bound if self._retention is not None else 3
+        retention_bound = (
+            self._retention.local_context_bound if self._retention is not None else FVG_FRAME_WINDOW
+        )
         checkpoint = LiveCheckpoint(
             configuration_identity=configuration_identity(self._runtime.configuration),
             symbol=self._runtime.series.symbol,
@@ -460,7 +509,10 @@ def start_live_service(
        fail closed when the regenerated fencing/latest id differs from the
        checkpoint (a restart can never silently re-publish).
     3. Else restore the Phase 27 window (legacy) or take one initial feed
-       poll as the warm-up window — unchanged Phase 33 behavior.
+       poll as the warm-up window — unchanged Phase 33 behavior. Note that a
+       *configured* checkpoint store whose load returned ``None`` also lands
+       here; with the window bounded that is the audit C4 path documented in
+       the module docstring.
     4. Open the Phase 26G ledger session over the regenerated warm-up frames
        (fresh bootstrap or verified recovery, exactly as frozen).
     5. Persist the window, persist the checkpoint when configured, and return
@@ -507,6 +559,12 @@ def start_live_service(
         if checkpoint is not None:
             # Fail closed on any identity mismatch before touching the runtime.
             mismatches: list[str] = []
+            # Schema gate first: a checkpoint written under a schema version
+            # this build does not implement has no comparable field semantics,
+            # so its version is checked against the constant this build
+            # understands rather than against itself.
+            if checkpoint.schema_version != CHECKPOINT_SCHEMA_VERSION:
+                mismatches.append("schema_version")
             if checkpoint.configuration_identity != declared_identity:
                 mismatches.append("configuration_identity")
             if checkpoint.symbol != config.symbol:
@@ -517,11 +575,10 @@ def start_live_service(
                 mismatches.append("higher_timeframes")
             if checkpoint.series != series:
                 mismatches.append("series")
-            if checkpoint.schema_version != checkpoint.schema_version:  # pragma: no cover
-                mismatches.append("schema_version")
             if mismatches:
                 raise LiveCheckpointError(
-                    "checkpoint does not match the current runtime declaration ("
+                    "checkpoint does not match the current runtime declaration (schema "
+                    f"{CHECKPOINT_SCHEMA_VERSION} expected; mismatched: "
                     + ", ".join(mismatches)
                     + "); refusing to restore a checkpoint from another configuration"
                 )
@@ -549,6 +606,13 @@ def start_live_service(
             tf: tuple(candles) for tf, candles in checkpoint.higher_candles.items()
         }
     else:
+        # Audit C4 path: a configured checkpoint store whose load returned
+        # None (checkpoint absent/deleted) lands here, so the recovery source
+        # is the Phase 27 window — which, with a checkpoint store configured,
+        # holds only the bounded suffix. See the module docstring's "Lost
+        # checkpoint with a bounded window" section for the exact fail-closed
+        # analysis: the Phase 26G verified ledger open below refuses whenever
+        # the stored ledger has content it cannot reproduce.
         window = window_store.load(window_key)
         if window is not None:
             if (
