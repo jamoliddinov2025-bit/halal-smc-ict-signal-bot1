@@ -25,6 +25,19 @@ generation, or delivery — construction and explicit ``run_cycle``/``run``
 calls do.
 """
 
+from smcsignal.live.checkpoint import (
+    CHECKPOINT_METHODOLOGY,
+    CHECKPOINT_SCHEMA_VERSION,
+    CheckpointStore,
+    FileCheckpointStore,
+    LiveCheckpoint,
+    LiveCheckpointError,
+    MemoryCheckpointStore,
+    checkpoint_bytes,
+    live_checkpoint_key,
+    load_checkpoint_bytes,
+    verify_checkpoint_identity,
+)
 from smcsignal.live.config import (
     DEFAULT_HIGHER_TIMEFRAMES,
     DEFAULT_HISTORY_LIMIT,
@@ -83,12 +96,13 @@ from smcsignal.live.poll_loop_retry_after import (
     RetryAfterAwareLivePollLoop,
     RetryAfterAwarePollLoopConfig,
 )
+from smcsignal.live.retention import RetentionPolicy, local_context_bound
 from smcsignal.live.retry_after import (
     MAX_RETRY_AFTER_SECONDS,
     RateLimitedFeedError,
     parse_retry_after,
 )
-from smcsignal.live.runtime import LiveRuntime
+from smcsignal.live.runtime import LiveRuntime, RuntimeCheckpointState, primary_candle_of
 from smcsignal.live.service import (
     DESTINATION_ID,
     LIVE_DATASET_ID,
@@ -100,6 +114,9 @@ from smcsignal.live.service import (
 )
 
 __all__ = [
+    "CHECKPOINT_METHODOLOGY",
+    "CHECKPOINT_SCHEMA_VERSION",
+    "CheckpointStore",
     "DEFAULT_HISTORY_LIMIT",
     "DEFAULT_HIGHER_TIMEFRAMES",
     "DEFAULT_POLL_BACKOFF_BASE_SECONDS",
@@ -112,6 +129,7 @@ __all__ = [
     "DEFAULT_RETRY_ATTEMPTS",
     "DEFAULT_RETRY_BACKOFF_SECONDS",
     "DESTINATION_ID",
+    "FileCheckpointStore",
     "GapInfo",
     "GapAwareLiveMarketFeed",
     "GapAwareLiveService",
@@ -119,6 +137,8 @@ __all__ = [
     "LIVE_DATASET_ID",
     "LIVE_VENUE",
     "LIVE_WINDOW_KEY_PREFIX",
+    "LiveCheckpoint",
+    "LiveCheckpointError",
     "LiveConfigurationBinding",
     "LiveConfigurationError",
     "LiveFeedError",
@@ -131,6 +151,7 @@ __all__ = [
     "LiveService",
     "LiveServiceConfig",
     "MAX_RETRY_AFTER_SECONDS",
+    "MemoryCheckpointStore",
     "PollCycleResult",
     "PollOutcome",
     "RateLimitedFeedError",
@@ -139,8 +160,11 @@ __all__ = [
     "RetryAfterAwarePollLoopConfig",
     "CycleReport",
     "CycleRunner",
+    "RetentionPolicy",
+    "RuntimeCheckpointState",
     "bind_live_configuration",
     "build_telegram_delivery",
+    "checkpoint_bytes",
     "classify_failure",
     "configuration_identity",
     "detect_continuity_gap",
@@ -149,13 +173,18 @@ __all__ = [
     "first_new",
     "install_stop_signal_handlers",
     "interval_of",
+    "live_checkpoint_key",
     "live_configuration_key",
     "live_window_key",
+    "load_checkpoint_bytes",
     "load_live_config",
     "load_poll_loop_config",
+    "local_context_bound",
     "next_poll_time",
     "parse_retry_after",
+    "primary_candle_of",
     "start_gap_aware_live_service",
     "start_live_service",
     "validate_batch_contiguity",
+    "verify_checkpoint_identity",
 ]

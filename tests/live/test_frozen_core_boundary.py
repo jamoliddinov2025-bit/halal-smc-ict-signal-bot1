@@ -143,6 +143,8 @@ def test_only_the_live_service_consumes_the_dataset_store() -> None:
     # Phase 35C: gap_aware_service.py is an approved DatasetStore consumer.
     # Phase 35D: outbox_wiring.py is an approved DatasetStore consumer (its
     # mirrored gap-aware startup restores the durable candle window).
+    # Phase 35E: checkpoint.py owns its own CheckpointStore boundary and must
+    # NOT import the Phase 27 DatasetStore (ownership stays separate).
     approved = {
         "service.py",
         "configuration_binding.py",
@@ -206,10 +208,12 @@ def test_live_introduces_no_second_telegram_transport() -> None:
 
 def test_live_modules_exist_and_offline_seams_do_not_import_them() -> None:
     # The exact Phase 33 module set plus the Phase 35A poll loop, the Phase 35B
-    # configuration binding, and the Phase 35C gap + Retry-After seams exists;
-    # nothing else was added under live/.
+    # configuration binding, the Phase 35C gap + Retry-After seams, and the
+    # Phase 35E retention/checkpoint seams exists; nothing else was added
+    # under live/.
     expected = {
         "__init__.py",
+        "checkpoint.py",  # Phase 35E: explicit versioned live checkpoint
         "config.py",
         "configuration_binding.py",  # Phase 35B: declared-configuration binding
         "gap.py",  # Phase 35C: gap detection
@@ -219,6 +223,7 @@ def test_live_modules_exist_and_offline_seams_do_not_import_them() -> None:
         "outbox_wiring.py",  # Phase 35D: durable delivery outbox wiring
         "poll_loop.py",
         "poll_loop_retry_after.py",  # Phase 35C remediation: Retry-After outside frozen loop
+        "retention.py",  # Phase 35E: configuration-derived retention policy
         "retry_after.py",  # Phase 35C: Retry-After parsing
         "runtime.py",
         "service.py",

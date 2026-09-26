@@ -372,13 +372,16 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # ledger, or trading/execution surface and never touches the offline
         # replay path (Phase 20 replay, 26F, 26H, 27-31 remain unaware of it).
         "src/smcsignal/live/__init__.py",
+        "src/smcsignal/live/checkpoint.py",  # Phase 35E: explicit live checkpoint
         "src/smcsignal/live/config.py",
         "src/smcsignal/live/configuration_binding.py",  # Phase 35B
         "src/smcsignal/live/gap.py",  # Phase 35C
         "src/smcsignal/live/gap_aware_feed.py",  # Phase 35C
         "src/smcsignal/live/gap_aware_service.py",  # Phase 35C
         "src/smcsignal/live/market_feed.py",
+        "src/smcsignal/live/outbox_wiring.py",  # Phase 35D: durable outbox wiring
         "src/smcsignal/live/poll_loop_retry_after.py",  # Phase 35C remediation
+        "src/smcsignal/live/retention.py",  # Phase 35E: derived retention policy
         "src/smcsignal/live/retry_after.py",  # Phase 35C
         "src/smcsignal/live/runtime.py",
         "src/smcsignal/live/service.py",
@@ -390,6 +393,14 @@ def test_phase22_sources_are_the_only_src_changes_from_baseline() -> None:
         # no analyzer, ledger, persistence, transport, or trading/execution
         # surface, and leaves every frozen module and the offline path untouched.
         "src/smcsignal/live/poll_loop.py",
+        # Phase 35D approved the durable Telegram delivery outbox: models,
+        # atomic store, reconcile, and sink — output-only, strictly downstream
+        # of published signals, never a second transport or scheduler.
+        "src/smcsignal/delivery/outbox/__init__.py",
+        "src/smcsignal/delivery/outbox/models.py",
+        "src/smcsignal/delivery/outbox/reconcile.py",
+        "src/smcsignal/delivery/outbox/sink.py",
+        "src/smcsignal/delivery/outbox/store.py",
         "src/smcsignal/analysis/__init__.py",
     }
     assert set(changed) <= allowed, set(changed) - allowed
