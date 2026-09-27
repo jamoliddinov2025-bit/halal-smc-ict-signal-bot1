@@ -5,7 +5,9 @@ Phase 35D Telegram outbox (delivery durability stays there), not the Phase 27
 dataset window (bounded raw context may still live there), and not the Phase
 26D ledger (outcome durability stays there). Ownership is separate: this
 module persists only what the live runtime and service need to resume the
-Phase 3-19 chain deterministically.
+Phase 3-19 chain deterministically. Raw-window eviction is not owned here
+either — the single sanctioned raw-context bound is
+``smcsignal.live.retention.RetentionPolicy.bound_candles``.
 
 Contents (schema ``live-checkpoint-v1``)
 ----------------------------------------
@@ -66,7 +68,7 @@ from __future__ import annotations
 import json
 import os
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal, DecimalException
@@ -596,15 +598,6 @@ class FileCheckpointStore:
         return self._path_for(key).is_file()
 
 
-def bound_candles(candles: Sequence[OHLCV], bound: int) -> tuple[OHLCV, ...]:
-    """Shared deterministic suffix bound used when encoding stored windows."""
-
-    if type(bound) is not int or bound < 3:
-        raise AnalysisInputError("bound must be an integer >= 3")
-    retained = tuple(candles)
-    return retained if len(retained) <= bound else retained[-bound:]
-
-
 __all__ = [
     "CHECKPOINT_KIND",
     "CHECKPOINT_METHODOLOGY",
@@ -614,7 +607,6 @@ __all__ = [
     "LiveCheckpoint",
     "LiveCheckpointError",
     "MemoryCheckpointStore",
-    "bound_candles",
     "checkpoint_bytes",
     "live_checkpoint_key",
     "load_checkpoint_bytes",
