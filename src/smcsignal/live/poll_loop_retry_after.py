@@ -239,3 +239,19 @@ class RetryAfterAwareLivePollLoop(LivePollLoop):
         # Keep references for introspection
         self._retry_after_holder = holder
         self._inner_runner = runner
+
+    @property
+    def retry_after_delay(self) -> float | None:
+        """Read-only view of the server-directed delay currently in effect.
+
+        Phase 35F authorized exactly this one accessor and nothing else. It
+        exposes the existing ``_retry_after_holder[0]`` and does nothing more:
+        no scheduling change, no backoff algorithm change, no persistence, no
+        recovery behavior, and no mutation of the holder. ``None`` means no
+        Retry-After is currently being honored.
+        """
+
+        holder = self._retry_after_holder
+        if not holder:
+            return None
+        return holder[0]

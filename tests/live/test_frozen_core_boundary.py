@@ -208,8 +208,9 @@ def test_live_introduces_no_second_telegram_transport() -> None:
 
 def test_live_modules_exist_and_offline_seams_do_not_import_them() -> None:
     # The exact Phase 33 module set plus the Phase 35A poll loop, the Phase 35B
-    # configuration binding, the Phase 35C gap + Retry-After seams, and the
-    # Phase 35E retention/checkpoint seams exists; nothing else was added
+    # configuration binding, the Phase 35C gap + Retry-After seams, the
+    # Phase 35E retention/checkpoint seams, and the Phase 35F read-only
+    # operator snapshot + derived health seams exists; nothing else was added
     # under live/.
     expected = {
         "__init__.py",
@@ -219,7 +220,9 @@ def test_live_modules_exist_and_offline_seams_do_not_import_them() -> None:
         "gap.py",  # Phase 35C: gap detection
         "gap_aware_feed.py",  # Phase 35C: gap-aware feed
         "gap_aware_service.py",  # Phase 35C: gap-aware service
+        "health.py",  # Phase 35F: derived five-state health classification
         "market_feed.py",
+        "operator.py",  # Phase 35F: read-only operator snapshot
         "outbox_wiring.py",  # Phase 35D: durable delivery outbox wiring
         "poll_loop.py",
         "poll_loop_retry_after.py",  # Phase 35C remediation: Retry-After outside frozen loop
