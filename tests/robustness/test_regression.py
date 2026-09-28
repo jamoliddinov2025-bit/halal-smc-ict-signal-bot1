@@ -362,7 +362,9 @@ def test_decision_modules_are_unmodified_since_the_phase20_baseline() -> None:
         "src/smcsignal/live/gap.py",  # Phase 35C
         "src/smcsignal/live/gap_aware_feed.py",  # Phase 35C
         "src/smcsignal/live/gap_aware_service.py",  # Phase 35C
+        "src/smcsignal/live/health.py",  # Phase 35F: derived health states
         "src/smcsignal/live/market_feed.py",
+        "src/smcsignal/live/operator.py",  # Phase 35F: operator snapshot
         "src/smcsignal/live/outbox_wiring.py",  # Phase 35D: durable outbox wiring
         "src/smcsignal/live/poll_loop_retry_after.py",  # Phase 35C remediation
         "src/smcsignal/live/retention.py",  # Phase 35E: derived retention policy
